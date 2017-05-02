@@ -948,7 +948,8 @@ public class TiUIHelper
 	
 	public static Drawable getResourceDrawable(int res_id)
 	{
-		return TiApplication.getInstance().getResources().getDrawable(res_id);
+		Activity activity = TiApplication.getInstance().getCurrentActivity();
+		return TiDrawableReference.fromResourceId(activity, res_id).getDrawable();
 	}
 
 	public static Drawable getResourceDrawable(Object path)

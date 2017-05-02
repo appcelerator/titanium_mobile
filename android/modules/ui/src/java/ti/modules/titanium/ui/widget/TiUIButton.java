@@ -72,7 +72,7 @@ public class TiUIButton extends TiUIView
 			}
 
 			if (drawableRef != null) {
-				Drawable image = drawableRef.getDensityScaledDrawable();
+				Drawable image = drawableRef.getDrawable();
 				btn.setCompoundDrawablesWithIntrinsicBounds(image, null, null, null);
 			}
 		} else if (d.containsKey(TiC.PROPERTY_BACKGROUND_COLOR)) {

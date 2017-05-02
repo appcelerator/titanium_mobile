@@ -34,6 +34,7 @@ import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.view.TiDrawableReference;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -307,65 +308,60 @@ public class TiFileHelper implements Handler.Callback
 	 */
 	public Drawable loadDrawable(String path, boolean report, boolean checkForNinePatch, boolean densityScaled)
 	{
-		Drawable d = null;
-		InputStream is = null;
-
-		// Try to get Resource drawable first.
-		d = TiUIHelper.getResourceDrawable(path);
-		if (d != null) {
-			return d;
+		// Validate.
+		if ((path == null) || (path.length() <= 0)) {
+			return null;
 		}
 
-		try
-		{
-			if (checkForNinePatch && path != null && !URLUtil.isNetworkUrl(path)) {
+		// Create a new drawable wrapping the given image.
+		Drawable d = null;
+		try {
+			// Determine if we need to process the referenced image as a 9-patch.
+			// Note: Titanium does not require the ".9.png" suffix on an image file.
+			boolean isNinePatchProcessingRequested = false;
+			if (checkForNinePatch && !URLUtil.isNetworkUrl(path)) {
 				if (path.endsWith(".png")) {
 					if (!path.endsWith(".9.png")) {
-						String apath = null;
-						// First See if it's in the root dir
-						apath = path.substring(0, path.lastIndexOf(".")) + ".9.png";
+						// If the given file path does not end with ".9.png",
+						// then append it and check if a matching file exists.
+						String apath = path.substring(0, path.lastIndexOf(".")) + ".9.png";
+						InputStream is = null;
 						try {
 							is = openInputStream(apath, false);
 							if (is != null) {
 								path = apath;
 							}
 						} catch (IOException e) {
-								Log.d(TAG, "path not found: " + apath);
+							Log.d(TAG, "path not found: " + apath);
+						}
+						finally {
+							if (is != null) {
+								try { is.close(); }
+								catch (Exception ex) {}
+							}
 						}
 					}
 				}
-				if (is == null) {
-					is = openInputStream(path, report);
-				}
-				Bitmap b = null;
+				isNinePatchProcessingRequested = true;
+			}
+
+			// Load the image via "TiDrawableReference" which will auto-downscale the image
+			// if is too large to be displayed by an Android view. (Can happen with large camera photos.)
+			TiDrawableReference drawableLoader = TiDrawableReference.fromUrl(
+					TiApplication.getInstance().getCurrentActivity(), path);
+			if (drawableLoader != null) {
 				if (densityScaled) {
-					b = TiUIHelper.createDensityScaledBitmap(is);
-				} else {
-					b = TiUIHelper.createBitmap(is);
+					d = drawableLoader.getDensityScaledDrawable();
 				}
-				d = nph.process(b);
-			} else {
-				is = openInputStream(path, report);
-				Bitmap b = null;
-				if (densityScaled) {
-					b = TiUIHelper.createDensityScaledBitmap(is);
-				} else {
-					b = TiUIHelper.createBitmap(is);
+				else {
+					d = drawableLoader.getDrawable();
 				}
-				if (b != null) {
-					d = new BitmapDrawable(b);
+				if (isNinePatchProcessingRequested && (d != null)) {
+					d = this.nph.process(d);
 				}
 			}
-		} catch (IOException e) {
-			Log.e(TAG, path + " not found.", e);
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException e) {
-					//Ignore
-				}
-			}
+		} catch (Exception e) {
+			Log.e(TAG, "Failed to load drawable for path: " + path, e);
 		}
 
 		return d;

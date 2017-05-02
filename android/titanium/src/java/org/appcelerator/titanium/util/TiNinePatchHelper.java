@@ -8,8 +8,12 @@ package org.appcelerator.titanium.util;
 
 import java.util.ArrayList;
 
+import org.appcelerator.titanium.TiApplication;
+
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.NinePatch;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -24,15 +28,35 @@ public class TiNinePatchHelper
 		int color;
 	};
 
+	/**
+	 * Analyzes the given drawable's bitmap (if it has one) to see if it is a 9-patch image.
+	 * If it is, then this method creates and returns a new NinePatchDrawable with the given drawable's bitmap.
+	 * @param d The drawable whose bitmap will be checked for 9-patch information. Can be null.
+	 * @return
+	 * Returns a new NinePatchDrawable using the given drawable's bitmap if that bitmap is a 9-patch image.
+	 * <p>
+	 * Returns the given drawable reference if it cannot be displayed as a 9-patch.
+	 * <p>
+	 * Returns null if given a null argument.
+	 */
 	public Drawable process(Drawable d) {
 		Drawable nd = d;
 
 		if (d instanceof BitmapDrawable) {
 			Bitmap b = ((BitmapDrawable) d).getBitmap();
 			if (b != null) {
-				if (isNinePatch(b)) {
-			        byte[] newChunk = createChunk(b);
-			        nd = new NinePatchDrawable(cropNinePatch(b), newChunk, new Rect(1,1,1,1), "");
+				Resources resources = TiApplication.getInstance().getResources();
+				byte[] ninePatchChunk = b.getNinePatchChunk();
+				if ((ninePatchChunk != null) && NinePatch.isNinePatchChunk(ninePatchChunk)) {
+					// The bitmap already has 9-patch pixels extracted from the image. Use it as-is.
+					// Note: This is typically the case for image's under the APK's "res/drawable" directories.
+					nd = new NinePatchDrawable(resources, b, ninePatchChunk, new Rect(1,1,1,1), "");
+				}
+				else if (isNinePatch(b)) {
+					// The bitmap has 9-patch pixels on the edges. Extract it and crop the pixels off.
+					// Note: This is typically the case for images under the APK's "assets" directory.
+					ninePatchChunk = createChunk(b);
+					nd = new NinePatchDrawable(resources, cropNinePatch(b), ninePatchChunk, new Rect(1,1,1,1), "");
 				}
 			}
 		}
@@ -40,16 +64,36 @@ public class TiNinePatchHelper
 		return nd;
 	}
 
-	public Drawable process(Bitmap b)
-	{
+	/**
+	 * Creates a new BitmapDrawable or NinePatchDrawable with the given bitmap.
+	 * @param b The bitmap to be drawn by the returned drawable. Can be null.
+	 * @return
+	 * Returns a new NinePatchDrawable if the given bitmap is a 9-patch image.
+	 * <p>
+	 * Returns a new BitmapDrawable if the given bitmap is not a 9-patch image.
+	 * <p>
+	 * Returns null if given a null argument.
+	 */
+	public Drawable process(Bitmap b) {
 		Drawable nd = null;
 
 		if (b != null) {
-			if (isNinePatch(b)) {
-		        byte[] newChunk = createChunk(b);
-		        nd = new NinePatchDrawable(cropNinePatch(b), newChunk, new Rect(1,1,1,1), "");
-			} else {
-				nd = new BitmapDrawable(b);
+			Resources resources = TiApplication.getInstance().getResources();
+			byte[] ninePatchChunk = b.getNinePatchChunk();
+			if ((ninePatchChunk != null) && NinePatch.isNinePatchChunk(ninePatchChunk)) {
+				// The bitmap already has 9-patch pixels extracted from the image. Use it as-is.
+				// Note: This is typically the case for image's under the APK's "res/drawable" directories.
+				nd = new NinePatchDrawable(resources, b, ninePatchChunk, new Rect(1,1,1,1), "");
+			}
+			else if (isNinePatch(b)) {
+				// The bitmap has 9-patch pixels on the edges. Extract it and crop the pixels off.
+				// Note: This is typically the case for images under the APK's "assets" directory.
+				ninePatchChunk = createChunk(b);
+				nd = new NinePatchDrawable(resources, cropNinePatch(b), ninePatchChunk, new Rect(1,1,1,1), "");
+			}
+			else {
+				// The given bitmap is not a 9-patch image. Display it in a drawable as-is.
+				nd = new BitmapDrawable(resources, b);
 			}
 		}
 
@@ -120,16 +164,17 @@ public class TiNinePatchHelper
 		return (c == 0 || (c == Color.BLACK));
 	}
 
-    private Bitmap cropNinePatch(Bitmap b) {
-    	Bitmap cb = null;
+	private Bitmap cropNinePatch(Bitmap b) {
+		Bitmap cb = null;
 
-    	cb = Bitmap.createBitmap(b.getWidth()-2, b.getHeight()-2, b.getConfig());
-    	int[] pixels = new int[cb.getWidth() * cb.getHeight()];
-    	b.getPixels(pixels, 0, cb.getWidth(), 1, 1, cb.getWidth(), cb.getHeight());
-    	cb.setPixels(pixels, 0, cb.getWidth(), 0, 0, cb.getWidth(), cb.getHeight());
+		cb = Bitmap.createBitmap(b.getWidth()-2, b.getHeight()-2, b.getConfig());
+		int[] pixels = new int[cb.getWidth() * cb.getHeight()];
+		b.getPixels(pixels, 0, cb.getWidth(), 1, 1, cb.getWidth(), cb.getHeight());
+		cb.setPixels(pixels, 0, cb.getWidth(), 0, 0, cb.getWidth(), cb.getHeight());
+		cb.setDensity(b.getDensity());
 
-    	return cb;
-    }
+		return cb;
+	}
 
     byte[] createChunk(Bitmap b) {
     	byte[] chunk = null;

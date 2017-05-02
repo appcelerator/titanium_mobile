@@ -47,6 +47,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewParent;
 
@@ -261,10 +262,20 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 
 	private void handleSetImage(final Bitmap bitmap)
 	{
+		// Fetch the image view.
 		TiImageView view = getView();
-		if (view != null) {
-			view.setImageBitmap(bitmap);
+		if (view == null) {
+			return;
 		}
+
+		// Clear the DPI/density setting from the bitmap.
+		// This makes the view display the bitmap pixel perfect, without density scaling.
+		if (bitmap != null) {
+			bitmap.setDensity(Bitmap.DENSITY_NONE);
+		}
+
+		// Show the given bitmap in the view.
+		view.setImageBitmap(bitmap);
 	}
 
 	private class BitmapWithIndex

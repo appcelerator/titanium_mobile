@@ -18,6 +18,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
+import javax.microedition.khronos.egl.EGLSurface;
+import javax.microedition.khronos.opengles.GL10;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.Log;
@@ -40,9 +47,13 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.NinePatch;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 import android.webkit.URLUtil;
 
@@ -52,10 +63,10 @@ import android.webkit.URLUtil;
 @SuppressWarnings("deprecation")
 public class TiDrawableReference
 {
-	private static Map<Integer, Bounds> boundsCache;
+	private static Map<String, Bounds> boundsCache;
 	static
 	{
-		boundsCache = Collections.synchronizedMap(new HashMap<Integer, Bounds>());
+		boundsCache = Collections.synchronizedMap(new HashMap<String, Bounds>());
 	}
 
 	public enum DrawableReferenceType
@@ -70,10 +81,21 @@ public class TiDrawableReference
 		public int width = UNKNOWN;
 	}
 
+	/** The default Android log tag name to be used by this class. */
 	private static final String TAG = "TiDrawableReference";
-	private static final String FILE_PREFIX = "file://";
+
+	/** Unique integer used to represent an invalid/unknown resource ID. */
 	private static final int UNKNOWN = -1;
-	private static final int DEFAULT_SAMPLE_SIZE = 1;
+
+	/**
+	 * The maximum number of bytes a decoded bitmap can have when displaying it via an Android "Drawable".
+	 * <p>
+	 * Exceeding this value will cause a "Canvas: trying to draw too large" RuntimeException to be thrown.
+	 * <p>
+	 * This value comes from a private "MAX_BITMAP_SIZE" constant within Google's "DisplayListCanvas" class.
+	 */
+	private static final long MAX_BITMAP_BYTES = 100L * 1024L * 1024L;
+
 	private int resourceId = UNKNOWN;
 	private String url;
 	private TiBlob blob;
@@ -102,7 +124,7 @@ public class TiDrawableReference
 			appInfo = TiApplication.getInstance().getApplicationInfo();
 		}
 		anyDensityFalse = (appInfo.flags & ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES) == 0;
-		decodeRetries = DEFAULT_DECODE_RETRIES;
+		decodeRetries = Math.max(DEFAULT_DECODE_RETRIES, 1);
 	}
 
 	/**
@@ -301,134 +323,216 @@ public class TiDrawableReference
 	}
 	
 	/**
-	 * Gets the bitmap from the resource. If densityScaled is set to true, image is scaled
-	 * based on the device density otherwise no sampling/scaling is done.
-	 * When needRetry is set to true, it will retry loading when decode fails.
-	 * If decode fails because of out of memory, clear the memory and call GC and retry loading a smaller image.
-	 * If decode fails because of the odd Android 2.3/Gingerbread behavior (TIMOB-3599), retry loading the original image.
-	 * This method should be called from a background thread when needRetry is set to true because it may block
-	 * the thread if it needs to retry several times.
-	 * @param needRetry If true, it will retry loading when decode fails.
+	 * Loads/decodes the referenced image and returns it as an uncompressed bitmap.
+	 * <p>
+	 * Note that the the returned bitmap may be returned downscaled if it is too big to be displayed
+	 * by an Android "View" object or if there is not enough memory on the heap.
+	 * @param needRetry
+	 * Set true to attempt to load the image multiple times if there is a failure such as problems
+	 * accessing the file stream immediately or due to out-of-memory issues. This method should be called
+	 * on a separate thread when set true since it may block the thread.
+	 * <p>
+	 * Set false to attempt to load the image only once, without fault tolerance.
+	 * @param densityScaled
+	 * Set true to scale the returned bitmap based on the device's DPI scale factor, if applicable.
+	 * An image loaded outside of the "res/drawable" directory are assumed to have an "mdpi" based resolution
+	 * and will be scaled based on current DPI scale factory (ex: xhdpi = 2x scale).
+	 * An image from a "res/drawable" directory will only be scaled if one was not found matching the device's DPI.
+	 * <p>
+	 * Set false to load the bitmap as-is. Note that the image can still be downscaled if it is
+	 * too big to be displayed by an Android "View".
 	 * @return Bitmap, or null if errors occurred while trying to load or fetch it.
 	 */
 	public Bitmap getBitmap(boolean needRetry, boolean densityScaled)
 	{
+		// Attempt to access the encoded image's bytes.
 		InputStream is = getInputStream();
 		Bitmap b = null;
+		Bounds originalBounds = null;
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inInputShareable = true;
 		opts.inPurgeable = true;
-		opts.inPreferredConfig = Bitmap.Config.RGB_565;
+		opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+		opts.inSampleSize = 1;
+
+		// Set up DPI scaling, if enabled.
+		// Note: Non-resource files are assumed to use an "mdpi" based resolution.
 		if (densityScaled) {
 			DisplayMetrics dm = new DisplayMetrics();
 			dm.setToDefaults();
-			opts.inDensity = DisplayMetrics.DENSITY_MEDIUM;
-
-			opts.inTargetDensity = dm.densityDpi;
 			opts.inScaled = true;
+			opts.inTargetDensity = dm.densityDpi;
+			opts.inDensity = DisplayMetrics.DENSITY_MEDIUM;
 		}
 
+		// If loading a "res/drawable", then always set BitmapFactory option "inDensity" to the
+		// DPI directory the resource was loaded from, even if "densityScaled" argument is false.
+		// This does the following:
+		// - Allow BitmapFactory density scaling to work correctly. (Can't assume mdpi like assets.)
+		// - Returned object's Bitmap.getDensity() method will return the res file's density/DPI,
+		//   which is needed by a BitmapDrawable to size itself correctly when displaying the bitmap.
+		if (isTypeResourceId() && (this.resourceId != UNKNOWN)) {
+			try {
+				Resources resources = getResources();
+				TypedValue typedValue = new TypedValue();
+				resources.getValue(this.resourceId, typedValue, true);
+				if (typedValue.density > 0) {
+					opts.inDensity = typedValue.density;
+				}
+			}
+			catch (Exception ex) {}
+		}
+
+		// Attempt to decode the referenced image as an uncompressed bitmap.
 		try {
-			if (needRetry) {
-				for (int i = 0; i < decodeRetries; i++) {
-					// getInputStream() fails sometimes but after retry it will get
-					// input stream successfully.
-					if (is == null) {
+			final int MAX_ATTEMPTS = needRetry ? this.decodeRetries : 1;
+			for (int attemptCount = 1; attemptCount <= MAX_ATTEMPTS; attemptCount++) {
+				// Check if we've acquired an input stream to the image.
+				// Note: getInputStream() sometimes fails. Might have to wait for garbage collection.
+				if (is == null) {
+					if (needRetry) {
 						Log.i(TAG, "Unable to get input stream for bitmap. Will retry.", Log.DEBUG_MODE);
 						try {
 							Thread.sleep(100);
-						} catch (InterruptedException ie) {
-							// Ignore
 						}
+						catch (InterruptedException ie) {}
 						is = getInputStream();
-						continue;
+						if (is == null) {
+							continue;
+						}
 					}
-					try {
-						oomOccurred = false;
-						b = BitmapFactory.decodeStream(is, null, opts);
-						if (b != null) {
-							break;
-						}
-						// Decode fails because of TIMOB-3599.
-						// Really odd Android 2.3/Gingerbread behavior -- BitmapFactory.decode* Skia functions
-						// fail randomly and seemingly without a cause. Retry 5 times by default w/ 250ms between each try.
-						// Usually the 2nd or 3rd try succeeds, but the "decodeRetries" property in ImageView
-						// will allow users to tweak this if needed
-						Log.i(TAG, "Unable to decode bitmap. Will retry.", Log.DEBUG_MODE);
-						try {
-							Thread.sleep(250);
-						} catch (InterruptedException ie) {
-							// Ignore
-						}
-					} catch (OutOfMemoryError e) { // Decode fails because of out of memory
-						oomOccurred = true;
-						Log.e(TAG, "Unable to load bitmap. Not enough memory: " + e.getMessage(), e);
-						Log.i(TAG, "Clear memory cache and signal a GC. Will retry load.", Log.DEBUG_MODE);
-						TiImageLruCache.getInstance().evictAll();
-						System.gc(); // See if we can force a compaction
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException ie) {
-							// Ignore
-						}
-						opts.inSampleSize = (int) Math.pow(2, i);
+					else {
+						break;
 					}
 				}
-				// If decoding fails, we try to get it from httpclient.
-				if (b == null) {
-				    HttpURLConnection connection = null;
-				    try {
-				        URL mURL = new URL(url);
-				        connection = (HttpURLConnection) mURL.openConnection();
-				        connection.setInstanceFollowRedirects(true);
-				        connection.setDoInput(true);
-				        connection.connect();
-				        int responseCode = connection.getResponseCode();
-				        if (responseCode == 200) {
-				            b = BitmapFactory.decodeStream(connection.getInputStream());
-				        } else if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
-				            String location = connection.getHeaderField("Location");
-				            URL nURL = new URL(location);
-				            String prevProtocol = mURL.getProtocol();
-				            //HttpURLConnection doesn't handle http to https redirects so we do it manually.
-				            if (prevProtocol != null && !prevProtocol.equals(nURL.getProtocol())) {
-				                b = BitmapFactory.decodeStream(nURL.openStream());
-				            } else {
-				                b = BitmapFactory.decodeStream(connection.getInputStream());
-				            }
-				        } else {
-				            b = null;
-				        }
-				    } catch (Exception e) {
-				        b = null;
-				    } finally {
-                        if (connection != null) {
-                            connection.disconnect();
-                        }
-                    }
+
+				// The image's input stream has been acquired.
+				// Fetch the image's bounds, if not done already.
+				if (originalBounds == null) {
+					// Fetch the image's pixel width and height.
+					// If this fails, then the stream references an unsupported image format or is corrupted.
+					originalBounds = peekBounds();
+					if ((originalBounds == null) || (originalBounds.width <= 0) || (originalBounds.height <= 0)) {
+						break;
+					}
+
+					// If density scaling is enabled, then calculate what the new bounds will be.
+					Bounds newBounds = originalBounds;
+					if (opts.inScaled && (opts.inDensity > 0) && (opts.inTargetDensity > 0)) {
+						if ((opts.inDensity != opts.inTargetDensity) && (opts.inDensity != opts.inScreenDensity)) {
+							double scale = (double)opts.inTargetDensity / (double)opts.inDensity;
+							newBounds = new Bounds();
+							newBounds.width = (int)(((double)originalBounds.width * scale) + 0.5);
+							newBounds.height = (int)(((double)originalBounds.height * scale) + 0.5);
+						}
+					}
+
+					// If the image size exceeds the GPU's max texture size,
+					// then set up the image decoder to down-sample it to fit.
+					// Note: If we don't do this, then the UI will fail to display the image or throw an exception.
+					int maxTextureSize = GpuInfo.getMaxTextureSize();
+					if (maxTextureSize > 0) {
+						int longestLength = Math.max(newBounds.width, newBounds.height);
+						while (longestLength > maxTextureSize) {
+							opts.inSampleSize *= 2;		// Must be down-sampled by powers of 2.
+							longestLength /= 2;
+						}
+					}
+
+					// Down-sample if the image exceeds 100 MB when decoded as a 32-bit color uncompressed bitmap.
+					// This will prevent a "Canvas: trying to draw too large" RuntimeException from being thrown.
+					// Note: The 100 MB limit comes from a private MAX_BITMAP_SIZE constant within the
+					//       "DisplayListCanvas" class. (See Android's source code on GitHub.)
+					final long MAX_BITMAP_PIXELS = MAX_BITMAP_BYTES / 4L;
+					while ((long)(newBounds.width / opts.inSampleSize) * (long)(newBounds.height / opts.inSampleSize) > MAX_BITMAP_PIXELS) {
+						opts.inSampleSize *= 2;
+					}
 				}
-			} else {
-				if (is == null) {
-					Log.w(TAG, "Could not open stream to get bitmap");
-					return null;
-				}
+
+				// Attempt to load the image.
 				try {
+					// Decode the image to an uncompressed bitmap.
 					oomOccurred = false;
 					b = BitmapFactory.decodeStream(is, null, opts);
+					if (b != null) {
+						break;
+					}
+
+					// Decode fails because of TIMOB-3599.
+					// Really odd Android 2.3/Gingerbread behavior -- BitmapFactory.decode* Skia functions
+					// fail randomly and seemingly without a cause. Retry 5 times by default w/ 250ms between each try.
+					// Usually the 2nd or 3rd try succeeds, but the "decodeRetries" property in ImageView
+					// will allow users to tweak this if needed
+					Log.i(TAG, "Unable to decode bitmap. Will retry.", Log.DEBUG_MODE);
+					try {
+						Thread.sleep(250);
+					} catch (InterruptedException ie) {}
 				} catch (OutOfMemoryError e) {
+					// Decode fails because of out of memory
 					oomOccurred = true;
 					Log.e(TAG, "Unable to load bitmap. Not enough memory: " + e.getMessage(), e);
+					if (needRetry) {
+						// Free up memory the next time we "retry" image decoding.
+						Log.i(TAG, "Clear memory cache and signal a GC. Will retry load.", Log.DEBUG_MODE);
+						TiImageLruCache.getInstance().evictAll();
+						System.gc();	// Force garbage collection.
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException ie) {}
+
+						// Down-sample the image the next time we decode it.
+						// Note: This will reduce the decoded memory footprint by a power of 2.
+						opts.inSampleSize *= 2;
+					}
+				} catch (Exception e) {
+					Log.e(TAG, "Unable to load bitmap. Reason: " + e.getMessage(), e);
+				}
+			}
+
+			// If decoding fails, then try to get load it via an HttpClient.
+			if ((b == null) && needRetry) {
+				HttpURLConnection connection = null;
+				try {
+					URL mURL = new URL(url);
+					connection = (HttpURLConnection) mURL.openConnection();
+					connection.setInstanceFollowRedirects(true);
+					connection.setDoInput(true);
+					connection.connect();
+					int responseCode = connection.getResponseCode();
+					if (responseCode == 200) {
+						b = BitmapFactory.decodeStream(connection.getInputStream());
+					} else if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+						String location = connection.getHeaderField("Location");
+						URL nURL = new URL(location);
+						String prevProtocol = mURL.getProtocol();
+						//HttpURLConnection doesn't handle http to https redirects so we do it manually.
+						if (prevProtocol != null && !prevProtocol.equals(nURL.getProtocol())) {
+							b = BitmapFactory.decodeStream(nURL.openStream());
+						} else {
+							b = BitmapFactory.decodeStream(connection.getInputStream());
+						}
+					} else {
+						b = null;
+					}
+				} catch (Exception e) {
+					b = null;
+				} finally {
+					if (connection != null) {
+						connection.disconnect();
+					}
 				}
 			}
 		} finally {
+			// Close the image stream.
 			if (is == null) {
 				Log.w(TAG, "Could not open stream to get bitmap");
-				return null;
 			}
-			try {
-				is.close();
-			} catch (IOException e) {
-				Log.e(TAG, "Problem closing stream: " + e.getMessage(), e);
+			else {
+				try {
+					is.close();
+				} catch (Exception e) {
+					Log.e(TAG, "Problem closing stream: " + e.getMessage(), e);
+				}
 			}
 		}
 
@@ -442,20 +546,59 @@ public class TiDrawableReference
 
 	private Drawable getResourceDrawable()
 	{
-		if (!isTypeResourceId()) {
+		// Do not continue if not referencing an APK resource file.
+		if (!isTypeResourceId() || (this.resourceId == UNKNOWN)) {
 			return null;
 		}
+
+		// Fetch the image's pixel width and height.
+		// If this fails, then we're referencing an unsupported/invalid image format or it is corrupted.
+		Bounds bounds = peekBounds();
+		if ((bounds == null) || (bounds.width <= 0) || (bounds.height <= 0)) {
+			return null;
+		}
+
+		// Determine if the referenced image is too big to be displayed as-is and requires downscaling.
+		boolean isImageTooBig = true;
+		{
+			// Check if the image exceeds the GPU's max texture size.
+			int maxTextureSize = GpuInfo.getMaxTextureSize();
+			int longestLength = Math.max(bounds.width, bounds.height);
+			if (longestLength <= maxTextureSize) {
+				// Check if the image exceeds a drawable's max allowed bitmap size (in bytes).
+				// Note: Images are decoded to 32-bit color bitmaps. So, there are 4 bytes per pixel.
+				final long MAX_BITMAP_PIXELS = MAX_BITMAP_BYTES / 4L;
+				if (((long)bounds.width * (long)bounds.height) <= MAX_BITMAP_PIXELS) {
+					// The image can be successfully displayed as-is. No downscaling required.
+					isImageTooBig = false;
+				}
+			}
+		}
+
+		// Create and return a drawable that'll display the referenced image.
 		Drawable drawable = null;
-		Resources resources = getResources();
-		if (resources != null && resourceId > 0) {
+		if (isImageTooBig) {
+			// The image is too big to be displayed by the GPU or UI.
+			// We must downscale it and load it to a drawable ourselves in order to display it.
+			boolean isDensityScalingEnabled = true;
+			drawable = getDrawable(isDensityScalingEnabled);
+		}
+		else {
+			// Load the drawable image normally.
+			// Note: This takes advantage of Android's drawable caching and is more future proof.
 			try {
-				drawable = resources.getDrawable(resourceId);
-			} catch (Resources.NotFoundException e) {
-				drawable = null;
+				Resources resources = getResources();
+				if (resources != null) {
+					drawable = resources.getDrawable(this.resourceId);
+				}
+			}
+			catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		}
 		return drawable;
 	}
+
 	/**
 	 * Gets a resource drawable directly if the reference is to a resource, else
 	 * makes a BitmapDrawable with the given attributes.
@@ -471,6 +614,7 @@ public class TiDrawableReference
 		}
 		return drawable;
 	}
+
 	/**
 	 * Gets a resource drawable directly if the reference is to a resource, else
 	 * makes a BitmapDrawable with the given attributes.
@@ -486,38 +630,94 @@ public class TiDrawableReference
 		}
 		return drawable;
 	}
+
 	/**
-	 * Gets a resource drawable directly if the reference is to a resource, else
-	 * makes a BitmapDrawable with default attributes.
+	 * Loads the referenced image and returns it as a drawable to be drawn in a view/canvas.
+	 * <p>
+	 * The returned drawable will be density scaled if referencing an image in the "res/drawable" directory.
+	 * All other images will not be density scaled and be drawn as-is, pixel perfect.
+	 * @return Returns the referenced image as a drawable. Returns null if failed to load the image.
 	 */
 	public Drawable getDrawable()
 	{
 		Drawable drawable = getResourceDrawable();
 		if (drawable == null) {
-			Bitmap b = getBitmap();
-			if (b != null) {
-				drawable = new BitmapDrawable(b);
-			}
+			boolean isDensityScalingEnabled = false;
+			drawable = getDrawable(isDensityScalingEnabled);
 		}
 		return drawable;
 	}
 	
 	/**
-	 * Gets a scaled resource drawable directly if the reference is to a resource, else
-	 * makes a BitmapDrawable with default attributes. Scaling is done based on the device
-	 * resolution.
+	 * Loads the referenced image and returns it as a drawable to be drawn in a view/canvas.
+	 * <p>
+	 * The returned drawable will be density scaled to a size matching the device's current DPI.
+	 * <p>
+	 * Images loaded outside of the "res/drawable" directory are assumed to use an "mdpi" base resolution
+	 * and will be scaled to the device's DPI. For example, "xhdpi" device will apply a 2x scale factor,
+	 * "xxhdpi" device will apply a 3x scale factor, etc.
+	 * @return Returns the referenced image as a drawable. Returns null if failed to load the image.
 	 */
 	public Drawable getDensityScaledDrawable()
 	{
 		Drawable drawable = getResourceDrawable();
 		if (drawable == null) {
-			Bitmap b = getBitmap(false, true);
-			if (b != null) {
-				drawable = new BitmapDrawable(b);
-			}
+			boolean isDensityScalingEnabled = true;
+			drawable = getDrawable(isDensityScalingEnabled);
 		}
 		return drawable;
 	}
+
+	/**
+	 * Loads the referenced image and returns it as a drawable to be drawn in a view/canvas.
+	 * <p>
+	 * If argument "isDensityScalingEnabled" is set true, then the returned drawable will be
+	 * density scaled to a size matching the device's current DPI.
+	 * <p>
+	 * Images loaded outside of the "res/drawable" directory are assumed to use an "mdpi" base resolution
+	 * and will be scaled to the device's DPI. For example, "xhdpi" device will apply a 2x scale factor,
+	 * "xxhdpi" device will apply a 3x scale factor, etc.
+	 * @param isDensityScalingEnabled
+	 * Set true to scale images loaded outside of the "res/drawable" directory.
+	 * Set false to load the images as-is, without scaling.
+	 * <p>
+	 * Note that "res/drawable" images are always scaled to device's DPI, even if this argument is set false.
+	 * @return Returns the referenced image as a drawable. Returns null if failed to load the image.
+	 */
+	private Drawable getDrawable(boolean isDensityScalingEnabled)
+	{
+		try {
+			// Load the referenced image.
+			// Note: Do not scale the actual decoded bitmap in memory. (That's expensive.)
+			//       Instead, decode the image as-is and then have the drawable stretch it to the size needed.
+			boolean areRetriesEnabled = false;
+			boolean isBitmapScalingEnabled = false;
+			Bitmap bitmap = getBitmap(areRetriesEnabled, isBitmapScalingEnabled);
+			if (bitmap != null) {
+				// If the decoded image is not a "res/drawable", then flag it as "mdpi".
+				// This is a hint to the drawable, telling it to stretch it from "mdpi" to the device's DPI.
+				// Note: Bitmaps loaded from "res/drawable" will already have their density assigned.
+				if (isDensityScalingEnabled) {
+					if (!isTypeResourceId() || (bitmap.getDensity() == Bitmap.DENSITY_NONE)) {
+						bitmap.setDensity(DisplayMetrics.DENSITY_MEDIUM);
+					}
+				}
+
+				// Return the bitmap wrapped in a drawable.
+				// Note: Resources argument tells it to scale using device DPI. Otherwise, it'll scale via "mdpi".
+				byte[] ninePatchChunk = bitmap.getNinePatchChunk();
+				if ((ninePatchChunk != null) && NinePatch.isNinePatchChunk(ninePatchChunk)) {
+					return new NinePatchDrawable(getResources(), bitmap, ninePatchChunk, new Rect(1,1,1,1), "");
+				}
+				else {
+					return new BitmapDrawable(getResources(), bitmap);
+				}
+			}
+		}
+		catch (Exception ex) {}
+		return null;
+	}
+
 	/**
 	 * Gets the bitmap, scaled to a specific width & height.
 	 * @param destWidth Width in pixels of resulting scaled bitmap
@@ -812,15 +1012,39 @@ public class TiDrawableReference
 	 */
 	public Bounds peekBounds()
 	{
-		int hash = this.hashCode();
-		if (boundsCache.containsKey(hash)) {
-			return boundsCache.get(hash);
+		// If we're referencing an immutable image, then set up a unique string key.
+		// Note: External files, external URLs, and blobs may reference mutable images whose bounds could change.
+		String cacheKey = null;
+		if (isTypeResourceId()) {
+			// Resource files within the APK are immutable.
+			cacheKey = "resource:" + this.resourceId;
 		}
+		else if (isTypeUrl()) {
+			if ((this.url != null) && (this.url.length() > 0)) {
+				if (TiFileHelper.getInstance().isTitaniumResource(this.url)) {
+					// "ti:" custom URL schemes reference immutable resource files within the APK.
+					cacheKey = this.url;
+				}
+				else if (this.url.startsWith("file:///android_asset/")) {
+					// Asset files within the APK are immutable.
+					cacheKey = this.url;
+				}
+			}
+		}
+
+		// Check if the image's bounds have already been fetched.
+		if ((cacheKey != null) && TiDrawableReference.boundsCache.containsKey(cacheKey)) {
+			return TiDrawableReference.boundsCache.get(cacheKey);
+		}
+
+		// If we're not referencing an image, then return 0x0.
 		Bounds bounds = new Bounds();
-		if (isTypeNull()) { return bounds; }
+		if (isTypeNull()) {
+			return bounds;
+		}
 
+		// Fetch the image's width and height.
 		InputStream stream = getInputStream();
-
 		try {
 			if (stream != null) {
 				BitmapFactory.Options bfo = new BitmapFactory.Options();
@@ -841,7 +1065,13 @@ public class TiDrawableReference
 			}
 		}
 
-		boundsCache.put(hash, bounds);
+		// Cache the image's bounds for fast retrieval later.
+		// Note: We'll only have a cache key if the image is immutable.
+		if (cacheKey != null) {
+			TiDrawableReference.boundsCache.put(cacheKey, bounds);
+		}
+
+		// Return the image's bounds.
 		return bounds;
 	}
 
@@ -897,7 +1127,7 @@ public class TiDrawableReference
 	public int calcSampleSize(int srcWidth, int srcHeight, int destWidth, int destHeight)
 	{
 		if (srcWidth <= 0 || srcHeight <= 0 || destWidth <= 0 || destHeight <= 0) {
-			return DEFAULT_SAMPLE_SIZE;
+			return 1;
 		}
 		return Math.max(srcWidth / destWidth, srcHeight / destHeight);
 	}
@@ -972,5 +1202,172 @@ public class TiDrawableReference
 	public String getUrl()
 	{
 		return url;
+	}
+
+
+	/**
+	 * Private class used to fetch GPU information such as the max texture size.
+	 * <p>
+	 * You cannot create instances of this class. Instead, you are expected to call its static functions.
+	 */
+	private static class GpuInfo
+	{
+		/** Set true if GPU info has been loaded. Set false if not. (Only needs to be loaded once.) */
+		private static boolean wasInitialized;
+
+		/** The maximum number of pixels wide/tall that the GPU supports when loading textures/bitmaps. */
+		private static int maxTextureSize;
+
+
+		/** Constructor made private to prevent instances from being made. */
+		private GpuInfo() {}
+
+		/**
+		 * Fetches the maximum number of pixels wide or tall that the GPU supports for bitmaps/textures.
+		 * That is, the GPU will not accept/display images larger than this size.
+		 * <p>
+		 * For example, if the returned value is 2048, then the GPU cannot display an image larger
+		 * than 2048x2048 pixels.
+		 * @return Returns the maximum texture size in pixels supported by the GPU.
+		 *         <p>
+		 *         Returns zero if failed to load this information from the GPU.
+		 */
+		public static int getMaxTextureSize()
+		{
+			load();
+			return GpuInfo.maxTextureSize;
+		}
+
+		/** Loads GPU information and stores them to this class' static member variables. */
+		private static void load()
+		{
+			// Do not continue if GPU info has already been loaded. (Only need to do so once.)
+			if (wasInitialized) {
+				return;
+			}
+
+			// Load GPU information.
+			synchronized (GpuInfo.class) {
+				// Handle race condition where 2 threads try to load GPU info simultaneously.
+				if (wasInitialized) {
+					return;
+				}
+
+				// Create a temporary OpenGL context to acquire GPU information.
+				EGL10 egl = null;
+				EGLDisplay display = null;
+				EGLContext context = null;
+				EGLSurface surface = null;
+				try {
+					// Set up an OpenGL interface to the display.
+					egl = (EGL10)EGLContext.getEGL();
+					display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+					if (display == EGL10.EGL_NO_DISPLAY) {
+						display = null;
+					}
+					if (display != null) {
+						int[] versionArray = new int[2];
+						boolean wasSuccessful = egl.eglInitialize(display, versionArray);
+						if (!wasSuccessful) {
+							display = null;
+						}
+					}
+
+					// Fetch a 32-bit color frame buffer config for the display interface.
+					EGLConfig eglConfig = null;
+					if (display != null) {
+						int[] eglConfigAttributes = {
+							EGL10.EGL_RED_SIZE, 8,
+							EGL10.EGL_GREEN_SIZE, 8,
+							EGL10.EGL_BLUE_SIZE, 8,
+							EGL10.EGL_ALPHA_SIZE, 8,
+							EGL10.EGL_DEPTH_SIZE, 16,
+							EGL10.EGL_NONE
+						};
+						int[] eglConfigCount = new int[1];
+						eglConfigCount[0] = 0;
+						egl.eglChooseConfig(display, eglConfigAttributes, null, 0, eglConfigCount);
+						if (eglConfigCount[0] > 0) {
+							EGLConfig[] eglConfigArray = new EGLConfig[eglConfigCount[0]];
+							boolean wasSuccessful = egl.eglChooseConfig(
+									display, eglConfigAttributes, eglConfigArray,
+									eglConfigCount[0], eglConfigCount);
+							if (wasSuccessful) {
+								eglConfig = eglConfigArray[0];
+							}
+						}
+					}
+
+					// Create an OpenGL context with the acquired display configuration.
+					if (eglConfig != null) {
+						context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, null);
+						if (context == EGL10.EGL_NO_CONTEXT) {
+							context = null;
+						}
+					}
+
+					// Create an offscreen surface to bind the OpenGL context to.
+					if (context != null) {
+						int[] surfaceAttributes = {
+							EGL10.EGL_WIDTH, 64,
+							EGL10.EGL_HEIGHT, 64,
+							EGL10.EGL_NONE
+						};
+						surface = egl.eglCreatePbufferSurface(display, eglConfig, surfaceAttributes);
+						if (surface == EGL10.EGL_NO_SURFACE) {
+							surface = null;
+						}
+					}
+
+					// Fetch GPU info if an OpenGL context/surface was successfully created above.
+					if (surface != null) {
+						// Fetch the OpenGL C API interface.
+						GL10 gl = (GL10)context.getGL();
+
+						// Select our OpenGL context.
+						egl.eglMakeCurrent(display, surface, surface, context);
+						
+						// Fetch the GPU's max texture size.
+						{
+							int[] intArray = new int[1];
+							intArray[0] = 0;
+							gl.glGetIntegerv(GL10.GL_MAX_TEXTURE_SIZE, intArray, 0);
+							if (intArray[0] > 0) {
+								GpuInfo.maxTextureSize = intArray[0];
+							}
+						}
+
+						// Unselect our OpenGL context. (Must do so before detroying it.)
+						egl.eglMakeCurrent(
+								display, EGL10.EGL_NO_SURFACE,
+								EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT);
+
+					}
+				}
+				catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				finally {
+					// Destroy the temporary OpenGL context and its associated objects.
+					if (egl != null) {
+						if (surface != null) {
+							try { egl.eglDestroySurface(display, surface); }
+							catch (Exception ex) {}
+						}
+						if (context != null) {
+							try { egl.eglDestroyContext(display, context); }
+							catch (Exception ex) {}
+						}
+						if (display != null) {
+							try { egl.eglTerminate(display); }
+							catch (Exception ex) {}
+						}
+					}
+				}
+
+				// Flag that we've attempted to load GPU info. (We only need to do so once.)
+				wasInitialized = true;
+			}
+		}
 	}
 }
