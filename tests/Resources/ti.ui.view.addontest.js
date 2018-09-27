@@ -44,27 +44,21 @@ describe('Titanium.UI.View', function () {
 		win = null;
 	});
 
-	// FIXME Get working on iOS
-	it.android('backgroundDisabledColor', function (finish) {
-		var view;
-		win = Ti.UI.createWindow({ backgroundColor: 'blue' });
-		view = Ti.UI.createView({ width: Ti.UI.FILL, height: Ti.UI.FILL });
-		win.add(view);
-		win.addEventListener('focus', function () {
-			if (didFocus) {
-				return;
-			}
-			didFocus = true;
-
-			try {
-				view.backgroundDisabledColor = '#88FFFFFF';
-				should(view.getBackgroundDisabledColor()).be.eql('#88FFFFFF');
-				finish();
-			} catch (err) {
-				finish(err);
-			}
+	// TIMOB-25461: Android - Views with alpha channel in background color and border radius act
+	// as a mask.
+	it.android('Border Radius with trasparency', function (finish) {
+		var win0 = Ti.UI.createWindow({ backgroundColor: 'green' }),
+			win1 = Ti.UI.createWindow({ backgroundColor: 'transparent' }),
+			view0 = Ti.UI.createView({ width: '90%', height: '90%', borderRadius: 5, backgroundColor: 'blue' }),
+			view1 = Ti.UI.createView({ width: 200, height: 200, borderRadius: 100, backgroundColor: '#33FFFFFF' }),
+			view2 = Ti.UI.createView({ width: 100, height: 100, borderRadius: 100, backgroundColor: 'white' });
+		view0.add([ view1, view2 ]);
+		win1.add(view0);
+		win0.open();
+		win1.open();
+		win1.addEventListener('open', function () {
+			finish();
 		});
-		win.open();
 	});
 
 });
