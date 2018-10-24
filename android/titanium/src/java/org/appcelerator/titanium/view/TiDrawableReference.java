@@ -38,6 +38,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -959,5 +960,51 @@ public class TiDrawableReference
 	public String getUrl()
 	{
 		return url;
+	}
+
+	public boolean compareBitmapWith(Drawable result)
+	{
+		try {
+			return areDrawablesIdentical(this.getDrawable(), result);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private boolean areDrawablesIdentical(Drawable drawableA, Drawable drawableB)
+	{
+		Drawable.ConstantState stateA = drawableA.getConstantState();
+		Drawable.ConstantState stateB = drawableB.getConstantState();
+		// If the constant state is identical, they are using the same drawable resource.
+		// However, the opposite is not necessarily true.
+		return (stateA != null && stateB != null && stateA.equals(stateB))
+			|| getBitmap(drawableA).sameAs(getBitmap(drawableB));
+	}
+
+	private Bitmap getBitmap(Drawable drawable)
+	{
+		Bitmap result;
+		// Directly get the bitmap in case of BitmapDrawable
+		if (drawable instanceof BitmapDrawable) {
+			result = ((BitmapDrawable) drawable).getBitmap();
+		} else {
+			// Get manually the bitmap through a new canvas.
+			int width = drawable.getIntrinsicWidth();
+			int height = drawable.getIntrinsicHeight();
+			// Some drawables have no intrinsic width - e.g. solid colours.
+			if (width <= 0) {
+				width = 1;
+			}
+			if (height <= 0) {
+				height = 1;
+			}
+
+			result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+			Canvas canvas = new Canvas(result);
+			drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+			drawable.draw(canvas);
+		}
+		return result;
 	}
 }

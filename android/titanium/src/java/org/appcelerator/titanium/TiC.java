@@ -491,6 +491,11 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String PROPERTY_TARGET = "target";
+
+	/**
+	 * @module.api
+	 */
 	public static final String EVENT_PROPERTY_THUMB_OFFSET = "thumbOffset";
 
 	/**

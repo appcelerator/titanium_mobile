@@ -139,6 +139,19 @@ properties:
     type: String
     platforms: [android]
 
+  - name: resourceLoadedListener
+    summary: Function callback for loading drawables in Toolbar elements.
+    description: |
+        Callback for checking the sucessfull showing of drawables used
+        for (logo)[Titanium.UI.Toolbar.logo), (overflowIcon)[Titanium.UI.Toolbar.overflowIcon] and (navigationIcon)[Titanium.UI.Toolbar.navigationIcon].
+        It compares the drawn resource and the source drawable.
+        The function recieves a (loadedDrawablesDictionary)[Titanium.UI.Toolbar.loadedDrawablesDictionary] as a parameter.
+        If any of the properties has not been used the dictionary has 'false' value for it.
+    type: loadedDrawablesDictionary
+    platforms: [android]
+    since: 7.0.0
+    availability: creation
+
 methods:
   - name: collapseActionViews
     summary: Collapses expanded ActionViews if there is any
@@ -356,3 +369,29 @@ examples:
                     </Menu>
                 </Window>
             </Alloy>
+
+---
+name: loadedDrawablesDictionary
+summary: |
+    Dictionary showing the succesfull loading of resource as logo, overflowIcon and navigationIcon.
+platforms: [android]
+since: 7.0.0
+properties:
+  - name: logo
+    summary: State of (logo)[Titanium.UI.Toolbar.logo] after Toolbar has been drawn.
+    description: |
+        When set to `true` a resource has been used and it was succesfully drawn for the Toolbar.
+    type: Boolean
+    default: false
+  - name: overflowIcon
+    summary: State of (overflowIcon)[Titanium.UI.Toolbar.overflowIcon] after Toolbar has been drawn.
+    description: |
+        When set to `true` a resource has been used and it was succesfully drawn for the Toolbar.
+    type: Boolean
+    default: false
+  - name: navigationIcon
+    summary: State of (navigationIcon)[Titanium.UI.Toolbar.navigationIcon] after Toolbar has been drawn.
+    description: |
+        When set to `true` a resource has been used and it was succesfully drawn for the Toolbar.
+    type: Boolean
+    default: false

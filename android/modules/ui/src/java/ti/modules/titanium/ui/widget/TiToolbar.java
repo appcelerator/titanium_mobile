@@ -1,5 +1,7 @@
 package ti.modules.titanium.ui.widget;
 
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.view.Window;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger;
@@ -20,6 +23,9 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiColorHelper;
 import org.appcelerator.titanium.view.TiDrawableReference;
 import org.appcelerator.titanium.view.TiUIView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TiToolbar extends TiUIView implements Handler.Callback
 {
@@ -58,15 +64,38 @@ public class TiToolbar extends TiUIView implements Handler.Callback
 	private final int TOOLBAR_SET_CONTENT_INSETS_RELATIVE = 10018;
 	//endregion
 
+	private Map<String, TiDrawableReference> drawableMap = new HashMap<String, TiDrawableReference>();
+	private KrollFunction resourceLoadedListener = null;
 	/**
 	 * Constructs a TiUIView object with the associated proxy.
 	 * @param proxy the associated proxy.
 	 * @module.api
 	 */
-	public TiToolbar(TiViewProxy proxy)
+	public TiToolbar(final TiViewProxy proxy)
 	{
 		super(proxy);
-		toolbar = new Toolbar(proxy.getActivity());
+		toolbar = new Toolbar(proxy.getActivity()) {
+			// Check the resource loading once the view is drawn
+			@Override
+			protected void onDraw(Canvas canvas)
+			{
+				super.onDraw(canvas);
+				//if we have attached listener send the dictionary
+				if (resourceLoadedListener != null) {
+					KrollDict callbackParam = new KrollDict();
+					callbackParam.put(TiC.PROPERTY_LOGO,
+									  checkResourceLoading(drawableMap.get(TiC.PROPERTY_LOGO), this.getLogo()));
+					callbackParam.put(
+						TiC.PROPERTY_OVERFLOW_ICON,
+						checkResourceLoading(drawableMap.get(TiC.PROPERTY_OVERFLOW_ICON), this.getOverflowIcon()));
+					callbackParam.put(
+						TiC.PROPERTY_NAVIGATION_ICON,
+						checkResourceLoading(drawableMap.get(TiC.PROPERTY_NAVIGATION_ICON), this.getNavigationIcon()));
+					resourceLoadedListener.callAsync(proxy.getKrollObject(), callbackParam);
+				}
+			}
+		};
+
 		setNativeView(toolbar);
 	}
 
@@ -257,6 +286,7 @@ public class TiToolbar extends TiUIView implements Handler.Callback
 		logo = object;
 		TiDrawableReference tiDrawableReference = TiDrawableReference.fromObject(proxy, object);
 		((Toolbar) getNativeView()).setLogo(tiDrawableReference.getDrawable());
+		drawableMap.put(TiC.PROPERTY_LOGO, tiDrawableReference);
 	}
 
 	/**
@@ -290,6 +320,7 @@ public class TiToolbar extends TiUIView implements Handler.Callback
 		navigationIcon = object;
 		TiDrawableReference tiDrawableReference = TiDrawableReference.fromObject(proxy, object);
 		((Toolbar) getNativeView()).setNavigationIcon(tiDrawableReference.getDrawable());
+		drawableMap.put(TiC.PROPERTY_NAVIGATION_ICON, tiDrawableReference);
 	}
 
 	/**
@@ -323,6 +354,7 @@ public class TiToolbar extends TiUIView implements Handler.Callback
 		overflowMenuIcon = object;
 		TiDrawableReference tiDrawableReference = TiDrawableReference.fromObject(proxy, object);
 		((Toolbar) getNativeView()).setOverflowIcon(tiDrawableReference.getDrawable());
+		drawableMap.put(TiC.PROPERTY_OVERFLOW_ICON, tiDrawableReference);
 	}
 
 	/**
@@ -536,9 +568,18 @@ public class TiToolbar extends TiUIView implements Handler.Callback
 		toolbar.setContentInsetsAbsolute(values[0], values[1]);
 	}
 
+	private boolean checkResourceLoading(TiDrawableReference source, Drawable result)
+	{
+		return (source != null && result != null && source.compareBitmapWith(result));
+	}
+
 	@Override
 	public void processProperties(KrollDict d)
 	{
+		//process internal properties
+		if (d.containsKey("resourceLoadedListener") && d.get("resourceLoadedListener") instanceof KrollFunction) {
+			resourceLoadedListener = ((KrollFunction) d.get("resourceLoadedListener"));
+		}
 		//region process common properties
 		if (d.containsKey(TiC.PROPERTY_BAR_COLOR)) {
 			setToolbarColor(d.getString(TiC.PROPERTY_BAR_COLOR));
