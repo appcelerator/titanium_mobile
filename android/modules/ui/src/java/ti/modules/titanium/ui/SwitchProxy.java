@@ -6,6 +6,7 @@
  */
 package ti.modules.titanium.ui;
 
+import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -41,6 +42,14 @@ public class SwitchProxy extends TiViewProxy
 	public TiUIView createView(Activity activity)
 	{
 		return new TiUISwitch(this);
+	}
+
+	@Kroll
+		.getProperty(writableKeys = true)
+		@Kroll.method
+		public Object getFont()
+	{
+		return hasProperty(TiC.PROPERTY_FONT) ? getProperty(TiC.PROPERTY_FONT) : KrollRuntime.UNDEFINED;
 	}
 
 	@Override

@@ -147,6 +147,9 @@ public:
 
 	static void dispose(v8::Isolate* isolate);
 
+	static void writableKeys_getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<Value>& args);
+	static void writableKeys_setter(v8::Local<v8::Name> property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& args);
+
 private:
 
 	/**

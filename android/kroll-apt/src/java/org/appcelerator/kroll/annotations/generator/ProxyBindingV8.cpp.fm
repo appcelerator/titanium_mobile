@@ -221,7 +221,11 @@ Local<FunctionTemplate> ${className}::getProxyTemplate(Isolate* isolate)
 	<#if !dynamicProperties?? || !dynamicProperties?keys?seq_contains(name)>
 	instanceTemplate->SetAccessor(
 		NEW_SYMBOL(isolate, "${name}"),
+		<#if Proxy.isWritableKeysProperty(getter)>
+		${className}::getter_${name},
+		<#else>
 		titanium::Proxy::getProperty,
+		</#if>
 		titanium::Proxy::onPropertyChanged);
 	</#if>
 	<#if !methods?? || !methods?keys?seq_contains(getter)>
@@ -308,6 +312,10 @@ void ${className}::getter_${name}(Local<Name> property, const PropertyCallbackIn
 	}
 	<@Proxy.callJNIMethod property.getMethodArgs, property.getHasInvocation, property.getReturnType,
 		"methodID", "javaProxy", "jArguments", (property.getReturnType != "void") ; hasResult, resultVar>
+
+	<#if property.writableKeys>
+	<@Proxy.setKeyAccessors className=className propertyName=name resultVar=resultVar/>
+	</#if>
 
 	args.GetReturnValue().Set(${resultVar});
 

@@ -721,6 +721,36 @@ beprovided to handle the result.
 	}
 </#macro>
 
+<#function isWritableKeysProperty methodName>
+	<#if dynamicProperties??>
+		<#list dynamicProperties?keys as propertyName>
+			<#local dynamicProperty = dynamicProperties[propertyName]>
+			<#if dynamicProperty.get>
+				<#if methodName = dynamicProperty.getMethodName>
+					<#return dynamicProperty.writableKeys>
+				</#if>
+			</#if>
+		</#list>
+	</#if>
+	<#return false>
+</#function>
+
+<#macro setKeyAccessors className propertyName resultVar>
+	Local<String> propertyName = NEW_SYMBOL(isolate, "${propertyName}");
+	Local<Object> ${resultVar}Obj = ${resultVar}->ToObject(isolate);
+	Local<Array> keys = ${resultVar}Obj->GetOwnPropertyNames();
+	for (int i = 0; i < keys->Length(); i++) {
+		Local<String> key = keys->Get(i)->ToString(isolate);
+		Local<Value> value = ${resultVar}Obj->Get(key);
+
+		Local<Object> data = Object::New(isolate);
+		data->Set(0, args.Holder());
+		data->Set(1, ${resultVar}Obj->Clone());
+		data->Set(2, propertyName);
+		v8ResultObj->SetAccessor(key, titanium::Proxy::writableKeys_getter, titanium::Proxy::writableKeys_setter, data);
+	}
+</#macro>
+
 <#macro getHolder>
 	Local<Object> holder = args.Holder();
 	if (!JavaObject::isJavaObject(holder)) {

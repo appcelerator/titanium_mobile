@@ -474,16 +474,11 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 
 	// clang-format off
 	@Kroll.method
-	@Kroll.getProperty
+	@Kroll.getProperty(writableKeys=true)
 	public Object getCenter()
 	// clang-format on
 	{
-		Object dict = KrollRuntime.UNDEFINED;
-		if (hasProperty(TiC.PROPERTY_CENTER)) {
-			dict = getProperty(TiC.PROPERTY_CENTER);
-		}
-
-		return dict;
+		return hasProperty(TiC.PROPERTY_CENTER) ? getProperty(TiC.PROPERTY_CENTER) : KrollRuntime.UNDEFINED;
 	}
 
 	// clang-format off

@@ -535,6 +535,56 @@ void Proxy::proxyOnPropertiesChanged(const v8::FunctionCallbackInfo<v8::Value>& 
 	}
 }
 
+void Proxy::writableKeys_getter(Local<Name> property, const PropertyCallbackInfo<Value>& args)
+{
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
+
+	// obtain property value
+	Local<Object> data = args.Data()->ToObject(isolate);
+	Local<Object> object = data->Get(1)->ToObject(isolate);
+	Local<Value> value = object->Get(property);
+
+	args.GetReturnValue().Set(value);
+}
+
+void Proxy::writableKeys_setter(Local<Name> property, Local<Value> value, const PropertyCallbackInfo<void>& args)
+{
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
+	Local<Object> data = args.Data()->ToObject(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+
+	Proxy* proxy = NativeObject::Unwrap<Proxy>(data->Get(0)->ToObject(isolate));
+	if (!proxy) {
+		return;
+	}
+	jobject javaProxy = proxy->getJavaObject();
+
+	// property
+	jstring javaProperty = titanium::TypeConverter::jsStringToJavaString(env, data->Get(2)->ToString(isolate));
+
+	// update object with value
+	bool isNew;
+	Local<Object> object = data->Get(1)->ToObject(isolate);
+	object->Set(property, value);
+	jobject javaValue = titanium::TypeConverter::jsValueToJavaObject(isolate, env, object, &isNew);
+
+	// onPropertyChanged
+	env->CallVoidMethod(javaProxy, JNIUtil::krollProxyOnPropertyChangedMethod, javaProperty, javaValue);
+
+	env->DeleteLocalRef(javaProxy);
+	if (isNew) {
+		env->DeleteLocalRef(javaValue);
+	}
+	env->DeleteLocalRef(javaProperty);
+}
+
 void Proxy::dispose(Isolate* isolate)
 {
 	baseProxyTemplate.Reset();

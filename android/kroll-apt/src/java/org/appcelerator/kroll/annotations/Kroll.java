@@ -283,6 +283,10 @@ public @interface Kroll {
 		 * When set to true, this property getter will only be executed on the UI thread.<br>
 		 */
 		boolean runOnUiThread() default false;
+		/**
+		 * When set to true, the object keys of this property can be directly written to.
+		 */
+		boolean writableKeys() default false;
 	}
 
 	/**

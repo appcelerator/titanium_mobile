@@ -8,6 +8,7 @@ package ti.modules.titanium.ui;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger;
@@ -76,6 +77,15 @@ public class TextFieldProxy extends TiViewProxy
 	public TiUIView createView(Activity activity)
 	{
 		return new TiUIText(this, true);
+	}
+
+	// clang-format off
+	@Kroll.getProperty(writableKeys=true)
+	@Kroll.method
+	public Object getFont()
+	// clang-format on
+	{
+		return hasProperty(TiC.PROPERTY_FONT) ? getProperty(TiC.PROPERTY_FONT) : KrollRuntime.UNDEFINED;
 	}
 
 	@Override
