@@ -36,7 +36,7 @@ Local<Object> ProxyFactory::createV8Proxy(v8::Isolate* isolate, jclass javaClass
 Local<Object> ProxyFactory::createV8Proxy(v8::Isolate* isolate, Local<Value> className, jobject javaProxy)
 {
 	LOGD(TAG, "ProxyFactory::createV8Proxy");
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOG_JNIENV_ERROR("while creating Java proxy.");
 		return Local<Object>();
@@ -103,7 +103,7 @@ jobject ProxyFactory::createJavaProxy(jclass javaClass, Local<Object> v8Proxy, c
 	LOGD(TAG, "ProxyFactory::createJavaProxy");
 	Isolate* isolate = args.GetIsolate();
 
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOG_JNIENV_ERROR("while creating Java proxy.");
 		return NULL;
@@ -137,7 +137,7 @@ jobject ProxyFactory::createJavaProxy(jclass javaClass, Local<Object> v8Proxy, c
 	jobjectArray javaArgs;
 	if (calledFromCreate) {
 		Local<Object> arguments = args[0].As<Object>();
-		MaybeLocal<Value> lengthValue = arguments->Get(context, Proxy::lengthSymbol.Get(isolate));
+		MaybeLocal<Value> lengthValue = arguments->Get(context, Proxy::lengthSymbolMap[isolate].Get(isolate));
 		Maybe<int32_t> length = Nothing<int32_t>();
 		if (!lengthValue.IsEmpty()) {
 			length = lengthValue.ToLocalChecked()->Int32Value(context);
@@ -151,7 +151,7 @@ jobject ProxyFactory::createJavaProxy(jclass javaClass, Local<Object> v8Proxy, c
 			if (!maybeFirstArgument.IsEmpty()) {
 				MaybeLocal<Object> scopeVars = maybeFirstArgument.ToLocalChecked()->ToObject(context);
 				if (!scopeVars.IsEmpty() && V8Util::constructorNameMatches(isolate, scopeVars.ToLocalChecked(), "ScopeVars")) {
-					MaybeLocal<Value> sourceUrl = scopeVars.ToLocalChecked()->Get(context, Proxy::sourceUrlSymbol.Get(isolate));
+					MaybeLocal<Value> sourceUrl = scopeVars.ToLocalChecked()->Get(context, Proxy::sourceUrlSymbolMap[isolate].Get(isolate));
 					javaSourceUrl = TypeConverter::jsValueToJavaString(isolate, env, sourceUrl.FromMaybe(String::Empty(isolate).As<Value>()));
 					start = 1;
 				}
@@ -206,7 +206,7 @@ jobject ProxyFactory::createJavaProxy(jclass javaClass, Local<Object> v8Proxy, c
 Local<Value> ProxyFactory::getJavaClassName(v8::Isolate* isolate, jclass javaClass)
 {
 	LOGD(TAG, "ProxyFactory::getJavaClassName");
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Unable to get JNIEnv while getting Java class name as V8 value.");
 		return Local<Value>();
@@ -220,7 +220,7 @@ Local<Value> ProxyFactory::getJavaClassName(v8::Isolate* isolate, jclass javaCla
 	return scope.Escape(className);
 }
 
-void ProxyFactory::dispose()
+void ProxyFactory::dispose(Isolate* isolate)
 {
 	// no-op for now
 }

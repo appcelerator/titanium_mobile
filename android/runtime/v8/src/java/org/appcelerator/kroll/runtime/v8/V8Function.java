@@ -37,17 +37,18 @@ public class V8Function extends V8Object implements KrollFunction, Handler.Callb
 
 	public Object call(KrollObject krollObject, Object[] args)
 	{
-		if (KrollRuntime.getInstance().isRuntimeThread()) {
+		if (KrollRuntime.getInstance().isOriginThreadForObject(this)) {
 			return callSync(krollObject, args);
 
 		} else {
-			return TiMessenger.sendBlockingRuntimeMessage(handler.obtainMessage(MSG_CALL_SYNC),
-														  new FunctionArgs(krollObject, args));
+			return TiMessenger.sendBlockingMessageToOrigin(this, handler.obtainMessage(MSG_CALL_SYNC),
+														   new FunctionArgs(krollObject, args));
 		}
 	}
 
-	public Object callSync(KrollObject krollObject, Object[] args)
+	private Object callSync(KrollObject krollObject, Object[] args)
 	{
+		// FIXME: check
 		if (!KrollRuntime.isInitialized()) {
 			Log.w(TAG, "Runtime disposed, cannot call function.");
 			return null;
@@ -62,7 +63,7 @@ public class V8Function extends V8Object implements KrollFunction, Handler.Callb
 
 	public void callAsync(final KrollObject krollObject, final Object[] args)
 	{
-		TiMessenger.postOnRuntime(new Runnable() {
+		TiMessenger.postOnOriginThread(this, new Runnable() {
 			public void run()
 			{
 				call(krollObject, args);

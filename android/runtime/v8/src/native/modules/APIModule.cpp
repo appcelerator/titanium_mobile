@@ -34,7 +34,7 @@ using namespace v8;
 
 #define LCAT "TiAPI"
 
-Persistent<FunctionTemplate> APIModule::constructorTemplate;
+std::map<Isolate *, Persistent<FunctionTemplate>> APIModule::constructorTemplate;
 
 
 void APIModule::Initialize(Local<Object> target, Local<Context> context)
@@ -43,7 +43,7 @@ void APIModule::Initialize(Local<Object> target, Local<Context> context)
 	HandleScope scope(isolate);
 	Local<FunctionTemplate> constructor = FunctionTemplate::New(isolate);
 	constructor->SetClassName(NEW_SYMBOL(isolate, "API"));
-	constructorTemplate.Reset(isolate, constructor);
+	constructorTemplate[isolate].Reset(isolate, constructor);
 
 	// Hook methods to the API prototype, notice these aren't hooked to API
 	// itself, instead we return a singleton of an API instance and export it
@@ -169,7 +169,7 @@ void APIModule::logFatal(const FunctionCallbackInfo<Value>& args)
 // Seems to be for internal use only, should be OK.
 static void debugLog(int logLevel, const char* message)
 {
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (env == NULL) {
 		LOGE(LCAT, "Failed to get JNI environment.");
 		return;
@@ -294,7 +294,7 @@ void APIModule::undefined(const FunctionCallbackInfo<Value>& args)
 
 void APIModule::Dispose(Isolate* isolate)
 {
-	constructorTemplate.Reset();
+	constructorTemplate[isolate].Reset();
 }
 
 }

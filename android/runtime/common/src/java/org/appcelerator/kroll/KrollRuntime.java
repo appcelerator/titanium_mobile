@@ -151,6 +151,11 @@ public abstract class KrollRuntime implements Handler.Callback
 		return null;
 	}
 
+	public boolean isOriginThreadForObject(KrollObject object)
+	{
+		return Thread.currentThread().getId() == object.getThreadId();
+	}
+
 	public boolean isRuntimeThread()
 	{
 		return Thread.currentThread().getId() == threadId;
@@ -186,12 +191,6 @@ public abstract class KrollRuntime implements Handler.Callback
 				return;
 			}
 			runtimeState = State.RELEASED;
-		}
-
-		// Cancel all timers associated with the app
-		KrollApplication app = krollApplication.get();
-		if (app != null) {
-			app.cancelTimers();
 		}
 
 		if (isRuntimeThread()) {
@@ -421,9 +420,11 @@ public abstract class KrollRuntime implements Handler.Callback
 		// Dispose/terminate the runtime.
 		doDispose();
 
-		// Request the application to dispose its native resources.
 		KrollApplication app = krollApplication.get();
 		if (app != null) {
+			// Cancel all timers associated with the app
+			app.cancelTimers();
+			// Request the application to dispose its native resources.
 			app.dispose();
 		}
 	}

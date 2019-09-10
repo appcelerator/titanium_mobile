@@ -405,8 +405,19 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport, OnLifecy
 
 	public Handler getRuntimeHandler()
 	{
+		if (krollObject != null) {
+			return getRuntimeHandler(krollObject);
+		}
+		return mainHandler;
+	}
+
+	public Handler getRuntimeHandler(KrollObject object)
+	{
 		if (runtimeHandler == null) {
-			runtimeHandler = new Handler(TiMessenger.getRuntimeMessenger().getLooper(), this);
+			TiMessenger messenger = TiMessenger.getMessenger(object);
+			if (messenger != null) {
+				runtimeHandler = new Handler(messenger.getLooper(), this);
+			}
 		}
 
 		return runtimeHandler;

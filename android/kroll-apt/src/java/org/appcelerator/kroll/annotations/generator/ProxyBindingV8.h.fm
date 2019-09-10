@@ -7,6 +7,7 @@
 
 /** This is generated, do not edit by hand. **/
 <#import "ProxyBinding.fm" as Proxy>
+#include <map>
 
 #include <jni.h>
 
@@ -28,7 +29,7 @@ public:
 	static jclass javaClass;
 
 private:
-	static v8::Persistent<v8::FunctionTemplate> proxyTemplate;
+	static std::map<v8::Isolate *, v8::Persistent<v8::FunctionTemplate>> proxyTemplate;
 
 	// Methods -----------------------------------------------------------
 	<@Proxy.listMethods ; isFirst, name, method>

@@ -18,6 +18,7 @@ import android.os.Build;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollInvocation;
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
@@ -108,7 +109,8 @@ public class FilesystemModule extends KrollModule
 	}
 
 	@Kroll.method
-	public void requestStoragePermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback)
+	public void requestStoragePermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback,
+										  KrollPromise promise)
 	{
 		if (hasStoragePermissions()) {
 			return;
@@ -118,7 +120,7 @@ public class FilesystemModule extends KrollModule
 											  android.Manifest.permission.WRITE_EXTERNAL_STORAGE };
 		Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
 		TiBaseActivity.registerPermissionRequestCallback(TiC.PERMISSION_CODE_EXTERNAL_STORAGE, permissionCallback,
-														 getKrollObject());
+														 getKrollObject(), promise);
 		currentActivity.requestPermissions(permissions, TiC.PERMISSION_CODE_EXTERNAL_STORAGE);
 	}
 

@@ -10,6 +10,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.KrollProxySupport;
@@ -31,7 +32,7 @@ public final class ReferenceTable
 	 * value around to Long.MIN_VALUE when Long.MAX_VALUE is reached? What if we ever reach back up to 0 - we need to
 	 * skip it!
 	 */
-	private static long lastKey = 1;
+	private static AtomicLong lastKey = new AtomicLong(1);
 
 	/**
 	 * Creates a new strong reference. Done when attaching a native Proxy to a Java object.
@@ -41,7 +42,7 @@ public final class ReferenceTable
 	 */
 	public static long createReference(Object object)
 	{
-		long key = lastKey++;
+		long key = lastKey.getAndIncrement();
 		Log.d(TAG, "Creating strong reference for key: " + key, Log.DEBUG_MODE);
 		references.put(key, object);
 		return key;

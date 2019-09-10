@@ -16,6 +16,7 @@ import android.service.quicksettings.Tile;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
@@ -665,7 +666,8 @@ public class AndroidModule extends KrollModule
 
 	@Kroll.method
 	public void requestPermissions(Object permissionObject,
-								   @Kroll.argument(optional = true) KrollFunction permissionCallback)
+								   @Kroll.argument(optional = true) KrollFunction permissionCallback,
+								   KrollPromise promise)
 	{
 		if (Build.VERSION.SDK_INT >= 23) {
 			ArrayList<String> permissions = new ArrayList<String>();
@@ -687,7 +689,8 @@ public class AndroidModule extends KrollModule
 				filteredPermissions.add(permission);
 			}
 			if (filteredPermissions.size() > 0) {
-				TiBaseActivity.registerPermissionRequestCallback(REQUEST_CODE, permissionCallback, getKrollObject());
+				TiBaseActivity.registerPermissionRequestCallback(REQUEST_CODE, permissionCallback, getKrollObject(),
+																 promise);
 				currentActivity.requestPermissions(filteredPermissions.toArray(new String[filteredPermissions.size()]),
 												   REQUEST_CODE);
 				return;
@@ -698,6 +701,7 @@ public class AndroidModule extends KrollModule
 		if (permissionCallback != null) {
 			permissionCallback.callAsync(getKrollObject(), response);
 		}
+		promise.resolve(response);
 	}
 
 	@Kroll.method

@@ -834,7 +834,8 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	public void registerModuleInstance(String name, KrollModule module)
 	{
 		if (modules.containsKey(name)) {
-			Log.w(TAG, "Registering module with name already in use.");
+			Log.w(TAG, "Registering module with name already in use. \"" + name + "\"");
+			return;
 		}
 
 		modules.put(name, new WeakReference<KrollModule>(module));

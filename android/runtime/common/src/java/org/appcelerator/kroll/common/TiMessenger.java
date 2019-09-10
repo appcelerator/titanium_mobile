@@ -6,11 +6,13 @@
  */
 package org.appcelerator.kroll.common;
 
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollRuntime;
 
 import android.os.Handler;
@@ -20,23 +22,23 @@ import android.os.Message;
 /**
  * A messenger interface that maintains a {@link android.os.MessageQueue}, and
  * {@link android.os.Looper} but with better primitives for blocking and single
- * loop iteration. The TiMessenger also provides information on the main and 
+ * loop iteration. The TiMessenger also provides information on the main and
  * runtime threads and supports posting runnable's on both threads.
- * 
+ *
  * TiMessengers have one instance per thread tied by a ThreadLocal. The main
  * thread's TiMessenger can be retrieved by calling {@link
- * #getMainMessenger()}.  The runtime thread's TiMessenger can be retrieved by 
+ * #getMainMessenger()}.  The runtime thread's TiMessenger can be retrieved by
  * calling {@link #getRuntimeMessenger()}.  A TiMessenger can be lazily created/queried for
  * the current Thread by calling {@link #getMessenger()}.
- * 
+ *
  * To simply send a message, see {@link #sendMessage(Message)} and {@link
  * #post(Runnable)}.
- * 
+ *
  * In situations where the current thread needs to be blocked while waiting on
  * another thread to process a message, see {@link
- * #sendBlockingMainMessage(Message, Object)} and {@link 
+ * #sendBlockingMainMessage(Message, Object)} and {@link
  * #sendBlockingRuntimeMessage(Message, Object)}.
- * 
+ *
  * To process and dispatch a single message from the message queue, see {@link
  * #dispatchMessage()}.
  */
@@ -46,6 +48,7 @@ public class TiMessenger implements Handler.Callback
 	private static final int MSG_RUN = 3000;
 
 	protected static TiMessenger mainMessenger;
+	protected static HashMap<Long, TiMessenger> messengerHashMap = new HashMap<>();
 
 	protected static ThreadLocal<TiMessenger> threadLocalMessenger = new ThreadLocal<TiMessenger>() {
 		protected TiMessenger initialValue()
@@ -65,7 +68,7 @@ public class TiMessenger implements Handler.Callback
 			if (currentThreadId == Looper.getMainLooper().getThread().getId()) {
 				mainMessenger = messenger;
 			}
-
+			messengerHashMap.put(currentThreadId, messenger);
 			return messenger;
 		}
 	};
@@ -83,6 +86,26 @@ public class TiMessenger implements Handler.Callback
 	public static TiMessenger getMessenger()
 	{
 		return threadLocalMessenger.get();
+	}
+
+	public static TiMessenger getMessenger(long threadId)
+	{
+		return messengerHashMap.get(threadId);
+	}
+
+	public static TiMessenger getMessenger(KrollObject object)
+	{
+		return messengerHashMap.get(object.getThreadId());
+	}
+
+	public static void releaseMessenger(TiMessenger messenger)
+	{
+		if (messenger == null) {
+			return;
+		}
+		long threadId = messenger.getLooper().getThread().getId();
+		messengerHashMap.remove(threadId);
+		messenger.getHandler().removeCallbacksAndMessages(null);
 	}
 
 	/**
@@ -129,6 +152,22 @@ public class TiMessenger implements Handler.Callback
 		postOnMain(runnable);
 	}
 
+	public static void postOnOriginThread(KrollObject object, Runnable runnable)
+	{
+		if (object == null) {
+			Log.w(TAG, "Unable to post runnable, object is null");
+			return;
+		}
+		TiMessenger messenger = TiMessenger.getMessenger(object);
+		if (messenger == null) {
+			long threadId = object.getThreadId();
+			Log.w(TAG, "Unable to post runnable on thread \"" + threadId + "\", messenger is null");
+			return;
+		}
+
+		messenger.handler.post(runnable);
+	}
+
 	/**
 	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
@@ -157,7 +196,7 @@ public class TiMessenger implements Handler.Callback
 	}
 
 	/**
-	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue}, 
+	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the KrollRuntime thread.
 	 * @param message  the message to send.
@@ -170,7 +209,7 @@ public class TiMessenger implements Handler.Callback
 	}
 
 	/**
-	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue}, 
+	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue},
 	 * and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. The blocking is done on the KrollRuntime thread.
 	 * @param message   the message to send.
@@ -219,6 +258,23 @@ public class TiMessenger implements Handler.Callback
 		return handler;
 	}
 
+	public static Object sendBlockingMessageToOrigin(KrollObject object, Message message)
+	{
+		TiMessenger targetMessenger = TiMessenger.getMessenger(object);
+		return threadLocalMessenger.get().sendBlockingMessage(message, targetMessenger, null, -1);
+	}
+
+	public static Object sendBlockingMessageToOrigin(KrollObject object, Message message, Object asyncArg)
+	{
+		TiMessenger targetMessenger = TiMessenger.getMessenger(object);
+		return threadLocalMessenger.get().sendBlockingMessage(message, targetMessenger, asyncArg, -1);
+	}
+	public static Object sendBlockingMessageToOrigin(KrollObject object, Message message, Object asyncArg,
+													 final long maxTimeout)
+	{
+		TiMessenger targetMessenger = TiMessenger.getMessenger(object);
+		return threadLocalMessenger.get().sendBlockingMessage(message, targetMessenger, asyncArg, maxTimeout);
+	}
 	/**
 	 * Sends a message to an {@link java.util.concurrent.ArrayBlockingQueue#ArrayBlockingQueue(int) ArrayBlockingQueue}, and dispatch messages on the current
 	 * queue while blocking on the passed in AsyncResult. If maxTimeout > 0 and the cannot get the permission from
@@ -298,7 +354,7 @@ public class TiMessenger implements Handler.Callback
 	 * <li>If this TiMessenger is <b>NOT</b> current blocking, it is queued to
 	 * it's Handler normally by using msg.sendToTarget()</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param message The message to send
 	 */
 	public void sendMessage(Message message)

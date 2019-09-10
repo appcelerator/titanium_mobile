@@ -21,8 +21,8 @@
 namespace titanium {
 using namespace v8;
 
-Persistent<FunctionTemplate> WrappedScript::constructor_template;
-Persistent<ObjectTemplate> WrappedContext::global_template;
+std::map<Isolate *, Persistent<FunctionTemplate>> WrappedScript::constructor_template;
+std::map<Isolate *, Persistent<ObjectTemplate>> WrappedContext::global_template;
 
 void WrappedContext::Initialize(Local<Object> target, Local<Context> context)
 {
@@ -31,7 +31,7 @@ void WrappedContext::Initialize(Local<Object> target, Local<Context> context)
 
 	Local<ObjectTemplate> gt = ObjectTemplate::New(isolate);
 	gt->SetInternalFieldCount(1);
-	global_template.Reset(isolate, gt);
+	global_template[isolate].Reset(isolate, gt);
 }
 
 WrappedContext* WrappedContext::Unwrap(v8::Isolate* isolate, Local<Object> global)
@@ -73,7 +73,7 @@ void WrappedScript::Initialize(Local<Object> target, Local<Context> context)
 	Local<String> symbol = NEW_SYMBOL(isolate, "Script");
 	constructor->SetClassName(symbol);
 
-	constructor_template.Reset(isolate, constructor);
+	constructor_template[isolate].Reset(isolate, constructor);
 
 	SetProtoMethod(isolate, constructor, "runInContext", WrappedScript::RunInContext);
 	SetProtoMethod(isolate, constructor, "runInThisContext", WrappedScript::RunInThisContext);
@@ -97,12 +97,13 @@ void WrappedScript::Initialize(Local<Object> target, Local<Context> context)
 
 void WrappedScript::New(const FunctionCallbackInfo<Value>& args)
 {
+	Isolate* isolate = args.GetIsolate();
 	if (!args.IsConstructCall()) {
-		args.GetReturnValue().Set(V8Util::newInstanceFromConstructorTemplate(constructor_template, args));
+		args.GetReturnValue().Set(V8Util::newInstanceFromConstructorTemplate(constructor_template[isolate], args));
 		return;
 	}
 
-	HandleScope scope(args.GetIsolate());
+	HandleScope scope(isolate);
 	WrappedScript *t = new WrappedScript();
 	t->Wrap(args.Holder());
 	WrappedScript::EvalMachine<compileCode, thisContext, wrapExternal>(args);
@@ -120,7 +121,7 @@ void WrappedScript::CreateContext(const FunctionCallbackInfo<Value>& args)
 
 	Local<Value> securityToken = isolate->GetCurrentContext()->GetSecurityToken();
 
-	Local<Context> context = Context::New(isolate, NULL, WrappedContext::global_template.Get(isolate));
+	Local<Context> context = Context::New(isolate, NULL, WrappedContext::global_template[isolate].Get(isolate));
 	Local<Object> global = context->Global();
 
 	// Allow current context access to newly created context's objects.
@@ -347,8 +348,10 @@ void ScriptsModule::Initialize(Local<Object> target, Local<Context> context)
 
 void ScriptsModule::Dispose(Isolate* isolate)
 {
-	WrappedScript::constructor_template.Reset();
-	WrappedContext::global_template.Reset();
+	WrappedScript::constructor_template[isolate].Reset();
+	WrappedScript::constructor_template.erase(isolate);
+	WrappedContext::global_template[isolate].Reset();
+	WrappedContext::global_template.erase(isolate);
 }
 
 }

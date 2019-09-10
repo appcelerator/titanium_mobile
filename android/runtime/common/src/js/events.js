@@ -61,7 +61,7 @@ Object.defineProperty(EventEmitter.prototype, 'callHandler', {
 		}
 
 		// Bubble the events to the parent view if needed.
-		if (data.bubbles && !cancelBubble) {
+		if (data.bubbles && !cancelBubble && typeof this._fireEventToParent === 'function') {
 			handled = this._fireEventToParent(type, data) || handled;
 		}
 
@@ -86,12 +86,12 @@ Object.defineProperty(EventEmitter.prototype, 'emit', {
 			data = { bubbles: false, cancelBubble: false };
 		}
 
-		if (this._hasJavaListener) {
+		if (this._hasJavaListener && typeof this._onEventFired === 'function') {
 			this._onEventFired(type,  data);
 		}
 
 		if (!this._events || !this._events[type] || !this.callHandler) {
-			if (data.bubbles && !data.cancelBubble) {
+			if (data.bubbles && !data.cancelBubble && typeof this._fireEventToParent === 'function') {
 				handled = this._fireEventToParent(type, data);
 			}
 			return handled;
@@ -107,7 +107,7 @@ Object.defineProperty(EventEmitter.prototype, 'emit', {
 				handled = this.callHandler(listeners[i], type, data) || handled;
 			}
 
-		} else if (data.bubbles && !data.cancelBubble) {
+		} else if (data.bubbles && !data.cancelBubble && typeof this._fireEventToParent === 'function') {
 			handled = this._fireEventToParent(type, data);
 		}
 
@@ -167,7 +167,7 @@ Object.defineProperty(EventEmitter.prototype, 'addListener', {
 		}
 
 		// Notify the Java proxy if this is the first listener added.
-		if (id === 0) {
+		if (id === 0 && typeof this._hasListenersForEventType === 'function') {
 			this._hasListenersForEventType(type, true);
 		}
 
@@ -262,7 +262,7 @@ Object.defineProperty(EventEmitter.prototype, 'removeListener', {
 			return this;
 		}
 
-		if (count === 0) {
+		if (count === 0 && typeof this._hasListenersForEventType === 'function') {
 			this._hasListenersForEventType(type, false);
 		}
 
@@ -282,7 +282,9 @@ Object.defineProperty(EventEmitter.prototype, 'removeAllListeners', {
 		// does not use listeners(), so no side effect of creating _events[type]
 		if (type && this._events && this._events[type]) {
 			this._events[type] = null;
-			this._hasListenersForEventType(type, false);
+			if (typeof this._hasListenersForEventType === 'function') {
+				this._hasListenersForEventType(type, false);
+			}
 		}
 		return this;
 	},

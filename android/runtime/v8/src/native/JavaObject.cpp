@@ -42,8 +42,7 @@ static void DetachCallback(const v8::WeakCallbackInfo<JavaObject>& data)
 }
 
 JavaObject::JavaObject()
-	: EventEmitter()
-	, javaObject_(NULL)
+	: javaObject_(NULL)
 	, refTableKey_(0)
 	, isWeakRef_(false)
 {

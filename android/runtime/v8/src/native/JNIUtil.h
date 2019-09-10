@@ -95,6 +95,7 @@ public:
 	static jclass nullPointerException;
 
 	// Titanium classes
+	static jclass v8PromiseClass;
 	static jclass v8ObjectClass;
 	static jclass v8FunctionClass;
 	static jclass krollRuntimeClass;
@@ -108,6 +109,7 @@ public:
 	static jclass tiJsErrorDialogClass;
 	static jclass referenceTableClass;
 	static jclass jsErrorClass;
+	static jclass krollWorkerClass;
 
 	// Java methods
 	static jmethodID classGetNameMethod;
@@ -135,6 +137,7 @@ public:
 
 	// Titanium methods and fields
 	static jfieldID v8ObjectPtrField;
+	static jmethodID v8PromiseInitMethod;
 	static jmethodID v8ObjectInitMethod;
 	static jmethodID v8FunctionInitMethod;
 
@@ -174,6 +177,8 @@ public:
 
 	// KrollLogging
 	static jmethodID krollLoggingLogWithDefaultLoggerMethod;
+	static jmethodID krollWorkerCloseMethod;
+	static jmethodID krollWorkerPostMessageMethod;
 
 	// KrollAssetHelper
 	static jmethodID krollAssetHelperReadAssetMethod;
@@ -189,6 +194,10 @@ public:
 	JNIScope(JNIEnv *env)
 			: prev(current)
 	{
+		JNIEnv *cur = getEnv();
+		if (cur != env) {
+			LOGE("JNIScope", "Error. JNIEnv %p != JNIEnv %p", cur, env);
+		}
 		current = env;
 	}
 	~JNIScope()

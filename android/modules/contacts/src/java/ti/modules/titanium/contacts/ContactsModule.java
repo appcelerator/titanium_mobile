@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
@@ -80,14 +81,15 @@ public class ContactsModule extends KrollModule implements TiActivityResultHandl
 	}
 
 	@Kroll.method
-	public void requestContactsPermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback)
+	public void requestContactsPermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback,
+										   KrollPromise promise)
 	{
 		if (hasContactsPermissions()) {
 			return;
 		}
 
 		TiBaseActivity.registerPermissionRequestCallback(TiC.PERMISSION_CODE_CONTACTS, permissionCallback,
-														 getKrollObject());
+														 getKrollObject(), promise);
 		Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
 		currentActivity.requestPermissions(
 			new String[] { Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS },

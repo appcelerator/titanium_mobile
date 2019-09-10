@@ -7,6 +7,7 @@
 
 /** This code is generated, do not edit by hand. **/
 <#import "ProxyBinding.fm" as Proxy>
+#include <map>
 
 #include "${packageName}.${proxyClassName}.h"
 
@@ -39,7 +40,7 @@ using namespace v8;
 
 <#assign className = Proxy.className(proxyClassName)>
 
-Persistent<FunctionTemplate> ${className}::proxyTemplate;
+std::map<Isolate *, Persistent<FunctionTemplate>> ${className}::proxyTemplate;
 jclass ${className}::javaClass = NULL;
 
 ${className}::${className}() : titanium::Proxy()
@@ -77,8 +78,9 @@ void ${className}::bindProxy(Local<Object> exports, Local<Context> context)
 void ${className}::dispose(Isolate* isolate)
 {
 	LOGD(TAG, "dispose()");
-	if (!proxyTemplate.IsEmpty()) {
-		proxyTemplate.Reset();
+	if (!proxyTemplate[isolate].IsEmpty()) {
+		proxyTemplate[isolate].Reset();
+		proxyTemplate.erase(isolate);
 	}
 
 	<#if superProxyClassName??>
@@ -88,9 +90,8 @@ void ${className}::dispose(Isolate* isolate)
 
 Local<FunctionTemplate> ${className}::getProxyTemplate(v8::Isolate* isolate)
 {
-	Local<Context> context = isolate->GetCurrentContext();
-	if (!proxyTemplate.IsEmpty()) {
-		return proxyTemplate.Get(isolate);
+	if (!proxyTemplate[isolate].IsEmpty()) {
+		return proxyTemplate[isolate].Get(isolate);
 	}
 
 	LOGD(TAG, "${className}::getProxyTemplate()");
@@ -107,13 +108,13 @@ Local<FunctionTemplate> ${className}::getProxyTemplate(v8::Isolate* isolate)
 	<#if superProxyClassName??>
 		<@Proxy.superNamespace/>${superProxyClassName}::getProxyTemplate(isolate),
 	<#else>
-		titanium::Proxy::baseProxyTemplate.Get(isolate),
+		titanium::Proxy::baseProxyTemplateMap[isolate].Get(isolate),
 	</#if>
 		javaClass,
 		nameSymbol);
 
-	proxyTemplate.Reset(isolate, t);
-	t->Set(titanium::Proxy::inheritSymbol.Get(isolate), FunctionTemplate::New(isolate, titanium::Proxy::inherit<${className}>));
+	proxyTemplate[isolate].Reset(isolate, t);
+	t->Set(titanium::Proxy::inheritSymbolMap[isolate].Get(isolate), FunctionTemplate::New(isolate, titanium::Proxy::inherit<${className}>));
 
 	// Method bindings --------------------------------------------------------
 	<@Proxy.listMethods ; isFirst, name, method>
@@ -129,7 +130,7 @@ Local<FunctionTemplate> ${className}::getProxyTemplate(v8::Isolate* isolate)
 
 	// Constants --------------------------------------------------------------
 	<#if constants??>
-	JNIEnv *env = titanium::JNIScope::getEnv();
+	JNIEnv *env = titanium::JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Failed to get environment in ${className}");
 		//return;
@@ -288,11 +289,14 @@ void ${className}::${method.apiName}(const FunctionCallbackInfo<Value>& args)
 		args.GetReturnValue().Set(v8::Undefined(isolate));
 		return;
 	}
-	<@Proxy.callJNIMethod method.args, method.hasInvocation, method.returnType,
+	<@Proxy.callJNIMethod method.args, method.hasInvocation, method.isAsync, method.returnType,
 		"methodID", "javaProxy", "jArguments", (method.returnType != "void") ; hasResult, resultVar>
 
 	<#if hasResult>
 	args.GetReturnValue().Set(${resultVar});
+	<#elseif method.isAsync>
+	auto promise = maybeResolver.ToLocalChecked().As<Promise::Resolver>()->GetPromise();
+	args.GetReturnValue().Set(promise);
 	<#else>
 	args.GetReturnValue().Set(v8::Undefined(isolate));
 	</#if>
@@ -329,7 +333,7 @@ void ${className}::getter_${name}(Local<Name> property, const PropertyCallbackIn
 		args.GetReturnValue().Set(v8::Undefined(isolate));
 		return;
 	}
-	<@Proxy.callJNIMethod property.getMethodArgs, property.getHasInvocation, property.getReturnType,
+	<@Proxy.callJNIMethod property.getMethodArgs, property.getHasInvocation, false, property.getReturnType,
 		"methodID", "javaProxy", "jArguments", (property.getReturnType != "void") ; hasResult, resultVar>
 
 	args.GetReturnValue().Set(${resultVar});
@@ -344,7 +348,7 @@ void ${className}::setter_${name}(Local<Name> property, Local<Value> value, cons
 	Isolate* isolate = args.GetIsolate();
 	HandleScope scope(isolate);
 
-	JNIEnv *env = titanium::JNIScope::getEnv();
+	JNIEnv *env = titanium::JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Failed to get environment, ${name} wasn't set");
 		return;
@@ -369,7 +373,7 @@ void ${className}::setter_${name}(Local<Name> property, Local<Value> value, cons
 	if (javaProxy == NULL) {
 		return;
 	}
-	<@Proxy.callJNIMethod property.setMethodArgs, property.setHasInvocation, property.setReturnType, "methodID", "javaProxy", "jArguments", false ;
+	<@Proxy.callJNIMethod property.setMethodArgs, property.setHasInvocation, false, property.setReturnType, "methodID", "javaProxy", "jArguments", false ;
 		hasResult, resultVar>
 	</@Proxy.callJNIMethod>
 

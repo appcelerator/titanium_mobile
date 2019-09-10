@@ -68,7 +68,7 @@ void KrollBindings::initTitanium(Local<Object> exports, Local<Context> context)
 {
 	Isolate* isolate = context->GetIsolate();
 	HandleScope scope(isolate);
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Couldn't initialize JNIEnv");
 		return;
@@ -88,7 +88,7 @@ void KrollBindings::disposeTitanium(Isolate* isolate)
 	TitaniumModule::dispose(isolate);
 }
 
-static Persistent<Object> bindingCache;
+static std::map<Isolate *, Persistent<Object>> bindingCache;
 
 void KrollBindings::getBinding(const FunctionCallbackInfo<Value>& args)
 {
@@ -117,7 +117,7 @@ void KrollBindings::getExternalBinding(const FunctionCallbackInfo<Value>& args)
 
 	Local<Context> context = isolate->GetCurrentContext();
 	Local<String> binding = args[0].As<String>();
-	Local<Object> cache = bindingCache.Get(isolate);
+	Local<Object> cache = bindingCache[isolate].Get(isolate);
 	// If in the cache, and we were able to successfully get it and convert it to an object, then return
 	// Otherwise if anything goes wrong, fall back to re-generating.
 	if (cache->Has(context, binding).FromMaybe(false)) {
@@ -169,11 +169,11 @@ Local<Object> KrollBindings::getBinding(v8::Isolate* isolate, Local<String> bind
 {
 	Local<Object> cache;
 	Local<Context> context = isolate->GetCurrentContext();
-	if (bindingCache.IsEmpty()) {
+	if (bindingCache[isolate].IsEmpty()) {
 		cache = Object::New(isolate);
-		bindingCache.Reset(isolate, cache);
+		bindingCache[isolate].Reset(isolate, cache);
 	} else {
-		cache = bindingCache.Get(isolate);
+		cache = bindingCache[isolate].Get(isolate);
 	}
 
 
@@ -230,7 +230,7 @@ Local<Object> KrollBindings::getBinding(v8::Isolate* isolate, Local<String> bind
 // clears out the module lookup cache
 void KrollBindings::dispose(v8::Isolate* isolate)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	std::map<std::string, jobject>::iterator iterMods;
 	for (iterMods = externalCommonJsModules.begin(); iterMods != externalCommonJsModules.end(); ++iterMods) {
 		jobject obj = iterMods->second;
@@ -249,12 +249,12 @@ void KrollBindings::dispose(v8::Isolate* isolate)
 		}
 	}
 
-	if (bindingCache.IsEmpty()) {
+	if (bindingCache[isolate].IsEmpty()) {
 		return;
 	}
 
 	Local<Context> context = isolate->GetCurrentContext();
-	Local<Object> cache = bindingCache.Get(isolate);
+	Local<Object> cache = bindingCache[isolate].Get(isolate);
 	Local<Array> propertyNames;
 	MaybeLocal<Array> maybePropertyNames = cache->GetPropertyNames(context);
 	if (maybePropertyNames.ToLocal(&propertyNames)) {
@@ -286,7 +286,8 @@ void KrollBindings::dispose(v8::Isolate* isolate)
 
 	externalLookupBindings.clear();
 
-	bindingCache.Reset();
+	bindingCache[isolate].Reset();
+	bindingCache.erase(isolate);
 }
 
 /*
@@ -354,7 +355,7 @@ void KrollBindings::getExternalCommonJsModule(const FunctionCallbackInfo<Value>&
 		return;
 	}
 
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	jobject sourceProvider = externalCommonJsModules[moduleRoot];
 	jmethodID sourceRetrievalMethod = commonJsSourceRetrievalMethods[moduleRoot];
 

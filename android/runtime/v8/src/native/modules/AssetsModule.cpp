@@ -38,7 +38,7 @@ void AssetsModule::readAsset(const FunctionCallbackInfo<Value>& args)
 		return;
 	}
 
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		JSException::GetJNIEnvironmentError(isolate);
 		return;

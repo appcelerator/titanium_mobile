@@ -23,6 +23,11 @@ public:
 	// The incrementing key to store the persistent functions
 	static int64_t functionIndex;
 
+	// Our global map of "pointers" to persistent functions
+    static std::map<int64_t, v8::Persistent<v8::Promise::Resolver, v8::CopyablePersistentTraits<v8::Promise::Resolver>>> resolvers;
+    // The incrementing key to store the persistent functions
+    static int64_t resolverIndex;
+
 	// short convert methods
 	static jshort jsNumberToJavaShort(v8::Local<v8::Number> jsNumber);
 	static v8::Local<v8::Number> javaShortToJsNumber(v8::Isolate* isolate, jshort javaShort);
@@ -121,6 +126,10 @@ public:
 
 	static jobject jsObjectToJavaFunction(v8::Isolate* isolate, JNIEnv *env, v8::Local<v8::Object> jsObject);
 	static v8::Local<v8::Function> javaObjectToJsFunction(v8::Isolate* isolate, JNIEnv *env, jobject javaObject);
+
+	// promise resolvers convert methods
+	static jobject jsObjectToJavaPromise(v8::Isolate* isolate, v8::Local<v8::Object> jsObject);
+	static jobject jsObjectToJavaPromise(v8::Isolate* isolate, JNIEnv *env, v8::Local<v8::Object> jsObject);
 
 	// arguments conversion
 	static jobjectArray jsArgumentsToJavaArray(const v8::FunctionCallbackInfo<v8::Value>& args);

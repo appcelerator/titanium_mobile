@@ -8,6 +8,7 @@
 #include <string>
 
 #include <v8.h>
+#include <unistd.h>
 #include <jni.h>
 
 #include "AndroidUtil.h"
@@ -19,6 +20,7 @@
 #include "ProxyFactory.h"
 #include "TypeConverter.h"
 #include "V8Util.h"
+#include "V8Runtime.h"
 
 #define TAG "Proxy"
 #define INDEX_NAME 0
@@ -30,12 +32,14 @@ using namespace v8;
 namespace titanium {
 
 Persistent<FunctionTemplate> Proxy::baseProxyTemplate;
-Persistent<String> Proxy::javaClassSymbol;
-Persistent<String> Proxy::constructorSymbol;
 Persistent<String> Proxy::inheritSymbol;
-Persistent<String> Proxy::propertiesSymbol;
-Persistent<String> Proxy::lengthSymbol;
-Persistent<String> Proxy::sourceUrlSymbol;
+std::map<Isolate *, Persistent<FunctionTemplate>> Proxy::baseProxyTemplateMap;
+std::map<Isolate *, Persistent<String>> Proxy::javaClassSymbolMap;
+std::map<Isolate *, Persistent<String>> Proxy::constructorSymbolMap;
+std::map<Isolate *, Persistent<String>> Proxy::inheritSymbolMap;
+std::map<Isolate *, Persistent<String>> Proxy::propertiesSymbolMap;
+std::map<Isolate *, Persistent<String>> Proxy::lengthSymbolMap;
+std::map<Isolate *, Persistent<String>> Proxy::sourceUrlSymbolMap;
 
 Proxy::Proxy() :
 	JavaObject()
@@ -45,25 +49,27 @@ Proxy::Proxy() :
 void Proxy::bindProxy(Local<Object> exports, Local<Context> context)
 {
 	Isolate* isolate = context->GetIsolate();
-	Local<String> javaClass = NEW_SYMBOL(isolate, "__javaClass__");
-	javaClassSymbol.Reset(isolate, javaClass);
-	constructorSymbol.Reset(isolate, NEW_SYMBOL(isolate, "constructor"));
-	inheritSymbol.Reset(isolate, NEW_SYMBOL(isolate, "inherit"));
-	propertiesSymbol.Reset(isolate, NEW_SYMBOL(isolate, "_properties"));
-	lengthSymbol.Reset(isolate, NEW_SYMBOL(isolate, "length"));
-	sourceUrlSymbol.Reset(isolate, NEW_SYMBOL(isolate, "sourceUrl"));
+	javaClassSymbolMap[isolate].Reset(isolate, NEW_SYMBOL(isolate, "__javaClass__"));
+	constructorSymbolMap[isolate].Reset(isolate, NEW_SYMBOL(isolate, "constructor"));
+	Local<v8::String> _inheritSymbol = NEW_SYMBOL(isolate, "inherit");
+	inheritSymbolMap[isolate].Reset(isolate, _inheritSymbol);
+	propertiesSymbolMap[isolate].Reset(isolate, NEW_SYMBOL(isolate, "_properties"));
+	lengthSymbolMap[isolate].Reset(isolate, NEW_SYMBOL(isolate, "length"));
+	sourceUrlSymbolMap[isolate].Reset(isolate, NEW_SYMBOL(isolate, "sourceUrl"));
+
+
 
 	Local<FunctionTemplate> proxyTemplate = FunctionTemplate::New(isolate, 0, External::New(isolate, JNIUtil::krollProxyClass));
 	Local<String> proxySymbol = NEW_SYMBOL(isolate, "Proxy");
 	proxyTemplate->InstanceTemplate()->SetInternalFieldCount(kInternalFieldCount);
 	proxyTemplate->SetClassName(proxySymbol);
-	proxyTemplate->Inherit(EventEmitter::constructorTemplate.Get(isolate));
+	proxyTemplate->Inherit(EventEmitter::constructorTemplate[isolate].Get(isolate));
 
 	SetProtoMethod(isolate, proxyTemplate, "_hasListenersForEventType", hasListenersForEventType);
 	SetProtoMethod(isolate, proxyTemplate, "onPropertiesChanged", proxyOnPropertiesChanged);
 	SetProtoMethod(isolate, proxyTemplate, "_onEventFired", onEventFired);
 
-	baseProxyTemplate.Reset(isolate, proxyTemplate);
+	baseProxyTemplateMap[isolate].Reset(isolate, proxyTemplate);
 
 	v8::TryCatch tryCatch(isolate);
 	Local<Function> constructor;
@@ -73,6 +79,12 @@ void Proxy::bindProxy(Local<Object> exports, Local<Context> context)
 	} else {
 		V8Util::fatalException(isolate, tryCatch);
 	}
+    if (V8Runtime::runtimeThreadId == gettid()) {
+        // TODO: remove on next module API breaking change
+        //   grep 'titanium::Proxy::' ProxyBindingV8.cpp.fm
+        baseProxyTemplate.Reset(isolate, proxyTemplate);
+        inheritSymbol.Reset(isolate, _inheritSymbol);
+    }
 }
 
 static Local<Value> getPropertyForProxy(Isolate* isolate, Local<Name> property, Local<Object> proxy)
@@ -158,7 +170,7 @@ static void onPropertyChangedForProxy(Isolate* isolate, Local<String> property, 
 {
 	Proxy* proxy = NativeObject::Unwrap<Proxy>(proxyObject);
 
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOG_JNIENV_GET_ERROR(TAG);
 		return;
@@ -221,7 +233,7 @@ void Proxy::onPropertyChanged(const v8::FunctionCallbackInfo<v8::Value>& args)
 void Proxy::getIndexedProperty(uint32_t index, const PropertyCallbackInfo<Value>& info)
 {
 	Isolate* isolate = info.GetIsolate();
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		JSException::GetJNIEnvironmentError(isolate);
 		return;
@@ -250,7 +262,7 @@ void Proxy::getIndexedProperty(uint32_t index, const PropertyCallbackInfo<Value>
 void Proxy::setIndexedProperty(uint32_t index, Local<Value> value, const PropertyCallbackInfo<Value>& info)
 {
 	Isolate* isolate = info.GetIsolate();
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOG_JNIENV_GET_ERROR(TAG);
 		// Returns undefined by default
@@ -284,7 +296,7 @@ void Proxy::setIndexedProperty(uint32_t index, Local<Value> value, const Propert
 void Proxy::hasListenersForEventType(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 	Isolate* isolate = args.GetIsolate();
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		JSException::GetJNIEnvironmentError(isolate);
 		return;
@@ -293,7 +305,7 @@ void Proxy::hasListenersForEventType(const v8::FunctionCallbackInfo<v8::Value>& 
 	Local<Object> holder = args.Holder();
 	// If holder isn't the JavaObject wrapper we expect, look up the prototype chain
 	if (!JavaObject::isJavaObject(holder)) {
-		holder = holder->FindInstanceInPrototypeChain(baseProxyTemplate.Get(isolate));
+		holder = holder->FindInstanceInPrototypeChain(baseProxyTemplateMap[isolate].Get(isolate));
 	}
 	Proxy* proxy = NativeObject::Unwrap<Proxy>(holder);
 
@@ -325,7 +337,7 @@ void Proxy::hasListenersForEventType(const v8::FunctionCallbackInfo<v8::Value>& 
 void Proxy::onEventFired(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 	Isolate* isolate = args.GetIsolate();
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		JSException::GetJNIEnvironmentError(isolate);
 		return;
@@ -334,7 +346,7 @@ void Proxy::onEventFired(const v8::FunctionCallbackInfo<v8::Value>& args)
 	Local<Object> holder = args.Holder();
 	// If holder isn't the JavaObject wrapper we expect, look up the prototype chain
 	if (!JavaObject::isJavaObject(holder)) {
-		holder = holder->FindInstanceInPrototypeChain(baseProxyTemplate.Get(isolate));
+		holder = holder->FindInstanceInPrototypeChain(baseProxyTemplateMap[isolate].Get(isolate));
 	}
 	Proxy* proxy = NativeObject::Unwrap<Proxy>(holder);
 
@@ -391,7 +403,7 @@ void Proxy::proxyConstructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 	Isolate* isolate = args.GetIsolate();
 	EscapableHandleScope scope(isolate);
 
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	Local<Object> jsProxy = args.This();
 
 	TryCatch tryCatch(isolate);
@@ -404,7 +416,7 @@ void Proxy::proxyConstructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 	Local<Context> context = isolate->GetCurrentContext();
 
 	// every instance gets a special "_properties" object for us to use internally for get/setProperty
-	jsProxy->DefineOwnProperty(context, propertiesSymbol.Get(isolate), Object::New(isolate), static_cast<PropertyAttribute>(DontEnum));
+	jsProxy->DefineOwnProperty(context, propertiesSymbolMap[isolate].Get(isolate), Object::New(isolate), static_cast<PropertyAttribute>(DontEnum));
 
 	// Now we hook up a java Object from the JVM...
 	jobject javaProxy = Proxy::unwrapJavaProxy(args); // do we already have one that got passed in?
@@ -432,7 +444,7 @@ void Proxy::proxyConstructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 		Local<String> constructorName = createProperties->GetConstructorName();
 		if (strcmp(*v8::String::Utf8Value(isolate, constructorName), "Arguments") == 0) {
 			extend = false;
-			int32_t argsLength = createProperties->Get(context, lengthSymbol.Get(isolate)).FromMaybe(Integer::New(isolate, 0).As<Value>())->Int32Value(context).FromMaybe(0);
+			int32_t argsLength = createProperties->Get(context, lengthSymbolMap[isolate].Get(isolate)).FromMaybe(Integer::New(isolate, 0).As<Value>())->Int32Value(context).FromMaybe(0);
 			if (argsLength > 1) {
 				Local<Value> properties = createProperties->Get(context, 1).FromMaybe(Undefined(isolate).As<Value>());
 				if (properties->IsObject()) {
@@ -447,7 +459,7 @@ void Proxy::proxyConstructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 			if (!maybePropertyNames.IsEmpty()) { // FIXME Handle when empty!
 				Local<Array> names = maybePropertyNames.ToLocalChecked();
 				int length = names->Length();
-				MaybeLocal<Value> maybeProperties = jsProxy->Get(context, propertiesSymbol.Get(isolate));
+				MaybeLocal<Value> maybeProperties = jsProxy->Get(context, propertiesSymbolMap[isolate].Get(isolate));
 				if (!maybeProperties.IsEmpty()) { // FIXME Handle when empty!
 					Local<Object> properties = maybeProperties.ToLocalChecked().As<Object>();
 
@@ -482,7 +494,7 @@ void Proxy::proxyConstructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 	}
 
 	if (deleteRef) {
-		JNIEnv *env = JNIScope::getEnv();
+		JNIEnv *env = JNIUtil::getJNIEnv();
 		if (env) {
 			env->DeleteLocalRef(javaProxy);
 		}
@@ -502,7 +514,7 @@ void Proxy::proxyOnPropertiesChanged(const v8::FunctionCallbackInfo<v8::Value>& 
 		return;
 	}
 
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		JSException::GetJNIEnvironmentError(isolate);
 		return;
@@ -563,13 +575,13 @@ void Proxy::proxyOnPropertiesChanged(const v8::FunctionCallbackInfo<v8::Value>& 
 
 void Proxy::dispose(Isolate* isolate)
 {
-	baseProxyTemplate.Reset();
-	javaClassSymbol.Reset();
-	constructorSymbol.Reset();
-	inheritSymbol.Reset();
-	propertiesSymbol.Reset();
-	lengthSymbol.Reset();
-	sourceUrlSymbol.Reset();
+	baseProxyTemplateMap[isolate].Reset();
+	javaClassSymbolMap[isolate].Reset();
+	constructorSymbolMap[isolate].Reset();
+	inheritSymbolMap[isolate].Reset();
+	propertiesSymbolMap[isolate].Reset();
+	lengthSymbolMap[isolate].Reset();
+	sourceUrlSymbolMap[isolate].Reset();
 }
 
 jobject Proxy::unwrapJavaProxy(const v8::FunctionCallbackInfo<v8::Value>& args)

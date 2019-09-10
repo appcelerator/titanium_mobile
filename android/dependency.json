@@ -22,6 +22,7 @@
 		"platform":[],
 		"ui":["filesystem","media","appcompat","cardview","design","compat"],
 		"utils":[],
+		"worker": [],
 		"xml":[]
 	},
 	"required": ["analytics","android","app","ui","locale","network"],

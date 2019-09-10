@@ -261,7 +261,7 @@ bool V8Util::constructorNameMatches(Isolate* isolate, Local<Object> object, cons
 	return strcmp(*String::Utf8Value(isolate, constructorName), name) == 0;
 }
 
-static Persistent<Function> isNaNFunction;
+static std::map<v8::Isolate*, Persistent<Function>> isNaNFunction;
 
 bool V8Util::isNaN(Isolate* isolate, Local<Value> value)
 {
@@ -269,23 +269,23 @@ bool V8Util::isNaN(Isolate* isolate, Local<Value> value)
 	Local<Context> context = isolate->GetCurrentContext();
 	Local<Object> global = context->Global();
 
-	if (isNaNFunction.IsEmpty()) {
+	if (isNaNFunction[isolate].IsEmpty()) {
 		MaybeLocal<Value> isNaNValue = global->Get(context, NEW_SYMBOL(isolate, "isNaN"));
 		if (isNaNValue.IsEmpty()) {
 			LOGE(TAG, "!!!! global isNaN function not found/inaccessible. !!!");
 			return false;
 		}
-		isNaNFunction.Reset(isolate, isNaNValue.ToLocalChecked().As<Function>());
+		isNaNFunction[isolate].Reset(isolate, isNaNValue.ToLocalChecked().As<Function>());
 	}
 
 	Local<Value> args[] = { value };
-	MaybeLocal<Value> result = isNaNFunction.Get(isolate)->Call(context, global, 1, args);
+	MaybeLocal<Value> result = isNaNFunction[isolate].Get(isolate)->Call(context, global, 1, args);
 	return result.FromMaybe(False(isolate).As<Value>())->BooleanValue(context).FromMaybe(false);
 }
 
-void V8Util::dispose()
+void V8Util::dispose(Isolate* isolate)
 {
-	isNaNFunction.Reset();
+	isNaNFunction[isolate].Reset();
 }
 
 std::string V8Util::stackTraceString(v8::Isolate* isolate, Local<StackTrace> frames) {

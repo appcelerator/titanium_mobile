@@ -63,6 +63,7 @@ public class KrollJSONGenerator extends AbstractProcessor
 	protected static final String Kroll_interceptor = Kroll_annotation + ".interceptor";
 	protected static final String Kroll_onAppCreate = Kroll_annotation + ".onAppCreate";
 
+	protected static final String KrollPromise = "org.appcelerator.kroll.KrollPromise";
 	protected static final String KrollInvocation = "org.appcelerator.kroll.KrollInvocation";
 	protected static final String KrollConverter = Kroll_package + ".KrollConverter";
 	protected static final String KrollNativeConverter = Kroll_package + ".KrollNativeConverter";
@@ -406,6 +407,15 @@ public class KrollJSONGenerator extends AbstractProcessor
 
 			methodAttrs.put("args", args);
 			methodAttrs.put("returnType", element.getReturnType().toString());
+
+			boolean isAsync = false;
+			if (args.size() > 0) {
+				Map<Object, Object> argParams = (Map<Object, Object>) args.get(args.size() - 1);
+				if (argParams.get("type").equals(KrollPromise)) {
+					isAsync = true;
+				}
+			}
+			methodAttrs.put("isAsync", isAsync);
 		}
 
 		protected void visitProperty(AnnotationMirror annotation, VariableElement element)

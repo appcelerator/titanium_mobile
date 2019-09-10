@@ -53,7 +53,7 @@ public:
 	 */
 	static v8::Local<v8::Value> getJavaClassName(v8::Isolate* isolate, jclass javaClass);
 
-	static void dispose();
+	static void dispose(v8::Isolate* isolate);
 };
 
 }

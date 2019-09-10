@@ -45,6 +45,7 @@ jclass JNIUtil::nullPointerException = NULL;
 jclass JNIUtil::throwableClass = NULL;
 jclass JNIUtil::stackTraceElementClass = NULL;
 
+jclass JNIUtil::v8PromiseClass = NULL;
 jclass JNIUtil::v8ObjectClass = NULL;
 jclass JNIUtil::v8FunctionClass = NULL;
 jclass JNIUtil::krollRuntimeClass = NULL;
@@ -57,6 +58,7 @@ jclass JNIUtil::krollLoggingClass = NULL;
 jclass JNIUtil::krollDictClass = NULL;
 jclass JNIUtil::referenceTableClass = NULL;
 jclass JNIUtil::jsErrorClass = NULL;
+jclass JNIUtil::krollWorkerClass = NULL;
 
 jmethodID JNIUtil::classGetNameMethod = NULL;
 jmethodID JNIUtil::arrayListInitMethod = NULL;
@@ -88,6 +90,7 @@ jmethodID JNIUtil::throwableGetStackTraceMethod = NULL;
 jmethodID JNIUtil::stackTraceElementToStringMethod = NULL;
 
 jfieldID JNIUtil::v8ObjectPtrField = NULL;
+jmethodID JNIUtil::v8PromiseInitMethod = NULL;
 jmethodID JNIUtil::v8ObjectInitMethod = NULL;
 jmethodID JNIUtil::v8FunctionInitMethod = NULL;
 
@@ -114,6 +117,8 @@ jmethodID JNIUtil::krollProxyOnPropertyChangedMethod = NULL;
 jmethodID JNIUtil::krollProxyOnPropertiesChangedMethod = NULL;
 jmethodID JNIUtil::krollAssetHelperReadAssetMethod = NULL;
 jmethodID JNIUtil::krollLoggingLogWithDefaultLoggerMethod = NULL;
+jmethodID JNIUtil::krollWorkerCloseMethod = NULL;
+jmethodID JNIUtil::krollWorkerPostMessageMethod = NULL;
 
 jmethodID JNIUtil::krollRuntimeDispatchExceptionMethod = NULL;
 
@@ -139,7 +144,7 @@ void JNIUtil::terminateVM()
 
 jobjectArray JNIUtil::newObjectArray(int length, jobject initial)
 {
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (env) {
 		return env->NewObjectArray(length, objectClass, initial);
 	}
@@ -148,7 +153,7 @@ jobjectArray JNIUtil::newObjectArray(int length, jobject initial)
 
 void JNIUtil::throwException(jclass clazz, const char *message)
 {
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env || !clazz) {
 		return;
 	}
@@ -158,7 +163,7 @@ void JNIUtil::throwException(jclass clazz, const char *message)
 
 void JNIUtil::throwException(const char *className, const char *message)
 {
-	JNIEnv* env = JNIScope::getEnv();
+	JNIEnv* env = JNIUtil::getJNIEnv();
 	if (!env) {
 		return;
 	}
@@ -179,7 +184,7 @@ void JNIUtil::throwNullPointerException(const char *message)
 
 jclass JNIUtil::findClass(const char *className)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Couldn't initialize JNIEnv");
 		return NULL;
@@ -202,7 +207,7 @@ jclass JNIUtil::findClass(const char *className)
 
 jmethodID JNIUtil::getMethodID(jclass javaClass, const char *methodName, const char *signature, bool isStatic)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Couldn't initialize JNIEnv");
 		return NULL;
@@ -227,7 +232,7 @@ jmethodID JNIUtil::getMethodID(jclass javaClass, const char *methodName, const c
 
 jfieldID JNIUtil::getFieldID(jclass javaClass, const char *fieldName, const char *signature)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		LOGE(TAG, "Couldn't initialize JNIEnv");
 		return NULL;
@@ -245,7 +250,7 @@ jfieldID JNIUtil::getFieldID(jclass javaClass, const char *fieldName, const char
 
 jstring JNIUtil::getClassName(jclass javaClass)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) return NULL;
 
 	return (jstring) env->CallObjectMethod(javaClass, classGetNameMethod);
@@ -253,7 +258,7 @@ jstring JNIUtil::getClassName(jclass javaClass)
 
 void JNIUtil::logClassName(const char *format, jclass javaClass, bool errorLevel)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env) {
 		return;
 	}
@@ -281,7 +286,7 @@ void JNIUtil::logClassName(const char *format, jclass javaClass, bool errorLevel
 
 bool JNIUtil::removePointer(jobject javaObject)
 {
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 	if (!env || env->IsSameObject(javaObject, NULL)) {
 		return false;
 	}
@@ -300,7 +305,7 @@ void JNIUtil::initCache()
 {
 	LOG_TIMER(TAG, "initializing JNI cache");
 
-	JNIEnv *env = JNIScope::getEnv();
+	JNIEnv *env = JNIUtil::getJNIEnv();
 
 	classClass = findClass("java/lang/Class");
 	objectClass = findClass("java/lang/Object");
@@ -329,6 +334,7 @@ void JNIUtil::initCache()
 	throwableClass = findClass("java/lang/Throwable");
 	stackTraceElementClass = findClass("java/lang/StackTraceElement");
 
+	v8PromiseClass = findClass("org/appcelerator/kroll/runtime/v8/V8Promise");
 	v8ObjectClass = findClass("org/appcelerator/kroll/runtime/v8/V8Object");
 	v8FunctionClass = findClass("org/appcelerator/kroll/runtime/v8/V8Function");
 	krollRuntimeClass = findClass("org/appcelerator/kroll/KrollRuntime");
@@ -341,6 +347,7 @@ void JNIUtil::initCache()
 	krollDictClass = findClass("org/appcelerator/kroll/KrollDict");
 	referenceTableClass = findClass("org/appcelerator/kroll/runtime/v8/ReferenceTable");
 	jsErrorClass = findClass("org/appcelerator/kroll/JSError");
+	krollWorkerClass = findClass("org/appcelerator/kroll/KrollWorker");
 
 	getJSPropertiesMethod = getMethodID(jsErrorClass, "getJSProperties", "()Ljava/util/HashMap;", false);
 	classGetNameMethod = getMethodID(classClass, "getName", "()Ljava/lang/String;", false);
@@ -371,6 +378,7 @@ void JNIUtil::initCache()
 	stackTraceElementToStringMethod = getMethodID(stackTraceElementClass, "toString", "()Ljava/lang/String;", false);
 
 	v8ObjectPtrField = getFieldID(v8ObjectClass, "ptr", "J");
+	v8PromiseInitMethod = getMethodID(v8PromiseClass, "<init>", "(J)V", false);
 	v8ObjectInitMethod = getMethodID(v8ObjectClass, "<init>", "(J)V", false);
 	v8FunctionInitMethod = getMethodID(v8FunctionClass, "<init>", "(J)V", false);
 
@@ -412,6 +420,9 @@ void JNIUtil::initCache()
 	krollAssetHelperReadAssetMethod = getMethodID(krollAssetHelperClass, "readAsset", "(Ljava/lang/String;)Ljava/lang/String;", true);
 
 	krollLoggingLogWithDefaultLoggerMethod = getMethodID(krollLoggingClass, "logWithDefaultLogger", "(ILjava/lang/String;)V", true);
+
+	krollWorkerCloseMethod = getMethodID(krollWorkerClass, "globalClose", "()V");
+	krollWorkerPostMessageMethod = getMethodID(krollWorkerClass, "globalPostMessage", "(Ljava/lang/Object;)V");
 
 	jfieldID undefinedObjectField = env->GetStaticFieldID(krollRuntimeClass, "UNDEFINED", "Ljava/lang/Object;");
 	undefinedObject = env->NewGlobalRef(env->GetStaticObjectField(krollRuntimeClass, undefinedObjectField));

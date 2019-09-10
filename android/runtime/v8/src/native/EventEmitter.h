@@ -9,6 +9,8 @@
 #ifndef EVENT_EMITTER_H
 #define EVENT_EMITTER_H
 
+#include <map>
+
 #include <v8.h>
 
 #include "NativeObject.h"
@@ -30,15 +32,12 @@ using v8::FunctionCallbackInfo;
 class EventEmitter : public NativeObject
 {
 public:
-	static Persistent<String> emitSymbol;
+	static std::map<v8::Isolate *, Persistent<FunctionTemplate>> constructorTemplate;
+	static std::map<v8::Isolate *, Persistent<String>> emitSymbol;
 
 	static void eventEmitterConstructor(const FunctionCallbackInfo<Value>& args);
-	static void initTemplate(Local<Context> context);
-	static void dispose();
-
-	static Persistent<FunctionTemplate> constructorTemplate;
-
-	bool emit(Local<String> event, int argc, Local<Value> *argv);
+	static void initTemplate(v8::Isolate* isolate);
+	static void dispose(v8::Isolate*);
 
 protected:
 	EventEmitter()

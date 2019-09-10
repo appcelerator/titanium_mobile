@@ -7,6 +7,7 @@
 #ifndef V8_UTIL_H
 #define V8_UTIL_H
 
+#include <map>
 #include <stdio.h>
 #include <v8.h>
 
@@ -148,7 +149,7 @@ public:
 	static v8::Local<v8::String> jsonStringify(v8::Isolate* isolate, v8::Local<v8::Value> value);
 	static bool constructorNameMatches(v8::Isolate* isolate, v8::Local<v8::Object>, const char* name);
 	static bool isNaN(v8::Isolate* isolate, v8::Local<v8::Value> value);
-	static void dispose();
+	static void dispose(v8::Isolate* isolate);
 	static std::string stackTraceString(v8::Isolate* isolate, v8::Local<v8::StackTrace> frames);
 };
 

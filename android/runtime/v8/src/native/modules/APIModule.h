@@ -8,6 +8,7 @@
 #ifndef API_MODULE_H
 #define API_MODULE_H
 
+#include <map>
 #include <v8.h>
 
 namespace titanium {
@@ -37,7 +38,7 @@ public:
 
 private:
 	static void logInternal(int logLevel, const char *messageTag, const char *message);
-	static Persistent<FunctionTemplate> constructorTemplate;
+	static std::map<Isolate *, Persistent<FunctionTemplate>> constructorTemplate;
 	static Local<String> combineLogMessages(const FunctionCallbackInfo<Value>& args, int startIndex=0);
 	static void getApiName(const FunctionCallbackInfo<Value>& args);
 	static void getter_apiName(Local<Name> name, const PropertyCallbackInfo<Value>& args);

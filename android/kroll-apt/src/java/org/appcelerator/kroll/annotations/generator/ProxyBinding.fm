@@ -217,6 +217,13 @@ namespace ${ns?lower_case} {
 </#function>
 
 <#assign typeInfo = {
+	"org.appcelerator.kroll.KrollPromise":{
+		"jsType":"Promise",
+		"jvalue":"l",
+		"jsToJavaConverter":"jsObjectToJavaPromise",
+		"typeValidation":false,
+		"defaultValue": "null"
+	},
 	"org.appcelerator.kroll.KrollProxy":{
 		"jsType":"Object",
 		"jsConvertType":"Value",
@@ -438,7 +445,7 @@ namespace ${ns?lower_case} {
 
 <#macro listMethodArguments args>
 	<#list args as arg>
-		<#nested arg_index, getTypeInfo(arg.type), arg.type, (arg.optional?? && arg.optional)>
+		<#nested arg_index, getTypeInfo(arg.type), arg.type, (arg.optional?? && arg.optional), (arg?is_last)>
 	</#list>
 </#macro>
 
@@ -518,7 +525,11 @@ fails, a JS exception is returned.
 	</#if>
 <#t>
 	<#local current_arg = "arg_" + index>
-	<#if info.jsType == "Value">
+	<#if info.jsType == "Promise">
+		<#local coerced = false>
+		<#local type = "auto">
+		<#local valueExpr = expr>
+	<#elseif info.jsType == "Value">
 		<#local coerced = false>
 		<#local type = "Local<Value>">
 		<#local valueExpr = expr>
@@ -534,6 +545,21 @@ fails, a JS exception is returned.
 		<#local coerced = true>
 		<#local type = "MaybeLocal<" + info.jsType + ">">
 		<#local valueExpr = expr + "->To" + info.jsType + "(context)">
+	</#if>
+	<#if info.jsType == "Promise">
+	TryCatch tryCatch(isolate);
+	Local<Promise::Resolver> nativeObject;
+	auto maybeResolver = ${valueExpr};
+	if (!maybeResolver.ToLocal(&nativeObject)) {
+		titanium::V8Util::fatalException(isolate, tryCatch);
+		return;
+	}
+	${type} ${current_arg} = nativeObject;
+	jArguments[${index}].${info.jvalue} =
+		titanium::TypeConverter::${info.jsToJavaConverter}(
+						isolate,
+						env, ${current_arg});
+		<#return>
 	</#if>
 	if (!${expr}->IsNull()) {
 	<#if coerced>
@@ -598,9 +624,14 @@ fails, a JS exception is returned.
 	<#-- Verify the correct argument count was provided. -->
 	<@Proxy.getRequiredArgumentCount args=args ; requiredCount>
 	<#if requiredCount &gt; 0>
-	if (args.Length() < ${requiredCount}) {
+		<#if method.isAsync>
+			<#local realRequiredCount=requiredCount-1 >
+		<#else>
+			<#local realRequiredCount=requiredCount >
+		</#if>
+	if (args.Length() < ${realRequiredCount}) {
 		char errorStringBuffer[100];
-		sprintf(errorStringBuffer, "${method.apiName}: Invalid number of arguments. Expected ${requiredCount} but got %d", args.Length());
+		sprintf(errorStringBuffer, "${method.apiName}: Invalid number of arguments. Expected ${realRequiredCount} but got %d", args.Length());
 		titanium::JSException::Error(isolate, errorStringBuffer);
 		return;
 	}
@@ -620,15 +651,16 @@ fails, a JS exception is returned.
 	<#if method.hasInvocation>
 	Local<Object> scopeVars = args[0]->ToObject(context).ToLocalChecked(); // FIXME handle when empty!
 	jstring sourceUrl = titanium::TypeConverter::jsValueToJavaString(isolate, env,
-		scopeVars->Get(context, Proxy::sourceUrlSymbol.Get(isolate)).FromMaybe(String::Empty(isolate).As<Value>())); // FIXME Default to app.js?
+		scopeVars->Get(context, Proxy::sourceUrlSymbolMap[isolate].Get(isolate)).FromMaybe(String::Empty(isolate).As<Value>())); // FIXME Default to app.js?
 	jArguments[0].l = env->NewObject(titanium::JNIUtil::krollInvocationClass,
 		titanium::JNIUtil::krollInvocationInitMethod, sourceUrl);
 	env->DeleteLocalRef(sourceUrl);
 	</#if>
 
-	<@Proxy.listMethodArguments args=args ; index, info, type, isOptional>
-
-	<#if type != "org.appcelerator.kroll.KrollInvocation">
+	<@Proxy.listMethodArguments args=args ; index, info, type, isOptional, isLast>
+	<#if method.isAsync && isLast>
+	<@Proxy.verifyAndConvertArgument expr="v8::Promise::Resolver::New(context)" index=index info=info logOnly=false isOptional=isOptional/>
+	<#elseif type != "org.appcelerator.kroll.KrollInvocation">
 		<#if index = varArgsIndex>
 			<@Proxy.convertToVarArgs args=args start=index/>
 		<#else>
@@ -673,19 +705,23 @@ Outputs the complete statement that performs the JNI call and
 stores the return value in "result". A nested section can
 beprovided to handle the result.
 ---------------------------------------------------------------->
-<#macro callJNIMethod methodArgs hasInvocation returnType methodID jobjectVar argsVar hasResult>
+<#macro callJNIMethod methodArgs hasInvocation isAsync returnType methodID jobjectVar argsVar hasResult>
 	<#local info = getTypeInfo(returnType)
 			callExpr = "Call${info.javaCallMethodType}MethodA"
 			argExpr = "${jobjectVar}, ${methodID}, ${argsVar}"
 			resultExpr = "${info.javaReturnType} jResult = (${info.javaReturnType})">
 	<#if hasResult>
+		<#if isAsync>
+	auto resolver = v8::Promise::Resolver::New(isolate);
+	auto promise = resolver->GetPromise();
+		<#else>
 	${resultExpr}env->${callExpr}(${argExpr});
 
-	<#local jsType = info.jsType>
-	<#if info?keys?seq_contains("jsConvertType")>
-		<#local jsType = info.jsConvertType>
-	</#if>
-
+			<#local jsType = info.jsType>
+			<#if info?keys?seq_contains("jsConvertType")>
+				<#local jsType = info.jsConvertType>
+			</#if>
+		</#if>
 	<#else>
 	env->${callExpr}(${argExpr});
 	</#if>
@@ -722,7 +758,7 @@ beprovided to handle the result.
 </#macro>
 
 <#macro initJNIEnv>
-	JNIEnv *env = titanium::JNIScope::getEnv();
+	JNIEnv *env = titanium::JNIUtil::getJNIEnv();
 	if (!env) {
 		titanium::JSException::GetJNIEnvironmentError(isolate);
 		return;

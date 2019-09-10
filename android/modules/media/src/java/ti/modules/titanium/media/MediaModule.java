@@ -24,6 +24,7 @@ import java.util.List;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.util.TiTempFileHelper;
@@ -532,7 +533,8 @@ public class MediaModule extends KrollModule implements Handler.Callback
 	}
 
 	@Kroll.method
-	public void requestCameraPermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback)
+	public void requestCameraPermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback,
+										 KrollPromise promise)
 	{
 		if (hasCameraPermissions()) {
 			return;
@@ -550,20 +552,21 @@ public class MediaModule extends KrollModule implements Handler.Callback
 		}
 
 		TiBaseActivity.registerPermissionRequestCallback(TiC.PERMISSION_CODE_CAMERA, permissionCallback,
-														 getKrollObject());
+														 getKrollObject(), promise);
 		Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
 		currentActivity.requestPermissions(permissions, TiC.PERMISSION_CODE_CAMERA);
 	}
 
 	@Kroll.method
-	public void requestAudioRecorderPermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback)
+	public void requestAudioRecorderPermissions(@Kroll.argument(optional = true) KrollFunction permissionCallback,
+												KrollPromise promise)
 	{
 		if (hasAudioRecorderPermissions()) {
 			return;
 		}
 		String[] permissions = new String[] { Manifest.permission.RECORD_AUDIO };
 		TiBaseActivity.registerPermissionRequestCallback(TiC.PERMISSION_CODE_MICROPHONE, permissionCallback,
-														 getKrollObject());
+														 getKrollObject(), promise);
 		Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
 		currentActivity.requestPermissions(permissions, TiC.PERMISSION_CODE_MICROPHONE);
 	}

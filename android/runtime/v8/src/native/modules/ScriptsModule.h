@@ -7,6 +7,7 @@
 #ifndef SCRIPTS_MODULE_H
 #define SCRIPTS_MODULE_H
 
+#include <map>
 #include <v8.h>
 #include "../NativeObject.h"
 
@@ -45,7 +46,7 @@ public:
 
 	void Dispose();
 
-	static Persistent<ObjectTemplate> global_template;
+	static std::map<Isolate *, Persistent<ObjectTemplate>> global_template;
 
 protected:
 	Persistent<Context> context_;
@@ -74,7 +75,7 @@ public:
 	template<EvalInputFlags input_flag, EvalContextFlags context_flag, EvalOutputFlags output_flag>
 	static void EvalMachine(const FunctionCallbackInfo<Value>& args);
 
-	static Persistent<FunctionTemplate> constructor_template;
+	static std::map<Isolate *, Persistent<FunctionTemplate>> constructor_template;
 
 	static void New(const FunctionCallbackInfo<Value>& args);
 	static void CreateContext(const FunctionCallbackInfo<Value>& args);

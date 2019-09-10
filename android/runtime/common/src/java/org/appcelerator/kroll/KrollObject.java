@@ -27,12 +27,24 @@ public abstract class KrollObject implements Handler.Callback
 
 	protected HashMap<String, Boolean> hasListenersForEventType = new HashMap<String, Boolean>();
 	protected Handler handler;
+	private volatile long threadId;
 
 	private WeakReference<KrollProxySupport> proxySupport;
 
 	public KrollObject()
 	{
-		handler = new Handler(TiMessenger.getRuntimeMessenger().getLooper(), this);
+		threadId = Thread.currentThread().getId();
+		handler = new Handler(TiMessenger.getMessenger(threadId).getLooper(), this);
+	}
+
+	public long getThreadId()
+	{
+		return threadId;
+	}
+
+	public void setThreadId(long id)
+	{
+		this.threadId = id;
 	}
 
 	/**
@@ -114,11 +126,11 @@ public abstract class KrollObject implements Handler.Callback
 	public abstract Object callProperty(String propertyName, Object[] args);
 
 	/**
-	 * Releases this KrollObject, that is, removes event listeners and any associated native views or content.	
+	 * Releases this KrollObject, that is, removes event listeners and any associated native views or content.
 	 */
 	protected void release()
 	{
-		if (KrollRuntime.getInstance().isRuntimeThread()) {
+		if (KrollRuntime.getInstance().isOriginThreadForObject(this)) {
 			doRelease();
 
 		} else {
@@ -129,7 +141,7 @@ public abstract class KrollObject implements Handler.Callback
 
 	public void setWindow(Object windowProxyObject)
 	{
-		if (KrollRuntime.getInstance().isRuntimeThread()) {
+		if (KrollRuntime.getInstance().isOriginThreadForObject(this)) {
 			doSetWindow(windowProxyObject);
 
 		} else {

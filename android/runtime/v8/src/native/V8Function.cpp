@@ -28,11 +28,16 @@ extern "C" {
  * Method:    nativeInvoke
  * Signature: (JJ[Ljava/lang/Object)V
  */
-JNIEXPORT jobject JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Function_nativeInvoke(
-	JNIEnv *env, jobject caller, jlong thisPointer, jlong functionPointer, jobjectArray functionArguments)
+JNIEXPORT jobject JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Function_nativeInvoke
+	(JNIEnv *env, jobject caller, jlong thisPointer, jlong functionPointer, jobjectArray functionArguments)
 {
-	HandleScope scope(V8Runtime::v8_isolate);
-	titanium::JNIScope jniScope(env);
+	pid_t threadId = gettid();
+	Isolate* isolate = V8Runtime::thread_isolateMap[threadId];
+	if (isolate == NULL) {
+		LOGE(TAG, "!!!Received a bad thread id (%i). Returning undefined.", threadId);
+		return JNIUtil::undefinedObject;
+	}
+	HandleScope scope(isolate);
 
 	// construct this from pointer
 	if (thisPointer == 0) {
@@ -40,7 +45,7 @@ JNIEXPORT jobject JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Function_nati
 		return JNIUtil::undefinedObject;
 	}
 	titanium::Proxy* proxy = (titanium::Proxy*) thisPointer;
-	Local<Object> thisObject = proxy->handle(V8Runtime::v8_isolate);
+	Local<Object> thisObject = proxy->handle(isolate);
 
 	// construct function from "pointer" - we used to use pointers to Persistent to re-construct Functions
 	// But that was a _BAD_ idea because V8 moves handles around as GC runs, resulting in the stored memory address being invalid
@@ -51,16 +56,16 @@ JNIEXPORT jobject JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Function_nati
 		return JNIUtil::undefinedObject;
 	}
 	Persistent<Function, CopyablePersistentTraits<Function>> persistentJSFunction = TypeConverter::functions.at(functionPointer);
-	Local<Function> jsFunction = persistentJSFunction.Get(V8Runtime::v8_isolate);
+	Local<Function> jsFunction = persistentJSFunction.Get(isolate);
 
 	// create function arguments
 	int length;
 	v8::Local<v8::Value>* jsFunctionArguments =
-		TypeConverter::javaObjectArrayToJsArguments(V8Runtime::v8_isolate, env, functionArguments, &length);
+		TypeConverter::javaObjectArrayToJsArguments(isolate, env, functionArguments, &length);
 
 	// call into the JS function with the provided argument
-	TryCatch tryCatch(V8Runtime::v8_isolate);
-	MaybeLocal<Value> object = jsFunction->Call(V8Runtime::v8_isolate->GetCurrentContext(), thisObject, length, jsFunctionArguments);
+	TryCatch tryCatch(isolate);
+	MaybeLocal<Value> object = jsFunction->Call(isolate->GetCurrentContext(), thisObject, length, jsFunctionArguments);
 
 	// make sure to delete the arguments since the arguments array is built on the heap
 	if (jsFunctionArguments) {
@@ -68,15 +73,15 @@ JNIEXPORT jobject JNICALL Java_org_appcelerator_kroll_runtime_v8_V8Function_nati
 	}
 
 	if (tryCatch.HasCaught()) {
-		V8Util::openJSErrorDialog(V8Runtime::v8_isolate, tryCatch);
-		V8Util::reportException(V8Runtime::v8_isolate, tryCatch);
+		V8Util::openJSErrorDialog(isolate, tryCatch);
+		V8Util::reportException(isolate, tryCatch);
 	} // if exception, object should be empty handle...so returns undefined
 	if (object.IsEmpty()) {
 		return JNIUtil::undefinedObject;
 	}
 
 	bool isNew;
-	return TypeConverter::jsValueToJavaObject(V8Runtime::v8_isolate, env, object.ToLocalChecked(), &isNew);
+	return TypeConverter::jsValueToJavaObject(isolate, env, object.ToLocalChecked(), &isNew);
 }
 
 JNIEXPORT void JNICALL

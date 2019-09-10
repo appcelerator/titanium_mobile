@@ -16,6 +16,7 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.KrollObject;
+import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.common.Log;
@@ -109,12 +110,15 @@ public abstract class TiBaseActivity extends AppCompatActivity implements TiActi
 		private final Integer requestCode;
 		private final KrollObject context;
 		private final KrollFunction callback;
+		private final KrollPromise promise;
 
-		public PermissionContextData(Integer requestCode, KrollFunction callback, KrollObject context)
+		public PermissionContextData(Integer requestCode, KrollFunction callback, KrollObject context,
+									 KrollPromise promise)
 		{
 			this.requestCode = requestCode;
 			this.callback = callback;
 			this.context = context;
+			this.promise = promise;
 		}
 
 		public Integer getRequestCode()
@@ -130,6 +134,11 @@ public abstract class TiBaseActivity extends AppCompatActivity implements TiActi
 		public KrollObject getContext()
 		{
 			return context;
+		}
+
+		public KrollPromise getPromise()
+		{
+			return promise;
 		}
 	}
 
@@ -431,12 +440,16 @@ public abstract class TiBaseActivity extends AppCompatActivity implements TiActi
 			}
 		}
 
+		KrollPromise promise = cbd.getPromise();
 		KrollDict response = new KrollDict();
 
 		if (deniedPermissions.isEmpty()) {
 			response.putCodeAndMessage(0, null);
+			promise.resolve(response);
 		} else {
-			response.putCodeAndMessage(-1, "Permission(s) denied: " + deniedPermissions);
+			String message = "Permission(s) denied: " + deniedPermissions;
+			response.putCodeAndMessage(-1, message);
+			promise.reject(response);
 		}
 
 		KrollFunction callback = cbd.getCallback();
@@ -446,8 +459,6 @@ public abstract class TiBaseActivity extends AppCompatActivity implements TiActi
 				Log.w(TAG, "Permission callback context object is null");
 			}
 			callback.callAsync(context, response);
-		} else {
-			Log.w(TAG, "Permission callback function has not been set");
 		}
 	}
 
@@ -460,11 +471,9 @@ public abstract class TiBaseActivity extends AppCompatActivity implements TiActi
 	 * @param context KrollObject as required by async callback pattern
 	 */
 	public static void registerPermissionRequestCallback(Integer requestCode, KrollFunction callback,
-														 KrollObject context)
+														 KrollObject context, KrollPromise promise)
 	{
-		if (callback != null && context != null) {
-			callbackDataByPermission.put(requestCode, new PermissionContextData(requestCode, callback, context));
-		}
+		callbackDataByPermission.put(requestCode, new PermissionContextData(requestCode, callback, context, promise));
 	}
 
 	protected void setFullscreen(boolean fullscreen)

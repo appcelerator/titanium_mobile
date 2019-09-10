@@ -7,6 +7,8 @@
 #ifndef PROXY_H
 #define PROXY_H
 
+#include <map>
+
 #include <jni.h>
 #include <v8.h>
 
@@ -23,10 +25,15 @@ public:
 		kInternalFieldCount // Just one internal field on proxies, and it wraps the java object
 	};
 
+	static std::map<v8::Isolate *, v8::Persistent<v8::FunctionTemplate>> baseProxyTemplateMap;
+	static std::map<v8::Isolate *, v8::Persistent<v8::String>> javaClassSymbolMap;
+	static std::map<v8::Isolate *, v8::Persistent<v8::String>> constructorSymbolMap;
+	static std::map<v8::Isolate *, v8::Persistent<v8::String>> inheritSymbolMap;
+	static std::map<v8::Isolate *, v8::Persistent<v8::String>> propertiesSymbolMap;
+	static std::map<v8::Isolate *, v8::Persistent<v8::String>> lengthSymbolMap;
+	static std::map<v8::Isolate *, v8::Persistent<v8::String>> sourceUrlSymbolMap;
+	static v8::Persistent<v8::String> inheritSymbol;
 	static v8::Persistent<v8::FunctionTemplate> baseProxyTemplate;
-	static v8::Persistent<v8::String> javaClassSymbol, constructorSymbol;
-	static v8::Persistent<v8::String> inheritSymbol, propertiesSymbol;
-	static v8::Persistent<v8::String> lengthSymbol, sourceUrlSymbol;
 
 	Proxy();
 

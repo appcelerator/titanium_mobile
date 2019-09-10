@@ -20,9 +20,11 @@ import java.util.Stack;
 
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollModule;
+import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiPlatformHelper;
@@ -176,10 +178,15 @@ public class TitaniumModule extends KrollModule
 			}
 		}
 
-		public void cancel()
+		public boolean cancel()
 		{
+			long threadId = handler.getLooper().getThread().getId();
+			if (Thread.currentThread().getId() != threadId) {
+				return false;
+			}
 			handler.removeCallbacks(this);
 			canceled = true;
+			return true;
 		}
 	}
 
@@ -211,13 +218,15 @@ public class TitaniumModule extends KrollModule
 
 	public static void cancelTimers()
 	{
-		final int timerCount = activeTimers.size();
+		int timerCount = activeTimers.size();
 		for (int i = 0; i < timerCount; i++) {
 			Timer timer = activeTimers.valueAt(i);
-			timer.cancel();
+			if (timer.cancel()) {
+				activeTimers.removeAt(i);
+				timerCount--;
+				i--;
+			};
 		}
-
-		activeTimers.clear();
 	}
 
 	// clang-format off
