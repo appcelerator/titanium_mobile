@@ -6,6 +6,12 @@
  */
 package ti.modules.titanium.ui.widget;
 
+import android.content.Context;
+import android.support.v7.widget.CardView;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.Log;
@@ -14,20 +20,18 @@ import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiCompositeLayout;
-import org.appcelerator.titanium.view.TiUIView;
 import org.appcelerator.titanium.view.TiCompositeLayout.LayoutArrangement;
+import org.appcelerator.titanium.view.TiGradientDrawable;
+import org.appcelerator.titanium.view.TiUIView;
 
-import android.content.Context;
-import android.support.v7.widget.CardView;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import java.util.HashMap;
 
 public class TiUICardView extends TiUIView
 {
 	public int paddingLeft, paddingTop, paddingRight, paddingBottom;
 
 	private static final String TAG = "TiUICardView";
+	private final TiCardView cardView;
 
 	public class TiUICardViewLayout extends TiCompositeLayout
 	{
@@ -78,11 +82,21 @@ public class TiUICardView extends TiUIView
 	public TiUICardView(final TiViewProxy proxy)
 	{
 		super(proxy);
+		LayoutArrangement arrangement = LayoutArrangement.DEFAULT;
 
-		// generate native view
-		if (this.nativeView == null) {
-			processProperties(getProxy().getProperties());
+		KrollDict d = proxy.getProperties();
+		if (d.containsKey(TiC.PROPERTY_LAYOUT) && d.getString(TiC.PROPERTY_LAYOUT).equals(TiC.LAYOUT_VERTICAL)) {
+			arrangement = LayoutArrangement.VERTICAL;
+		} else if (d.containsKey(TiC.PROPERTY_LAYOUT)
+				   && d.getString(TiC.PROPERTY_LAYOUT).equals(TiC.LAYOUT_HORIZONTAL)) {
+			arrangement = LayoutArrangement.HORIZONTAL;
 		}
+		// we create the view here
+		this.cardView = new TiCardView(proxy.getActivity(), arrangement);
+		this.cardView.setPadding(0, 0, 0, 0);
+		this.cardView.setFocusable(false);
+
+		setNativeView(cardView);
 	}
 
 	public TiUICardViewLayout getLayout()
@@ -137,49 +151,33 @@ public class TiUICardView extends TiUIView
 	{
 		super.processProperties(d);
 
-		// we create the view here
-		View view = null;
-		LayoutArrangement arrangement = LayoutArrangement.DEFAULT;
-
-		if (d.containsKey(TiC.PROPERTY_LAYOUT) && d.getString(TiC.PROPERTY_LAYOUT).equals(TiC.LAYOUT_VERTICAL)) {
-			arrangement = LayoutArrangement.VERTICAL;
-		} else if (d.containsKey(TiC.PROPERTY_LAYOUT)
-				   && d.getString(TiC.PROPERTY_LAYOUT).equals(TiC.LAYOUT_HORIZONTAL)) {
-			arrangement = LayoutArrangement.HORIZONTAL;
-		}
-
-		view = new TiCardView(getProxy().getActivity(), arrangement);
-		view.setPadding(0, 0, 0, 0);
-		view.setFocusable(false);
-		TiCardView cardview = (TiCardView) view;
-
-		if (d.containsKey(TiC.PROPERTY_BACKGROUND_COLOR)) {
-			cardview.setCardBackgroundColor(TiConvert.toColor(d, TiC.PROPERTY_BACKGROUND_COLOR));
+		if (d.containsKeyAndNotNull(TiC.PROPERTY_BACKGROUND_GRADIENT)) {
+			setGradientBackground(d.getKrollDict(TiC.PROPERTY_BACKGROUND_GRADIENT));
 		}
 
 		if (d.containsKey(TiC.PROPERTY_BORDER_RADIUS)) {
 			float radius = 0;
 			TiDimension radiusDim = TiConvert.toTiDimension(d.get(TiC.PROPERTY_BORDER_RADIUS), TiDimension.TYPE_WIDTH);
 			if (radiusDim != null) {
-				radius = (float) radiusDim.getPixels(cardview);
+				radius = (float) radiusDim.getPixels(getNativeView());
 			}
-			cardview.setRadius(radius);
+			this.cardView.setRadius(radius);
 		}
 
 		if (d.containsKey(TiC.PROPERTY_USE_COMPAT_PADDING)) {
-			cardview.setUseCompatPadding(TiConvert.toBoolean(d, TiC.PROPERTY_USE_COMPAT_PADDING, false));
+			this.cardView.setUseCompatPadding(TiConvert.toBoolean(d, TiC.PROPERTY_USE_COMPAT_PADDING, false));
 		}
 
 		if (d.containsKey(TiC.PROPERTY_ELEVATION)) {
-			cardview.setCardElevation(TiConvert.toFloat(d.get(TiC.PROPERTY_ELEVATION)));
+			this.cardView.setCardElevation(TiConvert.toFloat(d.get(TiC.PROPERTY_ELEVATION)));
 		}
 
 		if (d.containsKey(TiC.PROPERTY_MAX_ELEVATION)) {
-			cardview.setMaxCardElevation(TiConvert.toFloat(d.get(TiC.PROPERTY_MAX_ELEVATION)));
+			this.cardView.setMaxCardElevation(TiConvert.toFloat(d.get(TiC.PROPERTY_MAX_ELEVATION)));
 		}
 
 		if (d.containsKey(TiC.PROPERTY_PREVENT_CORNER_OVERLAP)) {
-			cardview.setPreventCornerOverlap(TiConvert.toBoolean(d, TiC.PROPERTY_PREVENT_CORNER_OVERLAP, false));
+			this.cardView.setPreventCornerOverlap(TiConvert.toBoolean(d, TiC.PROPERTY_PREVENT_CORNER_OVERLAP, false));
 		}
 
 		if (d.containsKey(TiC.PROPERTY_PADDING)) {
@@ -187,7 +185,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimRight =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING)), TiDimension.TYPE_RIGHT);
 			if (radiusDimRight != null) {
-				radiusRight = (float) radiusDimRight.getPixels(cardview);
+				radiusRight = (float) radiusDimRight.getPixels(this.cardView);
 			}
 			paddingRight = (int) radiusRight;
 
@@ -195,7 +193,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimBottom =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING)), TiDimension.TYPE_BOTTOM);
 			if (radiusDimBottom != null) {
-				radiusBottom = (float) radiusDimBottom.getPixels(cardview);
+				radiusBottom = (float) radiusDimBottom.getPixels(this.cardView);
 			}
 			paddingBottom = (int) radiusBottom;
 
@@ -203,7 +201,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimLeft =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING)), TiDimension.TYPE_LEFT);
 			if (radiusDimLeft != null) {
-				radiusLeft = (float) radiusDimLeft.getPixels(cardview);
+				radiusLeft = (float) radiusDimLeft.getPixels(this.cardView);
 			}
 			paddingLeft = (int) radiusLeft;
 
@@ -211,7 +209,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimTop =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING)), TiDimension.TYPE_TOP);
 			if (radiusDimTop != null) {
-				radiusTop = (float) radiusDimTop.getPixels(cardview);
+				radiusTop = (float) radiusDimTop.getPixels(this.cardView);
 			}
 			paddingTop = (int) radiusTop;
 		}
@@ -221,7 +219,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimBottom = TiConvert.toTiDimension(
 				TiConvert.toString(d.get(TiC.PROPERTY_PADDING_BOTTOM)), TiDimension.TYPE_BOTTOM);
 			if (radiusDimBottom != null) {
-				radiusBottom = (float) radiusDimBottom.getPixels(cardview);
+				radiusBottom = (float) radiusDimBottom.getPixels(this.cardView);
 			}
 			paddingBottom = (int) radiusBottom;
 		}
@@ -231,7 +229,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimLeft =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING_LEFT)), TiDimension.TYPE_LEFT);
 			if (radiusDimLeft != null) {
-				radiusLeft = (float) radiusDimLeft.getPixels(cardview);
+				radiusLeft = (float) radiusDimLeft.getPixels(this.cardView);
 			}
 			paddingLeft = (int) radiusLeft;
 		}
@@ -241,7 +239,7 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimRight =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING_RIGHT)), TiDimension.TYPE_RIGHT);
 			if (radiusDimRight != null) {
-				radiusRight = (float) radiusDimRight.getPixels(cardview);
+				radiusRight = (float) radiusDimRight.getPixels(this.cardView);
 			}
 			paddingRight = (int) radiusRight;
 		}
@@ -251,14 +249,12 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimTop =
 				TiConvert.toTiDimension(TiConvert.toString(d.get(TiC.PROPERTY_PADDING_TOP)), TiDimension.TYPE_TOP);
 			if (radiusDimTop != null) {
-				radiusTop = (float) radiusDimTop.getPixels(cardview);
+				radiusTop = (float) radiusDimTop.getPixels(this.cardView);
 			}
 			paddingTop = (int) radiusTop;
 		}
 
-		cardview.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-
-		setNativeView(view);
+		this.cardView.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 	}
 
 	@Override
@@ -268,33 +264,31 @@ public class TiUICardView extends TiUIView
 			Log.d(TAG, "Property: " + key + " old: " + oldValue + " new: " + newValue, Log.DEBUG_MODE);
 		}
 
-		TiCardView cardview = ((TiCardView) getNativeView());
-
-		if (key.equals(TiC.PROPERTY_BACKGROUND_COLOR)) {
-			cardview.setCardBackgroundColor(TiConvert.toColor(TiConvert.toString(newValue)));
-			cardview.requestLayout();
+		if (key.equals(TiC.PROPERTY_BACKGROUND_GRADIENT)) {
+			setGradientBackground(new KrollDict(((HashMap) newValue)));
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_BORDER_RADIUS)) {
 			float radius = 0;
 			TiDimension radiusDim = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
 			if (radiusDim != null) {
-				radius = (float) radiusDim.getPixels(cardview);
+				radius = (float) radiusDim.getPixels(this.cardView);
 			}
-			cardview.setRadius(radius);
-			cardview.requestLayout();
+			this.cardView.setRadius(radius);
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_ELEVATION)) {
-			cardview.setCardElevation(TiConvert.toFloat(newValue));
-			cardview.requestLayout();
+			this.cardView.setCardElevation(TiConvert.toFloat(newValue));
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_PREVENT_CORNER_OVERLAP)) {
-			cardview.setPreventCornerOverlap(TiConvert.toBoolean(newValue, false));
-			cardview.requestLayout();
+			this.cardView.setPreventCornerOverlap(TiConvert.toBoolean(newValue, false));
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_USE_COMPAT_PADDING)) {
-			cardview.setUseCompatPadding(TiConvert.toBoolean(newValue, false));
-			cardview.requestLayout();
+			this.cardView.setUseCompatPadding(TiConvert.toBoolean(newValue, false));
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_PADDING)) {
 			float radiusRight = 0;
 			TiDimension radiusDimRight = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_RIGHT);
 			if (radiusDimRight != null) {
-				radiusRight = (float) radiusDimRight.getPixels(cardview);
+				radiusRight = (float) radiusDimRight.getPixels(this.cardView);
 			}
 			paddingRight = (int) radiusRight;
 
@@ -302,66 +296,72 @@ public class TiUICardView extends TiUIView
 			TiDimension radiusDimBottom =
 				TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_BOTTOM);
 			if (radiusDimBottom != null) {
-				radiusBottom = (float) radiusDimBottom.getPixels(cardview);
+				radiusBottom = (float) radiusDimBottom.getPixels(this.cardView);
 			}
 			paddingBottom = (int) radiusBottom;
 
 			float radiusLeft = 0;
 			TiDimension radiusDimLeft = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_LEFT);
 			if (radiusDimLeft != null) {
-				radiusLeft = (float) radiusDimLeft.getPixels(cardview);
+				radiusLeft = (float) radiusDimLeft.getPixels(this.cardView);
 			}
 			paddingLeft = (int) radiusLeft;
 
 			float radiusTop = 0;
 			TiDimension radiusDimTop = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_TOP);
 			if (radiusDimTop != null) {
-				radiusTop = (float) radiusDimTop.getPixels(cardview);
+				radiusTop = (float) radiusDimTop.getPixels(this.cardView);
 			}
 			paddingTop = (int) radiusTop;
 
-			cardview.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			cardview.requestLayout();
+			this.cardView.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_PADDING_BOTTOM)) {
 			float radiusBottom = 0;
 			TiDimension radiusDimBottom =
 				TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_BOTTOM);
 			if (radiusDimBottom != null) {
-				radiusBottom = (float) radiusDimBottom.getPixels(cardview);
+				radiusBottom = (float) radiusDimBottom.getPixels(this.cardView);
 			}
 			paddingBottom = (int) radiusBottom;
-			cardview.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			cardview.requestLayout();
+			this.cardView.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_PADDING_LEFT)) {
 			float radiusLeft = 0;
 			TiDimension radiusDimLeft = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_LEFT);
 			if (radiusDimLeft != null) {
-				radiusLeft = (float) radiusDimLeft.getPixels(cardview);
+				radiusLeft = (float) radiusDimLeft.getPixels(this.cardView);
 			}
 			paddingLeft = (int) radiusLeft;
-			cardview.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			cardview.requestLayout();
+			this.cardView.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_PADDING_RIGHT)) {
 			float radiusRight = 0;
 			TiDimension radiusDimRight = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_RIGHT);
 			if (radiusDimRight != null) {
-				radiusRight = (float) radiusDimRight.getPixels(cardview);
+				radiusRight = (float) radiusDimRight.getPixels(this.cardView);
 			}
 			paddingRight = (int) radiusRight;
-			cardview.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			cardview.requestLayout();
+			this.cardView.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			this.cardView.requestLayout();
 		} else if (key.equals(TiC.PROPERTY_PADDING_TOP)) {
 			float radiusTop = 0;
 			TiDimension radiusDimTop = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_TOP);
 			if (radiusDimTop != null) {
-				radiusTop = (float) radiusDimTop.getPixels(cardview);
+				radiusTop = (float) radiusDimTop.getPixels(this.cardView);
 			}
 			paddingTop = (int) radiusTop;
-			cardview.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			cardview.requestLayout();
+			this.cardView.setContentPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			this.cardView.requestLayout();
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
+	}
+
+	private void setGradientBackground(KrollDict gradientBackgroundProperties)
+	{
+		TiGradientDrawable tiGradientDrawable = new TiGradientDrawable(this.cardView, gradientBackgroundProperties);
+		this.cardView.setBackground(tiGradientDrawable);
 	}
 
 	@Override

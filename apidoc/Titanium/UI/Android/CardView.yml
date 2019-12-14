@@ -18,7 +18,8 @@ description: |
     CardView does not support <Titanium.UI.View.backgroundImage>, <Titanium.UI.View.borderColor>, or <Titanium.UI.View.backgroundGradient>.
 extends: Titanium.UI.View
 excludes:
-    properties: [backgroundImage, backgroundRepeat, borderColor, backgroundGradient]
+    properties: [backgroundImage, backgroundRepeat, borderColor, backgroundDisabledColor, backgroundSelectedColor,
+                backgroundFocusedColor, backgroundDisabledImage, backgroundSelectedImage, backgroundFocusedImage]
 since: "5.1.0"
 platforms: [android]
 
@@ -31,6 +32,7 @@ properties:
     type: String
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.backgroundColor](Titanium.UI.Android.CardView.backgroundColor) instead.
 
   - name: backgroundColor
@@ -45,6 +47,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.borderRadius](Titanium.UI.Android.CardView.borderRadius) instead.
 
   - name: borderRadius
@@ -57,6 +60,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.elevation](Titanium.UI.Android.CardView.elevation) instead.
 
   - name: elevation
@@ -70,6 +74,7 @@ properties:
     availability: creation
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.maxElevation](Titanium.UI.Android.CardView.maxElevation) instead.
 
   - name: maxElevation
@@ -86,6 +91,7 @@ properties:
     default: false
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.preventCornerOverlap](Titanium.UI.Android.CardView.preventCornerOverlap) instead.
 
   - name: preventCornerOverlap
@@ -102,6 +108,7 @@ properties:
     default: false
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.useCompatPadding](Titanium.UI.Android.CardView.useCompatPadding) instead.
 
   - name: useCompatPadding
@@ -115,6 +122,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.padding](Titanium.UI.Android.CardView.padding) instead.
 
   - name: padding
@@ -127,6 +135,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.paddingBottom](Titanium.UI.Android.CardView.paddingBottom) instead.
 
   - name: paddingBottom
@@ -139,6 +148,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.paddingLeft](Titanium.UI.Android.CardView.paddingLeft) instead.
 
   - name: paddingLeft
@@ -151,6 +161,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.paddingRight](Titanium.UI.Android.CardView.paddingRight) instead.
 
   - name: paddingRight
@@ -163,6 +174,7 @@ properties:
     type: Number
     deprecated:
       since: 5.1.2
+      removed: 6.0.0
       notes: Use [Titanium.UI.Android.CardView.paddingTop](Titanium.UI.Android.CardView.paddingTop) instead.
 
   - name: paddingTop
