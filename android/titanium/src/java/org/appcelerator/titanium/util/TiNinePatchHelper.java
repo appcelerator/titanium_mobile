@@ -19,43 +19,99 @@ import android.graphics.drawable.NinePatchDrawable;
 public class TiNinePatchHelper
 {
 
+	// Constants for writing 9 patch data from bitmap
+	// Each one represents on of the sides of the bitmap.
+	private final int BITMAP_SIDE_LEFT = 1;
+	private final int BITMAP_SIDE_TOP = 2;
+	private final int BITMAP_SIDE_RIGHT = 4;
+	private final int BITMAP_SIDE_BOTTOM = 8;
+
 	class SegmentColor
 	{
 		int index;
 		int color;
-	};
-
-	public Drawable process(Drawable d)
-	{
-		Drawable nd = d;
-
-		if (d instanceof BitmapDrawable) {
-			Bitmap b = ((BitmapDrawable) d).getBitmap();
-			if (b != null) {
-				if (isNinePatch(b)) {
-					byte[] newChunk = createChunk(b);
-					nd = new NinePatchDrawable(cropNinePatch(b), newChunk, new Rect(1, 1, 1, 1), "");
-				}
-			}
-		}
-
-		return nd;
 	}
 
 	public Drawable process(Bitmap b)
 	{
 		Drawable nd = null;
-
 		if (b != null) {
 			if (isNinePatch(b)) {
 				byte[] newChunk = createChunk(b);
-				nd = new NinePatchDrawable(cropNinePatch(b), newChunk, new Rect(1, 1, 1, 1), "");
+				Rect paddingRectUnscaled = processPadding(b);
+				nd = new NinePatchDrawable(null, cropNinePatch(b), newChunk, paddingRectUnscaled, "");
 			} else {
 				nd = new BitmapDrawable(b);
 			}
 		}
 
 		return nd;
+	}
+
+	private Rect processPadding(Bitmap b)
+	{
+		int left = 0;
+		int top = 0;
+		int right = 0;
+		int bottom = 0;
+
+		ArrayList<SegmentColor> xdivs = walkPath(b, BITMAP_SIDE_BOTTOM);
+		ArrayList<SegmentColor> ydivs = walkPath(b, BITMAP_SIDE_RIGHT);
+
+		// Setting multiple padding areas in 9Patch images results
+		// in content area defined by outermost pixels' indexes.
+		// All the indexes are subtracted by one to reflect the proper
+		// position in the cropped bitmap (without the 9Patch border)
+
+		if (xdivs.size() != 0) {
+			// leftmost pixel of the first padding area
+			left = xdivs.get(0).index - 1;
+			// rightmost pixel of the last padding area
+			right = b.getWidth() - (xdivs.get(xdivs.size() - 1).index - 1);
+		}
+
+		if (ydivs.size() != 0) {
+			// leftmost pixel of the first padding area
+			top = ydivs.get(0).index - 1;
+			// bottommost pixel of the last padding area
+			bottom = b.getHeight() - (ydivs.get(ydivs.size() - 1).index - 1);
+		}
+
+		return new Rect(left, top, right, bottom);
+	}
+
+	// Common function for walking the 9Patch border in all directions.
+	private ArrayList<SegmentColor> walkPath(Bitmap b, int side)
+	{
+
+		ArrayList<SegmentColor> result = new ArrayList<SegmentColor>();
+
+		int left = ((side >> 0) & 1);
+		int top = ((side >> 1) & 1);
+		int right = ((side >> 2) & 1);
+		int bottom = ((side >> 3) & 1);
+
+		int horizontalMovement = top | bottom;
+		int verticalMovement = left | right;
+
+		//last pixel for comparison condition
+		int last = b.getPixel((b.getWidth() - 1) * right, (b.getHeight() - 1) * bottom);
+
+		for (int i = 1; i < b.getWidth() * (horizontalMovement) + b.getHeight() * (verticalMovement); i++) {
+			// common movement condition
+			int p = b.getPixel(i * horizontalMovement + ((b.getWidth() - 1) * right),
+							   i * verticalMovement + ((b.getHeight() - 1) * bottom));
+
+			if (p != last) {
+				SegmentColor sc = new SegmentColor();
+				sc.index = i;
+				sc.color = last;
+				result.add(sc);
+				last = p;
+			}
+		}
+
+		return result;
 	}
 
 	private boolean isNinePatch(Bitmap b)
@@ -139,42 +195,13 @@ public class TiNinePatchHelper
 	byte[] createChunk(Bitmap b)
 	{
 		byte[] chunk = null;
-
-		int numXDivs = 0;
-		int numYDivs = 0;
 		int numColors = 1;
 
-		int last = b.getPixel(0, 0);
+		ArrayList<SegmentColor> xdivs = walkPath(b, BITMAP_SIDE_TOP);
+		int numXDivs = xdivs.size();
 
-		ArrayList<SegmentColor> xdivs = new ArrayList<SegmentColor>();
-		// Walk Top
-		for (int x = 1; x < b.getWidth(); x++) {
-			int p = b.getPixel(x, 0);
-			if (p != last) {
-				SegmentColor sc = new SegmentColor();
-				sc.index = x;
-				sc.color = last;
-				xdivs.add(sc);
-				numXDivs++;
-				last = p;
-			}
-		}
-
-		last = b.getPixel(0, 0);
-
-		// Walk left
-		ArrayList<SegmentColor> ydivs = new ArrayList<SegmentColor>();
-		for (int y = 1; y < b.getHeight(); y++) {
-			int p = b.getPixel(0, y);
-			if (p != last) {
-				SegmentColor sc = new SegmentColor();
-				sc.index = y;
-				sc.color = last;
-				ydivs.add(sc);
-				numYDivs++;
-				last = p;
-			}
-		}
+		ArrayList<SegmentColor> ydivs = walkPath(b, BITMAP_SIDE_LEFT);
+		int numYDivs = ydivs.size();
 
 		// Calculate Region Colors
 		ArrayList<Integer> colors = new ArrayList<Integer>();
@@ -225,18 +252,6 @@ public class TiNinePatchHelper
 		}
 
 		return chunk;
-	}
-
-	private int toInt(byte[] a, int offset)
-	{
-		int i = 0;
-
-		i |= a[offset];
-		i |= a[offset + 1] << 8;
-		i |= a[offset + 2] << 16;
-		i |= a[offset + 3] << 24;
-
-		return i;
 	}
 
 	private void toBytes(byte[] a, int offset, int v)
