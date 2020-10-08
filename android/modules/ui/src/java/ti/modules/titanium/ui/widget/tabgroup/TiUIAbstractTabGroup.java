@@ -211,7 +211,7 @@ public abstract class TiUIAbstractTabGroup extends TiUIView
 	 * Sets the tabsDisabled flag to whether the tabs navigation is enabled/disabled.
 	 * @param value boolean to set for the flag.
 	 */
-	public void disableTabNavigation(boolean value)
+	public void disableTabNavigation(boolean value, boolean animated)
 	{
 		this.tabsDisabled = value;
 		this.numTabsWhenDisabled = tabs.size();

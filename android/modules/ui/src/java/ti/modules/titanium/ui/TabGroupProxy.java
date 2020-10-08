@@ -27,29 +27,25 @@ import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiRHelper;
 import org.appcelerator.titanium.util.TiUIHelper;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Message;
+import android.view.LayoutInflater;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import ti.modules.titanium.ui.android.AndroidModule;
 import ti.modules.titanium.ui.widget.tabgroup.TiUIAbstractTabGroup;
 import ti.modules.titanium.ui.widget.tabgroup.TiUIBottomNavigationTabGroup;
 import ti.modules.titanium.ui.widget.tabgroup.TiUITabLayoutTabGroup;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Message;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import android.view.LayoutInflater;
-
 @Kroll.proxy(creatableInModule = UIModule.class,
-	propertyAccessors = {
-		TiC.PROPERTY_TABS_BACKGROUND_COLOR,
-		TiC.PROPERTY_TABS_BACKGROUND_SELECTED_COLOR,
-		TiC.PROPERTY_SWIPEABLE,
-		TiC.PROPERTY_EXIT_ON_CLOSE,
-		TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK
-})
+			 propertyAccessors = { TiC.PROPERTY_TABS_BACKGROUND_COLOR, TiC.PROPERTY_TABS_BACKGROUND_SELECTED_COLOR,
+								   TiC.PROPERTY_SWIPEABLE, TiC.PROPERTY_EXIT_ON_CLOSE,
+								   TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK })
 public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 {
 	private static final String TAG = "TabGroupProxy";
@@ -113,7 +109,8 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 			}
 			case MSG_DISABLE_TAB_NAVIGATION: {
 				AsyncResult result = (AsyncResult) msg.obj;
-				handleDisableTabNavigation(TiConvert.toBoolean(result.getArg()));
+				Object[] args = (Object[]) result.getArg();
+				handleDisableTabNavigation(TiConvert.toBoolean(args[0], false), TiConvert.toBoolean(args[1], false));
 				result.setResult(null);
 				return true;
 			}
@@ -129,22 +126,25 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 	}
 
 	@Kroll.method
-	public void disableTabNavigation(boolean disable)
+	public void disableTabNavigation(boolean disable, @Kroll.argument(optional = true) boolean animated)
 	{
+		boolean ani = TiConvert.toBoolean(animated, false);
+
 		if (TiApplication.isUIThread()) {
-			handleDisableTabNavigation(disable);
+			handleDisableTabNavigation(disable, ani);
 
 			return;
 		}
 
-		TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_DISABLE_TAB_NAVIGATION), disable);
+		Object[] obj = new Object[]{ disable, ani };
+		TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_DISABLE_TAB_NAVIGATION), obj);
 	}
 
-	private void handleDisableTabNavigation(boolean disable)
+	private void handleDisableTabNavigation(boolean disable, boolean animated)
 	{
 		TiUIAbstractTabGroup tabGroup = (TiUIAbstractTabGroup) view;
 		if (tabGroup != null) {
-			tabGroup.disableTabNavigation(disable);
+			tabGroup.disableTabNavigation(disable, animated);
 		}
 	}
 

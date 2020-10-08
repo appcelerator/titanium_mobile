@@ -52,9 +52,9 @@ public class TiUITabLayoutTabGroup extends TiUIAbstractTabGroup implements TabLa
 	 * @param disable
 	 */
 	@Override
-	public void disableTabNavigation(boolean disable)
+	public void disableTabNavigation(boolean disable, boolean animated)
 	{
-		super.disableTabNavigation(disable);
+		super.disableTabNavigation(disable, animated);
 
 		// Show/hide the tab bar.
 		this.mTabLayout.setVisibility(disable ? View.GONE : View.VISIBLE);

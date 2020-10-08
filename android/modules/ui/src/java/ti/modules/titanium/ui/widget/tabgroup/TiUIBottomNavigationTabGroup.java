@@ -6,6 +6,7 @@
  */
 package ti.modules.titanium.ui.widget.tabgroup;
 
+import java.util.ArrayList;
 import android.annotation.SuppressLint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -27,7 +28,16 @@ import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 
-import java.util.ArrayList;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewParent;
+
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomnavigation.LabelVisibilityMode;
 
 import ti.modules.titanium.ui.TabGroupProxy;
 import ti.modules.titanium.ui.TabProxy;
@@ -129,9 +139,9 @@ public class TiUIBottomNavigationTabGroup extends TiUIAbstractTabGroup implement
 	 * @param disable
 	 */
 	@Override
-	public void disableTabNavigation(boolean disable)
+	public void disableTabNavigation(boolean disable, boolean animated)
 	{
-		super.disableTabNavigation(disable);
+		super.disableTabNavigation(disable, animated);
 
 		// Resize the view pager (the tab's content) to compensate for shown/hidden tab bar.
 		// Not applicable if Titanium "extendSafeArea" is true, because tab bar overlaps content in this case.
@@ -143,9 +153,16 @@ public class TiUIBottomNavigationTabGroup extends TiUIAbstractTabGroup implement
 			this.tabGroupViewPager.setLayoutParams(params);
 		}
 
-		// Show/hide the tab bar.
-		this.mBottomNavigationView.setVisibility(disable ? View.GONE : View.VISIBLE);
-		this.mBottomNavigationView.requestLayout();
+		if (animated) {
+			if (disable) {
+				this.mBottomNavigationView.animate().translationY(mBottomNavigationHeightValue).setDuration(200);
+			} else {
+				this.mBottomNavigationView.animate().translationY(0).setDuration(200);
+			}
+		} else {
+			this.mBottomNavigationView.setVisibility(disable ? View.GONE : View.VISIBLE);
+			this.mBottomNavigationView.requestLayout();
+		}
 
 		// Update top inset. (Will remove bottom inset if tab bar is "gone".)
 		this.insetsProvider.setBottomBasedOn(this.mBottomNavigationView);
