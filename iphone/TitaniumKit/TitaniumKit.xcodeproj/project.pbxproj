@@ -23,6 +23,7 @@
 /* Begin PBXBuildFile section */
 		4A175276218B64E70094C7B6 /* KrollTimerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A175274218B64E70094C7B6 /* KrollTimerManager.h */; };
 		4A175277218B64E70094C7B6 /* KrollTimerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A175275218B64E70094C7B6 /* KrollTimerManager.m */; };
+		4A1FF4432523262A00A0F923 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1FF4422523262A00A0F923 /* ErrorView.swift */; };
 		B106A6FD24535CB800B1305E /* JSValue+Addons.h in Headers */ = {isa = PBXBuildFile; fileRef = B106A6FB24535CB800B1305E /* JSValue+Addons.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B106A6FE24535CB800B1305E /* JSValue+Addons.m in Sources */ = {isa = PBXBuildFile; fileRef = B106A6FC24535CB800B1305E /* JSValue+Addons.m */; };
 		B10E8D502408559300578E8F /* APSHTTPClient.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10E8D4F2408559300578E8F /* APSHTTPClient.xcframework */; };
@@ -183,6 +184,7 @@
 /* Begin PBXFileReference section */
 		4A175274218B64E70094C7B6 /* KrollTimerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KrollTimerManager.h; sourceTree = "<group>"; };
 		4A175275218B64E70094C7B6 /* KrollTimerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KrollTimerManager.m; sourceTree = "<group>"; };
+		4A1FF4422523262A00A0F923 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		B106A6FB24535CB800B1305E /* JSValue+Addons.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JSValue+Addons.h"; sourceTree = "<group>"; };
 		B106A6FC24535CB800B1305E /* JSValue+Addons.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "JSValue+Addons.m"; sourceTree = "<group>"; };
 		B10E8D4F2408559300578E8F /* APSHTTPClient.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = APSHTTPClient.xcframework; path = TitaniumKit/Libraries/APSHTTPClient/APSHTTPClient.xcframework; sourceTree = "<group>"; };
@@ -558,6 +560,7 @@
 				DB15FC481F0A83A700A82C45 /* WebFont.m */,
 				B106A6FB24535CB800B1305E /* JSValue+Addons.h */,
 				B106A6FC24535CB800B1305E /* JSValue+Addons.m */,
+				4A1FF4422523262A00A0F923 /* ErrorView.swift */,
 			);
 			name = API;
 			path = Sources/API;
@@ -739,6 +742,7 @@
 				TargetAttributes = {
 					DB258CCC1F09757E000D0D8D = {
 						CreatedOnToolsVersion = 8.3.3;
+						LastSwiftMigration = 1200;
 					};
 					DB9635BE1F0AB4AC00C41B20 = {
 						CreatedOnToolsVersion = 8.3.3;
@@ -821,6 +825,7 @@
 				DB15FD0D1F0A894000A82C45 /* TiWindowProxy.m in Sources */,
 				DB15FC991F0A862000A82C45 /* TiPoint.m in Sources */,
 				B106A6FE24535CB800B1305E /* JSValue+Addons.m in Sources */,
+				4A1FF4432523262A00A0F923 /* ErrorView.swift in Sources */,
 				DB1596632075461400292B19 /* SBJSON.m in Sources */,
 				DB15FCA11F0A863B00A82C45 /* LayoutConstraint.m in Sources */,
 				DB15FC9D1F0A862D00A82C45 /* ListenerEntry.m in Sources */,
@@ -991,6 +996,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1008,7 +1014,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = NO;
 				INFOPLIST_FILE = TitaniumKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1033,6 +1039,8 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 			};
 			name = Debug;
@@ -1041,6 +1049,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1057,7 +1066,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = NO;
 				INFOPLIST_FILE = TitaniumKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1081,6 +1090,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 			};
 			name = Release;

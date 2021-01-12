@@ -10,8 +10,11 @@
 #import "TiErrorController.h"
 #import "TiApp.h"
 #import "TiBase.h"
+#import "TiExceptionHandler.h"
 #import "TiUtils.h"
 #import <QuartzCore/QuartzCore.h>
+
+#import <TitaniumKit/TitaniumKit-Swift.h>
 
 @implementation TiErrorNavigationController
 
@@ -32,11 +35,21 @@
   return self;
 }
 
+- (instancetype)initWithScriptError:(TiScriptError *)scriptError_
+{
+  if (self = [super init]) {
+    error = [scriptError_.description retain];
+    scriptError = [scriptError_ retain];
+  }
+  return self;
+}
+
 - (void)dealloc
 {
   RELEASE_TO_NIL(scrollView);
   RELEASE_TO_NIL(messageView);
   RELEASE_TO_NIL(error);
+  RELEASE_TO_NIL(scriptError);
   [super dealloc];
 }
 
@@ -54,11 +67,18 @@
   self.navigationItem.title = NSLocalizedString(@"Application Error", nil);
   self.navigationController.navigationBar.titleTextAttributes = @{ NSForegroundColorAttributeName : errorColor };
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
-  [self.view setBackgroundColor:[TiUtils isIOSVersionOrGreater:@"13.0"] ? UIColor.systemBackgroundColor : UIColor.whiteColor];
-#else
+  if (@available(iOS 13.0, *)) {
+    if (scriptError != nil) {
+      TiErrorViewController *errorVC = [[TiErrorViewController alloc] initWithError:scriptError];
+      [self addChildViewController:errorVC];
+      [self.view addSubview:errorVC.view];
+      [errorVC didMoveToParentViewController:self];
+      [errorVC release];
+      return;
+    }
+  }
+
   [self.view setBackgroundColor:UIColor.whiteColor];
-#endif
 
   // release previous allocations
   RELEASE_TO_NIL(scrollView);

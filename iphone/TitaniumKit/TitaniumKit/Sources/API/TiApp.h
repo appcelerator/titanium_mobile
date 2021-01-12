@@ -214,6 +214,11 @@ TI_INLINE void waitForMemoryPanicCleared() //WARNING: This must never be run on 
 - (void)showModalError:(NSString *)message;
 
 /**
+ Opens a modal view with detailed error information
+ */
+- (void)showDetailedModalError:(TiScriptError *)error;
+
+/**
  Tells application to display modal view controller.
  
  @param controller The view controller to display.

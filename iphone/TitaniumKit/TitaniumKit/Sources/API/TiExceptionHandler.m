@@ -99,7 +99,7 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
   [errorDict setObject:[NSNumber numberWithLong:error.lineNo] forKey:@"line"];
   NSString *stackTrace = [error.formattedNativeStack componentsJoinedByString:@"\n"];
   [errorDict setObject:stackTrace forKey:@"nativeStack"];
-  [[TiApp app] showModalError:[error description]];
+  [[TiApp app] showDetailedModalError:error];
   [[NSNotificationCenter defaultCenter] postNotificationName:kTiErrorNotification object:self userInfo:errorDict];
 }
 
@@ -126,6 +126,7 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
 @synthesize column = _column;
 @synthesize dictionaryValue = _dictionaryValue;
 @synthesize backtrace = _backtrace;
+@synthesize parsedJsStack = _parsedJsStack;
 @synthesize nativeStack = _nativeStack;
 @synthesize formattedNativeStack = _formattedNativeStack;
 
@@ -168,6 +169,7 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
   RELEASE_TO_NIL(_sourceURL);
   RELEASE_TO_NIL(_sourceLine);
   RELEASE_TO_NIL(_backtrace);
+  RELEASE_TO_NIL(_parsedJsStack);
   RELEASE_TO_NIL(_dictionaryValue);
   RELEASE_TO_NIL(_nativeStack);
   RELEASE_TO_NIL(_formattedNativeStack);
@@ -188,10 +190,31 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
 
   NSString *type = self.dictionaryValue[@"type"] != nil ? self.dictionaryValue[@"type"] : @"Error";
   [message appendFormat:@"%@: %@", type, self.message];
+  NSMutableString *formattedJsStack = [[NSMutableString new] autorelease];
+  for (NSDictionary *entry in self.parsedJsStack) {
+    [formattedJsStack appendFormat:@"\n    at %@ (%@)", entry[@"symbol"], entry[@"source"]];
+  }
+  [message appendString:formattedJsStack];
+  [message appendFormat:@"\n\n    %@", [self.formattedNativeStack componentsJoinedByString:@"\n    "]];
 
+  return message;
+}
+
+- (NSString *)detailedDescription
+{
+  return _dictionaryValue != nil ? [_dictionaryValue description] : [self description];
+}
+
+- (NSArray<NSDictionary *> *)parsedJsStack
+{
+  if (_parsedJsStack != nil) {
+    return _parsedJsStack;
+  }
+
+  NSString *encodedBundlePath = [NSString stringWithFormat:@"file://%@", [[NSBundle mainBundle].bundlePath stringByReplacingOccurrencesOfString:@" " withString:@"%20"]];
   NSString *jsStack = [self.backtrace stringByReplacingOccurrencesOfString:encodedBundlePath withString:@""];
   NSArray *jsStackLines = [jsStack componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet];
-  NSMutableString *formattedJsStack = [[NSMutableString new] autorelease];
+  NSMutableArray *entries = [[NSMutableArray new] autorelease];
   for (NSString *line in jsStackLines) {
     NSRange atSymbolRange = [line rangeOfString:@"@"];
     NSInteger atSymbolIndex = atSymbolRange.location == NSNotFound ? -1 : atSymbolRange.location;
@@ -204,18 +227,11 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
     if ([symbolName isEqualToString:@"global code"]) {
       continue;
     }
-    [formattedJsStack appendFormat:@"\n    at %@ (%@)", symbolName, source];
+    [entries addObject:@{ @"symbol" : symbolName, @"source" : source }];
   }
-  [message appendString:formattedJsStack];
+  _parsedJsStack = [entries copy];
 
-  [message appendFormat:@"\n\n    %@", [self.formattedNativeStack componentsJoinedByString:@"\n    "]];
-
-  return message;
-}
-
-- (NSString *)detailedDescription
-{
-  return _dictionaryValue != nil ? [_dictionaryValue description] : [self description];
+  return entries;
 }
 
 - (NSArray<NSString *> *)formattedNativeStack
@@ -225,13 +241,16 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
   }
 
   NSArray<NSString *> *stackTrace = self.nativeStack;
+  NSInteger startIndex = 0;
   if (stackTrace == nil) {
     stackTrace = [NSThread callStackSymbols];
+    // starting at index = 2 to not include this method and callee
+    startIndex = 2;
   }
-  NSMutableArray<NSString *> *formattedStackTrace = [[[NSMutableArray alloc] init] autorelease];
-  NSUInteger stackTraceLength = [stackTrace count];
-  // re-size stack trace and format results. starting at index = 2 to not include this method and callee
-  for (NSInteger i = 2; i < (stackTraceLength >= 20 ? 20 : stackTraceLength); i++) {
+  NSMutableArray<NSString *> *formattedStackTrace = [[NSMutableArray new] autorelease];
+  NSUInteger stackTraceLength = MIN([stackTrace count], 20 + startIndex);
+  // re-size stack trace and format results.
+  for (NSInteger i = startIndex; i < stackTraceLength; i++) {
     NSString *line = [self removeWhitespace:stackTrace[i]];
     // remove stack index
     line = [line substringFromIndex:[line rangeOfString:@" "].location + 1];

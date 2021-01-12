@@ -23,6 +23,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import <libkern/OSAtomic.h>
 
+#import <TitaniumKit/TitaniumKit-Swift.h>
+
 TiApp *sharedApp;
 
 NSString *TITANIUM_VERSION;
@@ -1124,6 +1126,25 @@ TI_INLINE void waitForMemoryPanicCleared(void); //WARNING: This must never be ru
   RELEASE_TO_NIL(error);
 
   [[[self controller] topPresentedController] presentViewController:nav animated:YES completion:nil];
+}
+
+- (void)showDetailedModalError:(TiScriptError *)error
+{
+  if ([[TiSharedConfig defaultConfig] showErrorController] == NO) {
+    NSLog(@"[ERROR] Application received error: %@", error.message);
+    return;
+  }
+  ENSURE_UI_THREAD(showDetailedModalError, error);
+
+  if (@available(iOS 13, *)) {
+    TiErrorController *errorVC = [[TiErrorController alloc] initWithScriptError:error];
+    TiErrorNavigationController *nav = [[[TiErrorNavigationController alloc] initWithRootViewController:errorVC] autorelease];
+    RELEASE_TO_NIL(errorVC);
+
+    [[[self controller] topPresentedController] presentViewController:nav animated:YES completion:nil];
+  } else {
+    [self showModalError:error.description];
+  }
 }
 
 - (void)showModalController:(UIViewController *)modalController animated:(BOOL)animated

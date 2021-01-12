@@ -1342,8 +1342,13 @@ If the new path starts with / and the base url is app://..., we have to massage 
   if ([error hasProperty:@"stack"]) {
     [errorDict setObject:[error[@"stack"] toString] forKey:@"stack"];
   }
-  if ([error hasProperty:@"nativeStack"]) {
-    [errorDict setObject:[error[@"nativeStack"] toString] forKey:@"nativeStack"];
+  if ([error hasProperty:@"nativeStack"] && error[@"nativeStack"].isString) {
+    NSString *callStack = error[@"nativeStack"].toString;
+    NSArray<NSString *> *nativeStack = [callStack componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet];
+    [errorDict setObject:nativeStack forKey:@"nativeStack"];
+  }
+  if ([error hasProperty:@"nativeLocation"]) {
+    [errorDict setObject:[error[@"nativeLocation"] toString] forKey:@"nativeLocation"];
   }
 
   return [[[TiScriptError alloc] initWithDictionary:errorDict] autorelease];

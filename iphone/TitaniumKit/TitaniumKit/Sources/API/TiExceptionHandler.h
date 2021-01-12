@@ -55,6 +55,11 @@
 @property (nonatomic, readonly) NSString *backtrace;
 
 /**
+ * Returns the parsed JavaScript stack trace entries consisting of smybol name and source location.
+ */
+@property (nonatomic, readonly) NSArray<NSDictionary *> *parsedJsStack;
+
+/**
  * Returns the native stack as a static string.
  */
 @property (nonatomic, readonly) NSArray<NSString *> *nativeStack;
