@@ -6,6 +6,10 @@ if (file("${projectDir}/google-services.json").exists()) {
 	apply plugin: 'com.google.gms.google-services'
 }
 
+if (file("${projectDir}/agconnect-services.json").exists()) {
+	apply plugin: 'com.huawei.agconnect'
+ }
+
 repositories {
 <% if (mavenRepositoryUrls) { for (let nextUrl of mavenRepositoryUrls) { %>
 	maven { url '<%- nextUrl %>' }
