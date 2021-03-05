@@ -52,7 +52,7 @@ public class TiUITab extends TiUIView
 		return windowProxy.getOrCreateView().getOuterView();
 	}
 
-	private TiWindowProxy getWindowProxy()
+	public TiWindowProxy getWindowProxy()
 	{
 		if (proxy != null) {
 			Object windowProxy = proxy.getProperty(TiC.PROPERTY_WINDOW);

@@ -1020,6 +1020,11 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String PROPERTY_AUTO_TAB_TITLE = "autoTabTitle";
+
+	/**
+	 * @module.api
+	 */
 	public static final String PROPERTY_BACKGROUND_COLOR = "backgroundColor";
 
 	/**

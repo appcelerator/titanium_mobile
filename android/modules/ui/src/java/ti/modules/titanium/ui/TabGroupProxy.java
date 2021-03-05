@@ -47,6 +47,7 @@ import android.view.LayoutInflater;
 		TiC.PROPERTY_TABS_BACKGROUND_COLOR,
 		TiC.PROPERTY_TABS_BACKGROUND_SELECTED_COLOR,
 		TiC.PROPERTY_SWIPEABLE,
+		TiC.PROPERTY_AUTO_TAB_TITLE,
 		TiC.PROPERTY_EXIT_ON_CLOSE,
 		TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK
 })
@@ -70,11 +71,13 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 	private TabProxy selectedTab;
 	private String tabGroupTitle = null;
 	private static int id_toolbar;
+	private boolean autoTabTitle = false;
 
 	public TabGroupProxy()
 	{
 		super();
 		defaultValues.put(TiC.PROPERTY_SWIPEABLE, true);
+		defaultValues.put(TiC.PROPERTY_AUTO_TAB_TITLE, autoTabTitle);
 		defaultValues.put(TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK, true);
 	}
 
@@ -307,6 +310,10 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 				Log.e(TAG, "Invalid orientationMode array. Must only contain orientation mode constants.");
 			}
 		}
+
+		if (options.containsKeyAndNotNull(TiC.PROPERTY_AUTO_TAB_TITLE)) {
+			autoTabTitle = options.getBoolean(TiC.PROPERTY_AUTO_TAB_TITLE);
+		}
 	}
 
 	@Kroll.method
@@ -344,7 +351,11 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 	{
 		// If the native view is drawn directly set the String as a title for the SupportActionBar.
 		if (view != null) {
-			((TiUIAbstractTabGroup) view).updateTitle(title);
+			if (autoTabTitle) {
+				((TiUIAbstractTabGroup) view).updateTitle("");
+			} else {
+				((TiUIAbstractTabGroup) view).updateTitle(title);
+			}
 		} else {
 			// If the native view is not yet drawn save the value to be passed during creation.
 			this.tabGroupTitle = title;
@@ -416,7 +427,11 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 		}
 		// If we have set a title before the creation of the native view, set it now.
 		if (this.tabGroupTitle != null) {
-			((TiUIAbstractTabGroup) view).updateTitle(this.tabGroupTitle);
+			if (autoTabTitle) {
+				((TiUIAbstractTabGroup) view).updateTitle("");
+			} else {
+				((TiUIAbstractTabGroup) view).updateTitle(this.tabGroupTitle);
+			}
 		}
 		setModelListener(view);
 
@@ -461,6 +476,15 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 		// Finish open handling by loading proxy settings.
 		handlePostOpen();
 
+		TiUIAbstractTabGroup tg = (TiUIAbstractTabGroup) view;
+		if (autoTabTitle) {
+			// expand title to fix truncated title
+			tg.updateTitle(tabs.get(0).getProperty(TiC.PROPERTY_TITLE).toString() + " "
+				+ tabs.get(0).getProperty(TiC.PROPERTY_TITLE).toString());
+
+			// clear it again
+			tg.updateTitle("");
+		}
 		super.onWindowActivityCreated();
 	}
 

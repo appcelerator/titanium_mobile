@@ -139,16 +139,6 @@ public class TabProxy extends TiViewProxy
 		}
 	}
 
-	/*@Kroll.getProperty
-	public String getTitle()
-	{
-		// Validate tabGroup proxy.
-		if (tabGroupProxy == null ) {
-			return null;
-		}
-		return ((TiUIAbstractTabGroup) tabGroupProxy.getOrCreateView()).getTabTitle(tabGroupProxy.getTabIndex(this));
-	}*/
-
 	public void setWindowId(int id)
 	{
 		windowId = id;

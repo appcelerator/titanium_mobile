@@ -156,8 +156,10 @@ public abstract class TiUIAbstractTabGroup extends TiUIView
 	// endregion
 
 	// region private fields
+	private boolean autoTabTitle = false;
 	private int textColorInt;
 	private int unselectedTextColorInt;
+	private int lastTab = -1;
 	private AtomicLong fragmentIdGenerator = new AtomicLong();
 	private ArrayList<Long> tabFragmentIDs = new ArrayList<Long>();
 	protected ArrayList<TiUITab> tabs = new ArrayList<TiUITab>();
@@ -378,6 +380,12 @@ public abstract class TiUIAbstractTabGroup extends TiUIView
 			@Override
 			public void onPageScrolled(int i, float v, int i1)
 			{
+				if (autoTabTitle && i != lastTab) {
+					if (tabs.get(i).getWindowProxy() != null) {
+						updateTitle(tabs.get(i).getWindowProxy().getProperty(TiC.PROPERTY_TITLE).toString());
+					}
+					lastTab = i;
+				}
 			}
 
 			@Override
@@ -424,6 +432,9 @@ public abstract class TiUIAbstractTabGroup extends TiUIView
 		if (d.containsKey(TiC.PROPERTY_SWIPEABLE)) {
 			this.swipeable = d.getBoolean(TiC.PROPERTY_SWIPEABLE);
 		}
+		if (d.containsKey(TiC.PROPERTY_AUTO_TAB_TITLE)) {
+			this.autoTabTitle = d.getBoolean(TiC.PROPERTY_AUTO_TAB_TITLE);
+		}
 		if (d.containsKey(TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK)) {
 			this.smoothScrollOnTabClick = d.getBoolean(TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK);
 		}
@@ -442,6 +453,8 @@ public abstract class TiUIAbstractTabGroup extends TiUIView
 			this.swipeable = TiConvert.toBoolean(newValue);
 		} else if (key.equals(TiC.PROPERTY_SMOOTH_SCROLL_ON_TAB_CLICK)) {
 			this.smoothScrollOnTabClick = TiConvert.toBoolean(newValue);
+		} else if (key.equals(TiC.PROPERTY_AUTO_TAB_TITLE)) {
+			this.autoTabTitle = TiConvert.toBoolean(newValue);
 		} else if (key.equals(TiC.PROPERTY_TABS_BACKGROUND_COLOR)) {
 			for (TiUITab tabView : tabs) {
 				updateTabBackgroundDrawable(tabs.indexOf(tabView));
