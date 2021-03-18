@@ -27,7 +27,7 @@
   [super dealloc];
 }
 
-- (id)_initWithPageContext:(id<TiEvaluator>)context_ args:(NSArray *)args
+- (id)_initWithPageContext:(id<TiEvaluator>)context_ args:(id)args
 {
   if (self = [self _initWithPageContext:context_]) {
     ENSURE_SINGLE_ARG(args, NSDictionary);

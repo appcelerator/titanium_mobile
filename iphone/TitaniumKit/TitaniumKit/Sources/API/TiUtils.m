@@ -1721,7 +1721,6 @@ If the new path starts with / and the base url is app://..., we have to massage 
 
   [controller setEdgesForExtendedLayout:[self extendedEdgesFromProp:edgesValue]];
   [controller setExtendedLayoutIncludesOpaqueBars:[self boolValue:includeOpaque def:NO]];
-  [controller setAutomaticallyAdjustsScrollViewInsets:[self boolValue:autoAdjust def:NO]];
 }
 
 + (CGRect)frameForController:(UIViewController *)theController

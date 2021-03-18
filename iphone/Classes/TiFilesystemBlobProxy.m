@@ -14,8 +14,6 @@
 #import <TitaniumKit/TiFilesystemFileProxy.h>
 #import <TitaniumKit/TiUtils.h>
 
-#import "TiDataStream.h"
-
 #define FILE_TOSTR(x) \
   ([x isKindOfClass:[TiFilesystemFileProxy class]]) ? [(TiFilesystemFileProxy *)x nativePath] : [TiUtils stringValue:x]
 

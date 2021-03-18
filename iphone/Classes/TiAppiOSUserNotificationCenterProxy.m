@@ -186,46 +186,5 @@
   return event;
 }
 
-- (NSDictionary *)formatUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings
-{
-  if (![NSThread isMainThread]) {
-    __block NSDictionary *result = nil;
-    TiThreadPerformOnMainThread(
-        ^{
-          result = [[self formatUserNotificationSettings:notificationSettings] retain];
-        },
-        YES);
-    return [result autorelease];
-  }
-  NSMutableArray *typesArray = [NSMutableArray array];
-  NSMutableArray *categoriesArray = [NSMutableArray array];
-
-  NSUInteger types = notificationSettings.types;
-  NSSet *categories = notificationSettings.categories;
-
-  // Types
-  if ((types & UIUserNotificationTypeBadge) != 0) {
-    [typesArray addObject:NUMINT(UIUserNotificationTypeBadge)];
-  }
-  if ((types & UIUserNotificationTypeAlert) != 0) {
-    [typesArray addObject:NUMINT(UIUserNotificationTypeAlert)];
-  }
-  if ((types & UIUserNotificationTypeSound) != 0) {
-    [typesArray addObject:NUMINT(UIUserNotificationTypeSound)];
-  }
-
-  // Categories
-  for (id cat in categories) {
-    TiAppiOSUserNotificationCategoryProxy *categoryProxy = [[[TiAppiOSUserNotificationCategoryProxy alloc] _initWithPageContext:[self executionContext]] autorelease];
-    categoryProxy.notificationCategory = cat;
-    [categoriesArray addObject:categoryProxy];
-  }
-
-  return @{
-    @"types" : typesArray,
-    @"categories" : categoriesArray
-  };
-}
-
 @end
 #endif

@@ -29,7 +29,6 @@ JSExportAs(fieldByName,
            : (NSString *)name withType
            : (JSValue *)optionalType);
 - (NSString *)fieldName:(NSInteger)index;
-- (NSString *)getFieldName:(NSInteger)index;
 - (bool)isValidRow;
 - (bool)next;
 

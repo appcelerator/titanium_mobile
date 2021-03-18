@@ -115,7 +115,7 @@ GETTER_IMPL(bool, portrait, Portrait);
 - (NSNumber *)orientation
 {
   UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
-  return NUMINT(orientation);
+  return @(orientation);
 }
 GETTER_IMPL(NSNumber *, orientation, Orientation);
 

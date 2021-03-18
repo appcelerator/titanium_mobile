@@ -205,8 +205,8 @@
       float duration = [TiUtils floatValue:@"animationDuration" properties:properties def:1000];
       UIViewAnimationTransition transition = [TiUtils intValue:@"animationStyle" properties:properties def:UIViewAnimationTransitionNone];
       TiAnimation *animation = [[[TiAnimation alloc] initWithDictionary:properties context:context callback:cb] autorelease];
-      animation.duration = [NSNumber numberWithFloat:duration];
-      animation.transition = [NSNumber numberWithInt:transition];
+      animation.duration = @(duration);
+      animation.transition = @(transition);
       return animation;
     }
 
@@ -283,7 +283,7 @@
   // Update the modified properties on the view!
   if (animatedViewProxy != nil) {
     if (!isReverse && ![self isTransitionAnimation] && ![autoreverse boolValue] && properties != nil) {
-      [animatedViewProxy applyProperties:properties];
+      [(TiProxy *)animatedViewProxy applyProperties:properties];
     }
     // TODO: What about center?
     RELEASE_TO_NIL(properties);

@@ -68,7 +68,7 @@ static NSUncaughtExceptionHandler *prevUncaughtExceptionHandler = NULL;
     [currentDelegate handleUncaughtException:exception];
     return;
   }
-  [prevUncaughtExceptionHandler handleUncaughtException:exception];
+  [(id)prevUncaughtExceptionHandler handleUncaughtException:exception];
 }
 
 - (void)reportScriptError:(TiScriptError *)scriptError

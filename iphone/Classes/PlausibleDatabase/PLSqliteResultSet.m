@@ -77,14 +77,6 @@
     return self;
 }
 
-/* GC */
-- (void) finalize {
-    /* 'Check in' our prepared statement reference */
-    [self close];
-
-    [super finalize];
-}
-
 /* Manual */
 - (void) dealloc {
     /* 'Check in' our prepared statement reference */

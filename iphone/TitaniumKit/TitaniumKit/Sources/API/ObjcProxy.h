@@ -30,11 +30,6 @@
     return [self LOWER];                \
   }
 
-// Defines a Read/write pair of accessors
-#define READWRITE(TYPE, NAME) \
-  GETTER(TYPE, NAME);         \
-  SETTER(TYPE, NAME);
-
 #define READWRITE_IMPL(TYPE, LOWER, UPPER) \
   GETTER_IMPL(TYPE, LOWER, UPPER);         \
   SETTER_IMPL(TYPE, UPPER);

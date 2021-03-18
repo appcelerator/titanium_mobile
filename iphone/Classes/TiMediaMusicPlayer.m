@@ -168,7 +168,7 @@
 
 - (NSNumber *)playbackState
 {
-  return NUMINT([player playbackState]);
+  return @([player playbackState]);
 }
 
 - (TiMediaItem *)nowPlaying
@@ -178,7 +178,7 @@
 
 - (NSNumber *)repeatMode
 {
-  return NUMINT([player repeatMode]);
+  return @([player repeatMode]);
 }
 
 - (void)setRepeatMode:(NSNumber *)mode
@@ -200,7 +200,7 @@
 
 - (NSNumber *)shuffleMode
 {
-  return NUMINT([player shuffleMode]);
+  return @([player shuffleMode]);
 }
 
 - (void)setShuffleMode:(NSNumber *)mode

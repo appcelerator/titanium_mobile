@@ -12,8 +12,8 @@
 // Properties (and accessors)
 READONLY_PROPERTY(NSString *, buildDate, BuildDate);
 READONLY_PROPERTY(NSString *, buildHash, BuildHash);
-PROPERTY(NSString *, userAgent, UserAgent);
 READONLY_PROPERTY(NSString *, version, Version);
+@property (nonatomic, assign) NSString *userAgent;
 
 // Methods
 - (JSValue *)createBuffer:(NSDictionary *)arg;

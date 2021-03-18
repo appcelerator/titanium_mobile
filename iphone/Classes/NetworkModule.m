@@ -205,27 +205,6 @@ MAKE_SYSTEM_NUMBER(PROGRESS_UNKNOWN, NUMINT(-1));
   return NUMBOOL(enabled);
 }
 
-- (NSArray *)remoteNotificationTypes
-{
-  __block NSUInteger types;
-  NSMutableArray *result = [NSMutableArray array];
-  TiThreadPerformOnMainThread(
-      ^{
-        types = [[[UIApplication sharedApplication] currentUserNotificationSettings] types];
-      },
-      YES);
-  if ((types & UIUserNotificationTypeBadge) != 0) {
-    [result addObject:NUMINT(1)];
-  }
-  if ((types & UIUserNotificationTypeAlert) != 0) {
-    [result addObject:NUMINT(2)];
-  }
-  if ((types & UIUserNotificationTypeSound) != 0) {
-    [result addObject:NUMINT(3)];
-  }
-  return result;
-}
-
 - (void)registerForPushNotifications:(id)args
 {
   ENSURE_SINGLE_ARG(args, NSDictionary);

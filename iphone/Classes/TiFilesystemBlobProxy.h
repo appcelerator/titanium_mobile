@@ -7,6 +7,7 @@
 
 #ifdef USE_TI_FILESYSTEM
 
+#import "TiDataStream.h"
 #import <TitaniumKit/TiFile.h>
 
 @interface TiFilesystemBlobProxy : TiFile {
@@ -16,6 +17,7 @@
 }
 
 - (id)initWithURL:(NSURL *)url data:(NSData *)data;
+- (TiStreamProxy *)open:(id)args;
 
 @end
 

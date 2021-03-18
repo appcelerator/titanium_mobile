@@ -230,6 +230,7 @@ void DoProxyDelegateReadValuesWithKeysFromProxy(UIView<TiProxyDelegate> *target,
  */
 - (NSNumber *)bubbleParent;
 - (void)setBubbleParent:(id)arg;
+- (void)applyProperties:(id)args;
 
 #pragma mark Utility
 - (KrollObject *)krollObjectForContext:(KrollContext *)context;

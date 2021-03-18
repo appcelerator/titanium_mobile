@@ -530,9 +530,9 @@ MAKE_SYSTEM_PROP(VIDEO_REPEAT_MODE_ONE, VideoRepeatModeOne);
 - (id)cameraFlashMode
 {
   if (picker != nil) {
-    return NUMINT([picker cameraFlashMode]);
+    return @([picker cameraFlashMode]);
   }
-  return NUMINT(UIImagePickerControllerCameraFlashModeAuto);
+  return @(UIImagePickerControllerCameraFlashModeAuto);
 }
 
 - (void)setCameraFlashMode:(id)args
@@ -973,9 +973,9 @@ MAKE_SYSTEM_PROP(VIDEO_REPEAT_MODE_ONE, VideoRepeatModeOne);
 - (id)camera
 {
   if (picker != nil) {
-    return NUMINT([picker cameraDevice]);
+    return @([picker cameraDevice]);
   }
-  return NUMINT(UIImagePickerControllerCameraDeviceRear);
+  return @(UIImagePickerControllerCameraDeviceRear);
 }
 #endif
 

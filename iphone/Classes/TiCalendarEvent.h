@@ -17,20 +17,20 @@
 
 @protocol TiCalendarEventExports <JSExport>
 // properties (and accessors)
-PROPERTY(NSArray<TiCalendarAlert *> *, alerts, Alerts);
+@property (nonatomic, strong) NSArray<TiCalendarAlert *> *alerts;
 PROPERTY(bool, allDay, AllDay);
 READONLY_PROPERTY(NSArray<TiCalendarAttendee *> *, attendees, Attendees);
 PROPERTY(EKEventAvailability, availability, Availability);
-PROPERTY(NSDate *, begin, Begin);
-PROPERTY(NSDate *, end, End);
+@property (nonatomic, strong) NSDate *begin;
+@property (nonatomic, strong) NSDate *end;
 READONLY_PROPERTY(bool, hasAlarm, HasAlarm);
 READONLY_PROPERTY(NSString *, id, Id);
 READONLY_PROPERTY(bool, isDetached, IsDetached);
-PROPERTY(NSString *, location, Location);
-PROPERTY(NSString *, notes, Notes);
-PROPERTY(NSArray<TiCalendarRecurrenceRule *> *, recurrenceRules, RecurrenceRules);
+@property (nonatomic, assign) NSString *location;
+@property (nonatomic, assign) NSString *notes;
+@property (nonatomic, strong) NSArray<TiCalendarRecurrenceRule *> *recurrenceRules;
 READONLY_PROPERTY(EKEventStatus, status, Status);
-PROPERTY(NSString *, title, Title);
+@property (nonatomic, assign) NSString *title;
 
 // methods
 - (void)addRecurrenceRule:(TiCalendarRecurrenceRule *)rule;

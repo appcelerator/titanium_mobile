@@ -63,7 +63,7 @@
 {
   CGColorRef oldCGColor = oldColor.CGColor;
 
-  int numberOfComponents = CGColorGetNumberOfComponents(oldCGColor);
+  int numberOfComponents = (int)CGColorGetNumberOfComponents(oldCGColor);
   // can not invert - the only component is the alpha
   if (numberOfComponents == 1) {
     return [UIColor colorWithCGColor:oldCGColor];

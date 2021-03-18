@@ -393,7 +393,7 @@ GETTER_IMPL(bool, allowCreation, AllowCreation);
     break;
   }
   case CLIPBOARD_IMAGE: {
-    board.image = [TiUtils toImage:data proxy:self];
+    board.image = [TiUtils toImage:data proxy:(TiProxy *)self];
     break;
   }
   case CLIPBOARD_COLOR: {

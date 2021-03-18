@@ -777,22 +777,19 @@ static NSString *const baseInjectScript = @"Ti._hexish=function(a){var r='';var 
       [module setExecutionContext:context];
 
       if ([method isEqualToString:@"fireEvent"]) {
-        [module fireEvent:name withObject:payload];
+        [(TiProxy *)module fireEvent:name withObject:payload];
       } else if ([method isEqualToString:@"addEventListener"]) {
         id listenerid = [event objectForKey:@"id"];
-        [module addEventListener:[NSArray arrayWithObjects:name, listenerid, nil]];
+        [(TiProxy *)module addEventListener:[NSArray arrayWithObjects:name, listenerid, nil]];
       } else if ([method isEqualToString:@"removeEventListener"]) {
         id listenerid = [event objectForKey:@"id"];
-        [module removeEventListener:[NSArray arrayWithObjects:name, listenerid, nil]];
+        [(TiProxy *)module removeEventListener:[NSArray arrayWithObjects:name, listenerid, nil]];
       } else if ([method isEqualToString:@"log"]) {
         NSString *level = [event objectForKey:@"level"];
         NSString *message = [event objectForKey:@"message"];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-        if ([module respondsToSelector:@selector(log:withMessage:)]) {
-          [module performSelector:@selector(log:withMessage:) withObject:level withObject:message];
+        if ([(TiProxy *)module respondsToSelector:@selector(log:withMessage:)]) {
+          [(TiProxy *)module performSelector:@selector(log:withMessage:) withObject:level withObject:message];
         }
-#pragma clang diagnostic pop
       }
       return;
     }

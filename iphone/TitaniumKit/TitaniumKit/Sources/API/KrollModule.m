@@ -79,7 +79,7 @@
   }
 
   // FIXME: Extract a Proxy protocol for ObjcProxy/TiProxy and place methods like boundBridge:withKrollObject: on it!
-  if ([module isKindOfClass:[ObjcProxy class]]) {
+  if ([(id)module isKindOfClass:[ObjcProxy class]]) {
     ObjcProxy *proxy = (ObjcProxy *)module;
     return [proxy JSValueInContext:context];
   }

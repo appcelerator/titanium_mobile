@@ -155,7 +155,7 @@
 - (void)livePhotoView:(PHLivePhotoView *)livePhotoView willBeginPlaybackWithStyle:(PHLivePhotoViewPlaybackStyle)playbackStyle
 {
   if ([[self livePhotoViewProxy] _hasListeners:@"start"]) {
-    NSDictionary *event = @{ @"playbackStyle" : NUMINT(playbackStyle) };
+    NSDictionary *event = @{ @"playbackStyle" : @(playbackStyle) };
     [[self livePhotoViewProxy] fireEvent:@"start" withObject:event];
   }
 }
@@ -163,7 +163,7 @@
 - (void)livePhotoView:(PHLivePhotoView *)livePhotoView didEndPlaybackWithStyle:(PHLivePhotoViewPlaybackStyle)playbackStyle
 {
   if ([[self livePhotoViewProxy] _hasListeners:@"stop"]) {
-    NSDictionary *event = @{ @"playbackStyle" : NUMINT(playbackStyle) };
+    NSDictionary *event = @{ @"playbackStyle" : @(playbackStyle) };
     [[self livePhotoViewProxy] fireEvent:@"stop" withObject:event];
   }
 }

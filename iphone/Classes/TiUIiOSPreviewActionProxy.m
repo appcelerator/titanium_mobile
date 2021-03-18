@@ -50,9 +50,9 @@
 - (void)fireEventWithAction:(UIPreviewAction *)action
 {
   NSMutableDictionary *event = [[NSMutableDictionary alloc] initWithDictionary:@{
-    @"index" : NUMINTEGER([self actionIndex]),
+    @"index" : @([self actionIndex]),
     @"title" : [self title],
-    @"style" : NUMINT([self style])
+    @"style" : @([self style])
   }];
 
   if ([self listViewEvent] != nil) {

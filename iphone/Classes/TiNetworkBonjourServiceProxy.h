@@ -17,11 +17,12 @@
 
 @protocol TiNetworkBonjourServiceProxyExports <JSExport>
 // Properties (and accessors)
-PROPERTY(NSString *, domain, Domain);
+@property (nonatomic, assign) NSString *domain;
 PROPERTY(bool, isLocal, IsLocal);
-PROPERTY(NSString *, name, Name);
-PROPERTY(JSValue *, socket, Socket);
-PROPERTY(NSString *, type, Type);
+@property (nonatomic, assign) NSString *name;
+@optional
+@property (nonatomic, strong) JSValue *socket;
+@property (nonatomic, assign) NSString *type;
 
 // Methods
 // FIXME: socketProxy can be TiNetworkSocketTCPProxy* once that proxy is moved to obj-c api

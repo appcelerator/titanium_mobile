@@ -71,7 +71,7 @@ DEFINE_EXCEPTIONS
   id systemButton = [proxy_ valueForKey:@"systemButton"];
   if (systemButton != nil) {
     UIBarButtonSystemItem type = [TiUtils intValue:systemButton];
-    UIView *button = [TiButtonUtil systemButtonWithType:type];
+    UIView *button = [TiButtonUtil systemButtonWithType:(int)type];
     if (button != nil) {
       if ([button isKindOfClass:[UIActivityIndicatorView class]]) {
         // we need to wrap our activity indicator view into a UIView that will delegate

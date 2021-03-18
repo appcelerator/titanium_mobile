@@ -95,13 +95,6 @@
   if ((count == 1) && [type isEqual:@"uploadprogress"]) {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveUploadProgressNotification:) name:kTiURLUploadProgress object:nil];
   }
-  if ((count == 1) && [type isEqual:@"usernotificationsettings"]) {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector
-                                             (didRegisterUserNotificationSettingsNotification:)
-                                                 name:kTiUserNotificationSettingsNotification
-                                               object:nil];
-  }
   if ((count == 1) && [type isEqual:@"watchkitextensionrequest"]) {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveWatchExtensionRequestNotification:)
@@ -515,23 +508,6 @@
   return supportedActivityTypes;
 }
 
-- (NSDictionary *)currentUserNotificationSettings
-{
-  DEPRECATED_REPLACED(@"App.iOS.currentUserNotificationSettings", @"7.3.0", @"App.iOS.UserNotificationCenter.requestUserNotificationSettings");
-
-  DebugLog(@"[ERROR] Please use Ti.App.iOS.UserNotificationCenter.requestUserNotificationSettings in iOS 10 and later to request user notification settings asynchronously.");
-
-  __block NSDictionary *returnVal = nil;
-  TiThreadPerformOnMainThread(
-      ^{
-        UIUserNotificationSettings *notificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
-        returnVal = [[self formatUserNotificationSettings:notificationSettings] retain];
-      },
-      YES);
-
-  return [returnVal autorelease];
-}
-
 - (NSDictionary *)formatNotificationAttachmentOptions:(NSDictionary *)options
 {
   if (!options) {
@@ -825,8 +801,6 @@
 
   if ([content isKindOfClass:UNMutableNotificationContent.class]) {
     ((UNMutableNotificationContent *)content).userInfo = userInfoWithId;
-  } else if ([content isKindOfClass:UILocalNotification.class]) {
-    ((UILocalNotification *)content).userInfo = userInfoWithId;
   }
 
   if (userInfo != nil) {
@@ -915,12 +889,6 @@
 - (void)didReceiveUploadProgressNotification:(NSNotification *)note
 {
   [self fireEvent:@"uploadprogress" withObject:[note userInfo]];
-}
-
-- (void)didRegisterUserNotificationSettingsNotification:(NSNotification *)note
-{
-  [self fireEvent:@"usernotificationsettings"
-       withObject:[self formatUserNotificationSettings:(UIUserNotificationSettings *)[[note userInfo] valueForKey:@"userNotificationSettings"]]];
 }
 
 #pragma mark Apple Watchkit notifications
@@ -1032,16 +1000,6 @@
 - (NSNumber *)USER_NOTIFICATION_ACTIVATION_MODE_FOREGROUND
 {
   return NUMINT(UNNotificationActionOptionForeground);
-}
-
-- (NSNumber *)USER_NOTIFICATION_BEHAVIOR_DEFAULT
-{
-  return NUMINT(UIUserNotificationActionBehaviorDefault);
-}
-
-- (NSNumber *)USER_NOTIFICATION_BEHAVIOR_TEXTINPUT
-{
-  return NUMINT(UIUserNotificationActionBehaviorTextInput);
 }
 
 - (NSNumber *)USER_NOTIFICATION_CATEGORY_OPTION_NONE

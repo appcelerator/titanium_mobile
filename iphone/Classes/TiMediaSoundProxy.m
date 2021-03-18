@@ -314,21 +314,6 @@
   [self forgetSelf];
 }
 
-- (void)audioPlayerBeginInterruption:(AVAudioPlayer *)player
-{
-  if ([self _hasListeners:@"interrupted"]) {
-    [self fireEvent:@"interrupted" withObject:nil];
-  }
-}
-
-- (void)audioPlayerEndInterruption:(AVAudioPlayer *)player
-{
-  if ([self _hasListeners:@"resume"]) {
-    NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:NUMBOOL(YES), @"interruption", nil];
-    [self fireEvent:@"resume" withObject:event];
-  }
-}
-
 - (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError *)error
 {
   if ([self _hasListeners:@"error"]) {
@@ -336,18 +321,6 @@
     [self fireEvent:@"error" withObject:event];
   }
   [self forgetSelf];
-}
-
-- (void)audioPlayerEndInterruption:(AVAudioPlayer *)player withFlags:(NSUInteger)flags
-{
-  if (flags != AVAudioSessionInterruptionOptionShouldResume) {
-    [self stop:nil];
-  }
-
-  if ([self _hasListeners:@"resume"]) {
-    NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:NUMBOOL(YES), @"interruption", nil];
-    [self fireEvent:@"resume" withObject:event];
-  }
 }
 
 - (void)remoteControlEvent:(NSNotification *)note

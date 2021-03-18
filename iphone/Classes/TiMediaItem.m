@@ -45,7 +45,7 @@
 {
   MPMediaItemArtwork *artwork = [item artwork];
   if (artwork != nil) {
-    return [[[TiBlob alloc] initWithImage:[artwork imageWithSize:[artwork imageCropRect].size]] autorelease];
+    return [[[TiBlob alloc] initWithImage:[artwork imageWithSize:artwork.bounds.size]] autorelease];
   }
   return nil;
 }

@@ -14,6 +14,7 @@
 #import "TiAppiOSProxy.h"
 #endif
 
+#import "Titanium-Swift.h"
 #import <TitaniumKit/TiLayoutQueue.h>
 #import <UIKit/UILocalNotification.h>
 #import <unistd.h>
@@ -102,7 +103,7 @@ extern BOOL const TI_APPLICATION_ANALYTICS;
   [super _configure];
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(accessibilityVoiceOverStatusChanged:)
-                                               name:UIAccessibilityVoiceOverStatusChanged
+                                               name:UIAccessibilityVoiceOverStatusDidChangeNotification
                                              object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(handleUserInteraction:)

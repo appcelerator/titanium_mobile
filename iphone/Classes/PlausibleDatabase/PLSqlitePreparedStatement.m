@@ -213,17 +213,6 @@
     return self;
 }
 
-
-/* GC */
-- (void) finalize {
-    // XXX: May cause a memory leak when garbage collecting due
-    // to Apple's finalization rules. No ordering is maintained,
-    // and such, there's no way to ensure that the sqlite3_stmt
-    // is released before sqlite3_close() is called.
-    [self close];
-    [super finalize];
-}
-
 /* Manual */
 - (void) dealloc {
     /* The statement must be released before the database is released, as the statement has a reference

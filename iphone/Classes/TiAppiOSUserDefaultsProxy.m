@@ -116,7 +116,7 @@
   GETPROP
   id theObject = [self.defaultsObject objectForKey:key];
   if ([theObject isKindOfClass:[NSData class]]) {
-    return [NSKeyedUnarchiver unarchiveObjectWithData:theObject];
+    return [NSKeyedUnarchiver unarchivedObjectOfClass:[NSData class] fromData:theObject error:nil];
   } else {
     return theObject;
   }
@@ -187,7 +187,7 @@
 - (void)setObject:(id)args
 {
   SETPROP
-  NSData *encoded = [NSKeyedArchiver archivedDataWithRootObject:value];
+  NSData *encoded = [NSKeyedArchiver archivedDataWithRootObject:value requiringSecureCoding:NO error:nil];
   [self.defaultsObject setObject:encoded forKey:key];
   [self.defaultsObject synchronize];
 }

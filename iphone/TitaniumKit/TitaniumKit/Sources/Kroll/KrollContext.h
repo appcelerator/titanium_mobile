@@ -13,8 +13,9 @@
 
 @protocol KrollDelegate <NSObject>
 
-@required
+@optional
 - (id)require:(KrollContext *)kroll path:(NSString *)path;
+@required
 - (BOOL)shouldDebugContext;
 - (BOOL)shouldProfileContext;
 @optional

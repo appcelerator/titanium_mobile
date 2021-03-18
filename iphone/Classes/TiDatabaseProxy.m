@@ -118,7 +118,7 @@
 {
   BOOL isDirectory;
   NSFileManager *fm = [NSFileManager defaultManager];
-  NSURL *url = [TiUtils toURL:path proxy:self];
+  NSURL *url = [TiUtils toURL:path proxy:(TiProxy *)self];
   path = [url path];
 
 #if TARGET_OS_SIMULATOR

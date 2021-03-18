@@ -170,7 +170,7 @@
 {
   if (button == nil) {
     UIButtonType defaultType = [self hasImageProperties] ? UIButtonTypeCustom : UIButtonTypeRoundedRect;
-    style = [TiUtils intValue:[self.proxy valueForKey:@"style"] def:defaultType];
+    style = [TiUtils intValue:[self.proxy valueForKey:@"style"] def:(int)defaultType];
     UIView *btn = [TiButtonUtil buttonWithType:style];
     button = (UIButton *)[btn retain];
     [self addSubview:button];

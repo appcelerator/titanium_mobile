@@ -27,14 +27,14 @@
 		B106A6FE24535CB800B1305E /* JSValue+Addons.m in Sources */ = {isa = PBXBuildFile; fileRef = B106A6FC24535CB800B1305E /* JSValue+Addons.m */; };
 		B10E8D502408559300578E8F /* APSHTTPClient.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10E8D4F2408559300578E8F /* APSHTTPClient.xcframework */; };
 		B10E8D5824085E1E00578E8F /* APSAnalytics.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10E8D5724085E1E00578E8F /* APSAnalytics.xcframework */; };
+		B70ABB8424B79C9C0007D07A /* KrollPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = B70ABB8324B79C9C0007D07A /* KrollPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B70ABB8624B79DCF0007D07A /* KrollPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = B70ABB8524B79DCF0007D07A /* KrollPromise.m */; };
 		B7385F50246593B7007DB1F2 /* ScriptModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B7385F4F246593B7007DB1F2 /* ScriptModule.m */; };
 		B7385F52246593BF007DB1F2 /* ScriptModule.h in Headers */ = {isa = PBXBuildFile; fileRef = B7385F51246593BF007DB1F2 /* ScriptModule.h */; };
 		B7385F5524659F83007DB1F2 /* AssetsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B7385F5324659F83007DB1F2 /* AssetsModule.m */; };
 		B7385F5624659F83007DB1F2 /* AssetsModule.h in Headers */ = {isa = PBXBuildFile; fileRef = B7385F5424659F83007DB1F2 /* AssetsModule.h */; };
 		B7385F592465A4B3007DB1F2 /* KrollModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B7385F572465A4B3007DB1F2 /* KrollModule.m */; };
 		B7385F5A2465A4B3007DB1F2 /* KrollModule.h in Headers */ = {isa = PBXBuildFile; fileRef = B7385F582465A4B3007DB1F2 /* KrollModule.h */; };
-		B70ABB8424B79C9C0007D07A /* KrollPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = B70ABB8324B79C9C0007D07A /* KrollPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		B70ABB8624B79DCF0007D07A /* KrollPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = B70ABB8524B79DCF0007D07A /* KrollPromise.m */; };
 		B7624B6C216663C7000C365A /* ObjcProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = B7624B6A216663C7000C365A /* ObjcProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B7624B6D216663C7000C365A /* ObjcProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = B7624B6B216663C7000C365A /* ObjcProxy.m */; };
 		B7D114DB2465F48600B95107 /* Module.h in Headers */ = {isa = PBXBuildFile; fileRef = B7D114DA2465F48600B95107 /* Module.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -204,8 +204,6 @@
 		B7385F5424659F83007DB1F2 /* AssetsModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AssetsModule.h; sourceTree = "<group>"; };
 		B7385F572465A4B3007DB1F2 /* KrollModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KrollModule.m; sourceTree = "<group>"; };
 		B7385F582465A4B3007DB1F2 /* KrollModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KrollModule.h; sourceTree = "<group>"; };
-		B70ABB8324B79C9C0007D07A /* KrollPromise.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KrollPromise.h; sourceTree = "<group>"; };
-		B70ABB8524B79DCF0007D07A /* KrollPromise.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KrollPromise.m; sourceTree = "<group>"; };
 		B7624B6A216663C7000C365A /* ObjcProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcProxy.h; sourceTree = "<group>"; };
 		B7624B6B216663C7000C365A /* ObjcProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjcProxy.m; sourceTree = "<group>"; };
 		B7D114DA2465F48600B95107 /* Module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Module.h; sourceTree = "<group>"; };
@@ -768,7 +766,7 @@
 		DB258CC41F09757E000D0D8D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = "Hans Knoechel";
 				TargetAttributes = {
 					DB258CCC1F09757E000D0D8D = {
@@ -1033,7 +1031,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -1083,7 +1081,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;

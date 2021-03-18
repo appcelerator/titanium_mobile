@@ -225,7 +225,7 @@
 
 - (NSNumber *)pushMode
 {
-  return NUMINT(_mode);
+  return @(_mode);
 }
 
 - (void)setActive:(id)args

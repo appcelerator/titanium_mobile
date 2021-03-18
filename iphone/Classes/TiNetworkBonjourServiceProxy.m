@@ -10,6 +10,7 @@
 
 #import "TiNetworkBonjourServiceProxy.h"
 #import "TiNetworkSocketTCPProxy.h"
+#import <TitaniumKit/JSValue+Addons.h>
 #import <arpa/inet.h>
 #import <netdb.h>
 #import <netinet/in.h>
@@ -33,7 +34,7 @@
 
 - (id)initWithContext:(id<TiEvaluator>)context_ service:(NSNetService *)service_ local:(bool)local_
 {
-  if (self = [super _initWithPageContext:context_]) {
+  if (self = [super init]) {
     pageContext = (id)context_; // do not retain // TODO: Remove once we've migrated TiNetworkSocketTCPProxy to obj-c API
     // NOTE: We need to resolve the service to make sure that it's available before opening this socket,
     // and make sure it's available over IPv4.

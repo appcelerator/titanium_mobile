@@ -331,6 +331,9 @@ GETTER_IMPL(NSUInteger, length, Length);
     writeData = data;
     break;
   }
+  case TiBlobTypeSystemImage: {
+    break;
+  }
   }
   if (writeData != nil) {
     return [writeData writeToFile:destination atomically:YES];
@@ -492,7 +495,7 @@ static void jsArrayBufferFreeDeallocator(void *data, void *ctx)
         JSValueRef *exception;
         JSObjectRef arrayBuffer = JSObjectMakeArrayBufferWithBytesNoCopy(context.JSGlobalContextRef, arrayBytes, len, jsArrayBufferFreeDeallocator, nil, exception);
         if (exception) {
-          [promise reject:@[ [JSValue valueWithJSValueRef:exception inContext:context] ]];
+          [promise reject:@[ [JSValue valueWithJSValueRef:*exception inContext:context] ]];
         } else {
           JSValue *buffer = [JSValue valueWithJSValueRef:arrayBuffer inContext:context];
           [promise resolve:@[ buffer ]];

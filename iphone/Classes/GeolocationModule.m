@@ -7,6 +7,7 @@
 #ifdef USE_TI_GEOLOCATION
 
 #import "GeolocationModule.h"
+#import "Titanium-Swift.h"
 #import <TitaniumKit/APSHTTPClient.h>
 #import <TitaniumKit/KrollPromise.h>
 #import <TitaniumKit/NSData+Additions.h>
@@ -1168,17 +1169,6 @@ READWRITE_IMPL(bool, showCalibration, ShowCalibration);
 
   [self updateLastLocationDictionary:locations];
   [self fireSingleShotLocationIfNeeded:event stopIfNeeded:YES];
-}
-
-- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
-{
-  if (newLocation != nil) {
-    if (oldLocation == nil) {
-      [self locationManager:manager didUpdateLocations:[NSArray arrayWithObject:newLocation]];
-    } else {
-      [self locationManager:manager didUpdateLocations:[NSArray arrayWithObjects:oldLocation, newLocation, nil]];
-    }
-  }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error

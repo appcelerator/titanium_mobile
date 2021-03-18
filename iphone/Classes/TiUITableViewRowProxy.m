@@ -17,6 +17,7 @@
 #import <TitaniumKit/TiViewProxy.h>
 #import <TitaniumKit/Webcolor.h>
 #import <libkern/OSAtomic.h>
+#import <stdatomic.h>
 
 NSString *const defaultRowTableClass = @"_default_";
 #define CHILD_ACCESSORY_WIDTH 20.0
@@ -738,17 +739,12 @@ TiProxy *DeepScanForProxyOfViewContainingPoint(UIView *targetView, CGPoint point
 
 - (void)updateRow:(TiUITableViewAction *)action
 {
-  OSAtomicTestAndClearBarrier(NEEDS_UPDATE_ROW, &dirtyRowFlags);
   [table dispatchAction:action];
 }
 
 - (void)triggerRowUpdate
 {
   if ([self isAttached] && self.viewAttached && !modifyingRow && !attaching) {
-    if (OSAtomicTestAndSetBarrier(NEEDS_UPDATE_ROW, &dirtyRowFlags)) {
-      return;
-    }
-
     TiUITableViewAction *action = [[[TiUITableViewAction alloc] initWithObject:self
                                                                      animation:nil
                                                                           type:TiUITableViewActionRowReload] autorelease];

@@ -385,7 +385,7 @@ extern NSString *const TI_APPLICATION_GUID;
 - (void)request:(APSHTTPRequest *)request onReadyStateChange:(APSHTTPResponse *)response
 {
   if (hasOnreadystatechange) {
-    [self fireCallback:@"onreadystatechange" withArg:[NSDictionary dictionaryWithObjectsAndKeys:NUMINT(response.readyState), @"readyState", nil] withSource:self];
+    [self fireCallback:@"onreadystatechange" withArg:[NSDictionary dictionaryWithObjectsAndKeys:@(response.readyState), @"readyState", nil] withSource:self];
   }
 }
 
@@ -563,7 +563,7 @@ extern NSString *const TI_APPLICATION_GUID;
 }
 - (NSNumber *)readyState
 {
-  return NUMINT([[self response] readyState]);
+  return @([[self response] readyState]);
 }
 - (NSDictionary *)responseHeaders
 {

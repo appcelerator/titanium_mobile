@@ -263,7 +263,7 @@
     }
   }
 
-  int theStyle = [TiUtils intValue:[self valueForUndefinedKey:@"statusBarStyle"] def:[[[TiApp app] controller] defaultStatusBarStyle]];
+  UIStatusBarStyle theStyle = [TiUtils intValue:[self valueForUndefinedKey:@"statusBarStyle"] def:(int)[[[TiApp app] controller] defaultStatusBarStyle]];
 
   [self assignStatusBarStyle:theStyle];
 
@@ -286,9 +286,9 @@
 
 - (void)setStatusBarStyle:(id)style
 {
-  int theStyle = [TiUtils intValue:style def:[[[TiApp app] controller] defaultStatusBarStyle]];
+  UIStatusBarStyle theStyle = [TiUtils intValue:style def:(int)[[[TiApp app] controller] defaultStatusBarStyle]];
   [self assignStatusBarStyle:theStyle];
-  [self setValue:NUMINT(barStyle) forUndefinedKey:@"statusBarStyle"];
+  [self setValue:@(barStyle) forUndefinedKey:@"statusBarStyle"];
   if (focussed) {
     TiThreadPerformOnMainThread(
         ^{
@@ -518,7 +518,7 @@
   return [tab tabGroup];
 }
 
-- (void)assignStatusBarStyle:(int)style
+- (void)assignStatusBarStyle:(UIStatusBarStyle)style
 {
   switch (style) {
   case UIStatusBarStyleDefault:
@@ -533,7 +533,7 @@
 
 - (NSNumber *)orientation
 {
-  return NUMINT([UIApplication sharedApplication].statusBarOrientation);
+  return @([UIApplication sharedApplication].statusBarOrientation);
 }
 
 - (void)forceNavBarFrame

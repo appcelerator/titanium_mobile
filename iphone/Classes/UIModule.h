@@ -31,7 +31,7 @@
   TiProxy *ios;
 #endif
 #ifdef USE_TI_UICLIPBOARD
-  TiProxy *clipboard;
+  ObjcProxy *clipboard;
 #endif
 #if defined(USE_TI_UISHORTCUT) || defined(USE_TI_UISHORTCUTITEM)
   TiUIShortcutProxy *shortcut;

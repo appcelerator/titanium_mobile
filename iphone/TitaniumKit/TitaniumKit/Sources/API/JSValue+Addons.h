@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface JSValue (Addons)
 
-@property (readonly) BOOL isFunction;
+- (BOOL)isFunction;
 
 - (void)defineReadOnlyProperty:(NSString *)propertyName withValue:(id)value;
 

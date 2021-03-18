@@ -951,7 +951,7 @@ DEFINE_EXCEPTIONS
     [self assignShadowPropertyFromLayer:_shadowLayer toLayer:self.layer];
     [_shadowLayer removeFromSuperlayer];
     RELEASE_TO_NIL(_shadowLayer);
-    _shadowLayer = self.layer;
+    _shadowLayer = (CAShapeLayer *)self.layer;
   } else if ((array.count > 1) && (!_shadowLayer || _shadowLayer == self.layer)) {
     _shadowLayer = [[CAShapeLayer alloc] init];
     _shadowLayer.fillColor = UIColor.clearColor.CGColor;

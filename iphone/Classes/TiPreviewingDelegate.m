@@ -81,7 +81,7 @@
         [item setListViewEvent:[self listViewEvent]];
       }
 
-      [result addObject:[item action]];
+      [result addObject:[(TiUIiOSPreviewActionProxy *)item action]];
 
       actionIndex++;
     } else if ([item isKindOfClass:[TiUIiOSPreviewActionGroupProxy class]]) {

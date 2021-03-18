@@ -30,7 +30,7 @@
 #import "PlausibleDatabase.h"
 
 /* Keep trying for up to 5 seconds */
-#define SQLITE_BUSY_TIMEOUT 5000
+#define TI_SQLITE_BUSY_TIMEOUT 5000
 
 
 /** A generic SQLite exception. */
@@ -85,13 +85,6 @@ NSString *PLSqliteException = @"PLSqliteException";
 	return _path;
 }
 
-/* GC */
-- (void) finalize {
-    [self close];
-
-    [super finalize];
-}
-
 /* Manual */
 - (void) dealloc {
     [self close];
@@ -142,7 +135,7 @@ NSString *PLSqliteException = @"PLSqliteException";
     }
     
     /* Set a busy timeout */
-    err = sqlite3_busy_timeout(_sqlite, SQLITE_BUSY_TIMEOUT);
+    err = sqlite3_busy_timeout(_sqlite, TI_SQLITE_BUSY_TIMEOUT);
     if (err != SQLITE_OK) {
         /* This should never happen. */
         [self populateError: error

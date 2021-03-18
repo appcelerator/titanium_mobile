@@ -45,22 +45,9 @@
       options |= UNNotificationActionOptionAuthenticationRequired;
     }
 
-    // Important: The UNNoticationAction class is creation-only, so the manual setters are only
-    // for the iOS < 10 UIUserNotificationAction
-    if (behavior && [TiUtils intValue:behavior def:UIUserNotificationActionBehaviorDefault] == UIUserNotificationActionBehaviorTextInput) {
-      _notificationAction = [[UNTextInputNotificationAction actionWithIdentifier:identifier
-                                                                           title:title
-                                                                         options:options
-                                                            textInputButtonTitle:textInputButtonTitle
-                                                            textInputPlaceholder:textInputButtonPlaceholder] retain];
-
-      [super _initWithProperties:properties];
-      return;
-    } else {
-      _notificationAction = [[UNNotificationAction actionWithIdentifier:identifier
-                                                                  title:title
-                                                                options:[TiUtils intValue:activationMode]] retain];
-    }
+    _notificationAction = [[UNNotificationAction actionWithIdentifier:identifier
+                                                                title:title
+                                                              options:[TiUtils intValue:activationMode]] retain];
   }
 
   [super _initWithProperties:properties];

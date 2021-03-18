@@ -18,7 +18,7 @@ READONLY_PROPERTY(bool, unique, Unique);
 // Methods
 - (void)clearData:(NSString *)type;
 - (void)clearText;
-- (JSValue *)getData:(NSString *)type;
+- (id)getData:(NSString *)type;
 - (NSArray<NSDictionary<NSString *, id> *> *)getItems;
 - (NSString *)getText;
 - (bool)hasData:(id)type;
@@ -43,6 +43,7 @@ JSExportAs(setData,
   BOOL isUnique;
 }
 
+- (id)initWithProperties:(NSDictionary *)dict;
 - (id)getData_:(NSString *)mimeType;
 
 @end

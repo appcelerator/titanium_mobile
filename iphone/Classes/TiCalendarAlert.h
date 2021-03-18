@@ -14,8 +14,8 @@
 @protocol TiCalendarAlertExports <JSExport>
 
 // properties (and accessors)
-PROPERTY(NSDate *, absoluteDate, AbsoluteDate);
-PROPERTY(double, relativeOffset, RelativeOffset);
+@property (nonatomic, strong) NSDate *absoluteDate;
+@property double relativeOffset;
 
 @end
 

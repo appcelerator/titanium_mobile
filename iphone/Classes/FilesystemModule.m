@@ -82,7 +82,12 @@
     TiFile *fileProxy = [self getFileProxy:resolvedPath];
     if (fileProxy != nil) {
       NSArray *payload = @[ [NSNumber numberWithInt:mode] ];
-      TiStreamProxy *streamProxy = [fileProxy open:payload];
+      TiStreamProxy *streamProxy;
+      if ([fileProxy isKindOfClass:[TiFilesystemFileStreamProxy class]]) {
+        streamProxy = [(TiFilesystemFileProxy *)fileProxy open:payload];
+      } else {
+        streamProxy = [(TiFilesystemBlobProxy *)fileProxy open:payload];
+      }
       if (streamProxy != nil) {
         return [self NativeToJSValue:streamProxy];
       }
