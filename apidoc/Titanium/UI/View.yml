@@ -471,6 +471,18 @@ events:
         may result in an endless loop.
     since: "2.0.0"
 
+  - name: rotate
+    summary: Fired when the device detects a two finger rotation.
+    description: |
+        This event is fired when doing a two finger rotation and returning the angle.
+        The event occurs continuously until a finger is lifted again.
+    platforms: [android]
+    properties:
+      - name: rotate
+        summary: Rotation in degrees.
+        type: Number
+    since: "9.0.0"
+
   - name: singletap
     summary: Fired when the device detects a single tap against the view.
     properties:

@@ -1759,6 +1759,22 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 		touchable.setOnTouchListener(new OnTouchListener() {
 			int pointersDown = 0;
 
+			private void doRotationEvent(MotionEvent event)
+			{
+				// Calculate the angle between the two fingers
+				float deltaX = event.getX(0) - event.getX(1);
+				float deltaY = event.getY(0) - event.getY(1);
+				double radians = Math.atan(deltaY / deltaX);
+				double degrees = Math.toDegrees(radians);
+
+				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+					KrollDict data = new KrollDict();
+					data.put(TiC.PROPERTY_ROTATE, degrees);
+					data.put(TiC.EVENT_PROPERTY_SOURCE, proxy);
+					fireEvent(TiC.EVENT_ROTATE, data);
+				}
+			}
+
 			public boolean onTouch(View view, MotionEvent event)
 			{
 				if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -1767,6 +1783,10 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 					lastUpEvent.put(TiC.EVENT_PROPERTY_X, xDimension.getAsDefault(view));
 					lastUpEvent.put(TiC.EVENT_PROPERTY_Y, yDimension.getAsDefault(view));
 					lastUpEvent.put(TiC.EVENT_PROPERTY_OBSCURED, wasObscured(event));
+				}
+
+				if (proxy != null && proxy.hierarchyHasListener(TiC.EVENT_ROTATE) && event.getPointerCount() == 2) {
+					doRotationEvent(event);
 				}
 
 				if (proxy != null && proxy.hierarchyHasListener(TiC.EVENT_PINCH)) {

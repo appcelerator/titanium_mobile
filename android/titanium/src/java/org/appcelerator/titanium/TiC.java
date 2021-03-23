@@ -587,6 +587,11 @@ public class TiC
 	/**
 	 * @module.api
 	 */
+	public static final String EVENT_ROTATE = "rotate";
+
+	/**
+	 * @module.api
+	 */
 	public static final String EVENT_SCROLL = "scroll";
 
 	/**
