@@ -380,14 +380,15 @@ properties:
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>.
     type: [String, Titanium.UI.Color]
-    platforms: [iphone,ipad, macos]
+    platforms: [iphone, ipad, macos]
 
   - name: selectionStyle
     summary: Selection style constant to control the selection color.
     description: |
-        Specify one of the constants from <Titanium.UI.iOS.TableViewCellSelectionStyle>.
+        Specify one of the constants from <Titanium.UI.SELECTION_STYLE_*>.
     type: Number
-    platforms: [iphone,ipad, macos]
+    platforms: [android, iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "5.4.0", ipad: "5.4.0", macos: "9.2.0"}
 
   - name: title
     summary: Text to display on the row.

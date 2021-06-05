@@ -58,6 +58,7 @@ public class TableViewRowProxy extends TiViewProxy
 	private int filteredIndex = -1;
 	private TableViewHolder holder;
 	private boolean placeholder = false;
+	private boolean selected = false;
 
 	// FIXME: On iOS the same row can be added to a table multiple times.
 	//        Due to constraints, we need to create a new proxy and track changes.
@@ -279,6 +280,24 @@ public class TableViewRowProxy extends TiViewProxy
 	}
 
 	/**
+	 * Determine if row is currently selected.
+	 *
+	 * @return Boolean of selection status.
+	 */
+	public boolean isSelected()
+	{
+		return selected;
+	}
+
+	/**
+	 * Set row selection status.
+	 */
+	public void setSelected(boolean selected)
+	{
+		this.selected = selected;
+	}
+
+	/**
 	 * Handle initial creation properties.
 	 *
 	 * @param options Initial creation properties.
@@ -394,6 +413,22 @@ public class TableViewRowProxy extends TiViewProxy
 			footerDeprecationLog();
 		}
 
+		// Set selected color from selection style.
+		if (!hasPropertyAndNotNull(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR)
+			&& name.equals(TiC.PROPERTY_SELECTION_STYLE)
+			&& value instanceof Integer) {
+			String selectionColor = null;
+
+			switch ((Integer) value) {
+				case UIModule.SELECTION_STYLE_NONE:
+					selectionColor = "transparent";
+					break;
+			}
+
+			setProperty(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR, selectionColor);
+			invalidate();
+		}
+
 		if (name.equals(TiC.PROPERTY_LEFT_IMAGE)
 			|| name.equals(TiC.PROPERTY_RIGHT_IMAGE)
 			|| name.equals(TiC.PROPERTY_HAS_CHECK)
@@ -402,7 +437,9 @@ public class TableViewRowProxy extends TiViewProxy
 			|| name.equals(TiC.PROPERTY_BACKGROUND_COLOR)
 			|| name.equals(TiC.PROPERTY_BACKGROUND_IMAGE)
 			|| name.equals(TiC.PROPERTY_SELECTED_BACKGROUND_COLOR)
+			|| name.equals(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR)
 			|| name.equals(TiC.PROPERTY_SELECTED_BACKGROUND_IMAGE)
+			|| name.equals(TiC.PROPERTY_BACKGROUND_SELECTED_IMAGE)
 			|| name.equals(TiC.PROPERTY_TITLE)
 			|| name.equals(TiC.PROPERTY_COLOR)
 			|| name.equals(TiC.PROPERTY_FONT)

@@ -109,8 +109,11 @@ public class TableViewAdapter extends TiRecyclerViewAdapter<TableViewHolder>
 		final TableViewRowProxy row = this.models.get(position);
 		final boolean selected = tracker != null ? tracker.isSelected(row) : false;
 
+		// Notify row of its selected status.
+		// This is necessary to maintain selection status on theme change.
+		row.setSelected(selected);
+
 		// Update TableViewHolder with new model data.
-		// TODO: Optimize `bind()`.
 		holder.bind(row, selected);
 	}
 

@@ -36,12 +36,24 @@
         android:id="@+id/titanium_ui_listview_holder_outer_content_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/titanium_ui_listview_holder_header_container">
+        android:layout_below="@id/titanium_ui_listview_holder_header_container"
+        android:addStatesFromChildren="true">
+
+            <ImageView
+                android:id="@+id/titanium_ui_listview_holder_left_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="6dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"/>
 
             <org.appcelerator.titanium.view.TiCompositeLayout
                 android:id="@+id/titanium_ui_listview_holder_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/titanium_ui_listview_holder_left_image"
                 android:addStatesFromChildren="true"/>
 
             <ImageView

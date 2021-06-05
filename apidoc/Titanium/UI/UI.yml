@@ -2443,6 +2443,26 @@ properties:
     type: Number
     permission: read-only
 
+  - name: SELECTION_STYLE_NONE
+    summary: Set the selection style to none.
+    description: |
+        Use with the <Titanium.UI.ListView.selectionStyle> and
+        <Titanium.UI.TableView.selectionStyle> properties.
+    type: Number
+    permission: read-only
+    platforms: [android, iphone, ipad, macos]
+    since: "10.1.0"
+
+  - name: SELECTION_STYLE_DEFAULT
+    summary: Set the selection style to system default.
+    description: |
+        Use with the <Titanium.UI.ListView.selectionStyle> and
+        <Titanium.UI.TableView.selectionStyle> properties.
+    type: Number
+    permission: read-only
+    platforms: [android, iphone, ipad, macos]
+    since: "10.1.0"
+
   - name: SEMANTIC_COLOR_TYPE_DARK
     summary: The value returned by <Titanium.UI.semanticColorType> when the device is in dark/night mode.
     type: String

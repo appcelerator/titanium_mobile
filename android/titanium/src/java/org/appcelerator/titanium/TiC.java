@@ -79,6 +79,7 @@ public class TiC
 	public static final String EVENT_KEY_PRESSED = "keypressed";
 	public static final String EVENT_HEADING = "heading";
 	public static final String EVENT_ITEM_CLICK = "itemclick";
+	public static final String EVENT_ITEMS_SELECTED = "itemsselected";
 	public static final String EVENT_LOAD = "load";
 	public static final String EVENT_LOADSTATE = "loadstate";
 	public static final String EVENT_LOCATION = "location";
@@ -152,6 +153,7 @@ public class TiC
 	public static final String EVENT_RESUME = "resume";
 	public static final String EVENT_RESUMED = "resumed";
 	public static final String EVENT_RETURN = "return";
+	public static final String EVENT_ROWS_SELECTED = "rowsselected";
 	public static final String EVENT_SCROLL = "scroll";
 	public static final String EVENT_SCROLLEND = "scrollend";
 	public static final String EVENT_SCROLLING = "scrolling";
@@ -237,6 +239,9 @@ public class TiC
 	public static final String PROPERTY_ADDRESS = "address";
 	public static final String PROPERTY_ALLOW_BACKGROUND = "allowBackground";
 	public static final String PROPERTY_ALLOW_MULTIPLE = "allowMultiple";
+	public static final String PROPERTY_ALLOWS_SELECTION_DURING_EDITING = "allowsSelectionDuringEditing";
+	public static final String PROPERTY_ALLOWS_MULTIPLE_SELECTION_DURING_EDITING
+		= "allowsMultipleSelectionDuringEditing";
 	public static final String PROPERTY_ALTITUDE = "altitude";
 	public static final String PROPERTY_ALTITUDE_ACCURACY = "altitudeAccuracy";
 	public static final String PROPERTY_ATTRIBUTES = "attributes";
@@ -670,7 +675,11 @@ public class TiC
 	public static final String PROPERTY_SELECTED_BACKGROUND_COLOR = "selectedBackgroundColor";
 	public static final String PROPERTY_SELECTED_BACKGROUND_IMAGE = "selectedBackgroundImage";
 	public static final String PROPERTY_SELECTED_INDEX = "selectedIndex";
+	public static final String PROPERTY_SELECTED_ITEMS = "selectedItems";
+	public static final String PROPERTY_SELECTION_INDICATOR = "selectionIndicator";
 	public static final String PROPERTY_SELECTION_OPENS = "selectionOpens";
+	public static final String PROPERTY_SELECTED_ROWS = "selectedRows";
+	public static final String PROPERTY_SELECTION_STYLE = "selectionStyle";
 	public static final String PROPERTY_SEPARATOR_COLOR = "separatorColor";
 	public static final String PROPERTY_SEPARATOR_HEIGHT = "separatorHeight";
 	public static final String PROPERTY_SEPARATOR_STYLE = "separatorStyle";
@@ -686,6 +695,7 @@ public class TiC
 	public static final String PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR = "showVerticalScrollIndicator";
 	public static final String PROPERTY_SHOW_PAGING_CONTROL = "showPagingControl";
 	public static final String PROPERTY_SHOW_PROGRESS = "showProgress";
+	public static final String PROPERTY_SHOW_SELECTION_CHECK = "showSelectionCheck";
 	public static final String PROPERTY_SISTER = "sister";
 	public static final String PROPERTY_SIZE = "size";
 	public static final String PROPERTY_SOFT_KEYBOARD_ON_FOCUS = "softKeyboardOnFocus";
@@ -698,6 +708,8 @@ public class TiC
 	public static final String PROPERTY_SPLIT_TRACK = "splitTrack";
 	public static final String PROPERTY_SPOUSE = "spouse";
 	public static final String PROPERTY_START = "start";
+	public static final String PROPERTY_STARTING_ITEM = "startingItem";
+	public static final String PROPERTY_STARTING_ROW = "startingRow";
 	public static final String PROPERTY_STATE = "state";
 	public static final String PROPERTY_STATUS = "status";
 	public static final String PROPERTY_STOP = "stop";

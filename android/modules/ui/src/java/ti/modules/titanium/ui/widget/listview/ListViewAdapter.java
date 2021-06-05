@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.selection.SelectionTracker;
 
 public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
 {
@@ -27,7 +26,6 @@ public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
 	private static int id_holder;
 	private LayoutInflater inflater;
 	private List<ListItemProxy> models;
-	private SelectionTracker tracker;
 
 	public ListViewAdapter(@NonNull Context context, @NonNull List<ListItemProxy> models)
 	{
@@ -94,10 +92,13 @@ public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
 	public void onBindViewHolder(@NonNull ListViewHolder holder, int position)
 	{
 		final ListItemProxy item = this.models.get(position);
-		final boolean selected = tracker != null ? tracker.isSelected(item) : false;
+		final boolean selected = this.tracker != null ? this.tracker.isSelected(item) : false;
+
+		// Notify item of its selected status.
+		// This is necessary to maintain selection status on theme change.
+		item.setSelected(selected);
 
 		// Update ListViewHolder with new model data.
-		// TODO: Optimize `bind()`.
 		holder.bind(item, selected);
 	}
 

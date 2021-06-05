@@ -55,6 +55,7 @@ public class ListItemProxy extends TiViewProxy
 	private KrollDict template;
 	private String templateId;
 	private boolean placeholder = false;
+	private boolean selected = false;
 
 	public ListItemProxy()
 	{
@@ -425,6 +426,24 @@ public class ListItemProxy extends TiViewProxy
 	}
 
 	/**
+	 * Determine if item is currently selected.
+	 *
+	 * @return Boolean of selection status.
+	 */
+	public boolean isSelected()
+	{
+		return selected;
+	}
+
+	/**
+	 * Set item selection status.
+	 */
+	public void setSelected(boolean selected)
+	{
+		this.selected = selected;
+	}
+
+	/**
 	 * Handle creation from ListDataItem object.
 	 *
 	 * @param options ListDataItem properties.
@@ -624,6 +643,21 @@ public class ListItemProxy extends TiViewProxy
 		if (name.equals(TiC.PROPERTY_SELECTED_BACKGROUND_IMAGE)) {
 			Log.w(TAG, "selectedBackgroundImage is deprecated, use backgroundSelectedImage instead.");
 			setProperty(TiC.PROPERTY_BACKGROUND_SELECTED_IMAGE, value);
+		}
+
+		// Set selected color from selection style.
+		if (!hasPropertyAndNotNull(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR)
+			&& name.equals(TiC.PROPERTY_SELECTION_STYLE)
+			&& value instanceof Integer) {
+			String selectionColor = null;
+
+			switch ((Integer) value) {
+				case UIModule.SELECTION_STYLE_NONE:
+					selectionColor = "transparent";
+					break;
+			}
+
+			setProperty(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR, selectionColor);
 		}
 
 		if (name.equals(TiC.PROPERTY_CAN_MOVE)) {

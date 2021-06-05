@@ -175,8 +175,8 @@ events:
     summary: |
         Fired when user stops two-pan gesture interaction for selecting multiple rows. 
         It is used in conjunction with <Titanium.UI.TableView.allowsMultipleSelectionInteraction>.
-    platforms: [iphone, ipad, macos]
-    since: 8.2.0
+    platforms: [android, iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
     properties:
       - name: selectedRows
         summary: List of rows selected by user.
@@ -958,7 +958,7 @@ methods:
 
   - name: setContentOffset
     summary: Sets the value of the content offset of the table view without animation by default.
-    platforms: [iphone, ipad, macos]
+    platforms: [android, iphone, ipad, macos]
     parameters:
       - name: contentOffset
         summary: |
@@ -973,7 +973,7 @@ methods:
         type: AnimatedOptions
         optional: true
         default: "{ animated: false }"
-    since: 3.4.0
+    since: {android: "10.1.0", iphone: "3.4.0", ipad: "3.4.0", macos: "9.2.0"}
 
   - name: selectRow
     summary: |
@@ -1065,14 +1065,16 @@ properties:
     type: Boolean
     default: true
     platforms: [iphone, ipad, macos]
+    since: {iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
 
   - name: allowsSelectionDuringEditing
     summary: Determines whether this table's rows can be selected while editing the table.
     description: Set to `true` to allow rows to be selected.
     type: Boolean
     default: false
-    platforms: [iphone, ipad, macos]
-
+    since: {android: "10.1.0", iphone: "5.4.0", ipad: "5.4.0", macos: "9.2.0"}
+    platforms: [android, iphone, ipad, macos]
+    
   - name: backgroundColor
     summary: Background color of the view, as a color name or hex triplet.
     description: |
@@ -1232,8 +1234,8 @@ properties:
     summary: Determines whether multiple items of this table view can be selected at the same time while editing the table.
     type: Boolean
     default: false
-    since: 8.2.0
-    platforms: [iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
+    platforms: [android, iphone, ipad, macos]
 
   - name: allowsMultipleSelectionInteraction
     summary: Allows a two-finger pan gesture to automatically transition the table view into editing mode and start selecting rows.
@@ -1245,7 +1247,7 @@ properties:
         Once user interaction stops the <Titanium.UI.TableView.rowsselected> event is fired.
     type: Boolean
     default: false
-    since: 8.2.0
+    since: {iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
     platforms: [iphone, ipad, macos]
 
   - name: footerView
@@ -1546,6 +1548,13 @@ properties:
     platforms: [iphone, ipad, android, macos]
     since: {android: "5.2.0"}
 
+  - name: showSelectionCheck
+    summary: Determines whether the selection checkmark is displayed on selected rows.
+    type: Boolean
+    default: true
+    since: {android: "10.1.0"}
+    platforms: [android]
+
   - name: showVerticalScrollIndicator
     summary: Determines whether this table view displays a vertical scroll indicator.
     description: Set to `false` to hide the vertical scroll indicator.
@@ -1812,8 +1821,8 @@ properties:
 ---
 name: SelectedRowObject
 summary: The arguments for the <Titanium.UI.TableView.rowsselected> event.
-since: 8.2.0
-platforms: [iphone, ipad, macos]    
+since: {android: "10.1.0", iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
+platforms: [android, iphone, ipad, macos]    
 properties:
   - name: index
     summary: Row index.

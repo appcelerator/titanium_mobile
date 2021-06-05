@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public abstract class TiRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH>
 {
 	protected Context context;
-	private SelectionTracker tracker;
+	protected SelectionTracker tracker;
 
 	/**
 	 * Get adapter context.

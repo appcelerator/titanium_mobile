@@ -270,8 +270,8 @@ events:
       - name: startingItem
         summary: First item selected when user started interaction.
         type: SelectedItem
-    platforms: [iphone, ipad, macos]
-    since: 8.2.0
+    platforms: [android, iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
 
   - name: delete
     summary: Fired when a list row is deleted by the user.
@@ -689,15 +689,15 @@ properties:
     summary: Determines whether this list view items can be selected while editing the table.
     type: Boolean
     default: false
-    since: "5.4.0"
-    platforms: [iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "5.4.0", ipad: "5.4.0", macos: "9.2.0"}
+    platforms: [android, iphone, ipad, macos]
 
   - name: allowsMultipleSelectionDuringEditing
     summary: Determines whether multiple items of this list view can be selected at the same time while editing the table.
     type: Boolean
     default: false
-    since: "7.0.0"
-    platforms: [iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "7.0.0", ipad: "7.0.0", macos: "9.2.0"}
+    platforms: [android, iphone, ipad, macos]
 
   - name: allowsMultipleSelectionInteraction
     summary: Allows a two-finger pan gesture to automatically transition the table view into editing mode and start selecting rows.
@@ -709,8 +709,8 @@ properties:
         Once user interaction stops the <Titanium.UI.ListView.itemsselected> event is fired.
     type: Boolean
     default: false
-    since: 8.2.0
-    platforms: [iphone, ipad, macos]
+    since: {android: "10.1.0", iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
+    platforms: [android, iphone, ipad, macos]
 
   - name: lazyLoadingEnabled
     summary: Determines if the list view should use lazy loading to load remote images.
@@ -953,6 +953,13 @@ properties:
     type: Number
     permission: read-only
 
+  - name: showSelectionCheck
+    summary: Determines whether the selection checkmark is displayed on selected items.
+    type: Boolean
+    default: true
+    since: {android: "10.1.0"}
+    platforms: [android]
+
   - name: showVerticalScrollIndicator
     summary: Determines whether this list view displays a vertical scroll indicator.
     description: Set to `false` to hide the vertical scroll indicator.
@@ -1146,8 +1153,8 @@ properties:
   - name: selectedItems
     summary: Returns the selected list view items.
     type: Array<ListItemEventType>
-    since: "7.0.0"
-    platforms: [iphone, ipad, macos]
+    since: { android: "10.1.0", iphone: "7.0.0", ipad: "7.0.0", macos: "9.2.0" }
+    platforms: [android, iphone, ipad, macos]
 
 methods:
   - name: scrollToItem
@@ -1292,7 +1299,7 @@ methods:
 
   - name: setContentOffset
     summary: Sets the value of the content offset of the list view without animation by default.
-    platforms: [iphone, ipad, macos]
+    platforms: [android, iphone, ipad, macos]
     parameters:
       - name: contentOffset
         summary: |
@@ -1305,7 +1312,7 @@ methods:
         type: AnimatedOptions
         optional: true
         default: "{ animated: false }"
-    since: 3.4.0
+    since: {android: "10.1.0", iphone: "3.4.0", ipad: "3.4.0", macos: "9.2.0"}
 
   - name: setMarker
     summary: Sets a reference item in the list view.
@@ -1827,8 +1834,8 @@ properties:
 ---
 name: SelectedItem
 summary: The arguments for the <Titanium.UI.ListView.itemsselected> event.
-since: 8.2.0
-platforms: [iphone, ipad, macos]
+since: {android: "10.1.0", iphone: "8.2.0", ipad: "8.2.0", macos: "9.2.0"}
+platforms: [android, iphone, ipad, macos]
 properties:
   - name: section
     summary: List section if the item is contained in a list section.
