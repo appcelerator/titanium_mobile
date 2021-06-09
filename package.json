@@ -92,7 +92,7 @@
     "ejs": "^3.1.6",
     "fields": "0.1.24",
     "fs-extra": "^10.0.0",
-    "ioslib": "^1.7.23",
+    "ioslib": "^1.7.24",
     "liveview": "^1.5.5",
     "lodash.merge": "^4.6.2",
     "markdown": "0.5.0",
