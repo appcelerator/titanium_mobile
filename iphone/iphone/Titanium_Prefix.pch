@@ -10,6 +10,12 @@
 #include "ThirdpartyNS.h"
 #import <AvailabilityInternal.h>
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
+#define IS_SDK_IOS_15 true
+#else
+#define IS_SDK_IOS_15 false
+#endif
+
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
 #define IS_SDK_IOS_14 true
 #else
