@@ -266,10 +266,6 @@ AndroidBuilder.prototype.config = function config(logger, config, cli) {
 								if (!alias) {
 									return callback(new Error(__('Invalid "--alias" value "%s"', value)));
 								}
-								if (alias.sigalg && alias.sigalg.toLowerCase() === 'sha256withrsa') {
-									logger.warn(__('The selected alias %s uses the %s signature algorithm which will likely have issues with Android 4.3 and older.', ('"' + value + '"').cyan, ('"' + alias.sigalg + '"').cyan));
-									logger.warn(__('Certificates that use the %s or %s signature algorithm will provide better compatibility.', '"SHA1withRSA"'.cyan, '"MD5withRSA"'.cyan));
-								}
 							}
 							callback(null, value);
 						}
