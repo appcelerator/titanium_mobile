@@ -9,7 +9,7 @@
 			android:configChanges="${tiActivityConfigChanges}"
 			android:theme="@style/Theme.AppDerived.Translucent"/>
 		<activity
-			android:name="ti.modules.titanium.media.TiCameraActivity"
+			android:name="ti.modules.titanium.media.TiCameraXActivity"
 			android:configChanges="${tiActivityConfigChanges}"
 			android:theme="@style/Theme.Titanium.Dark.Fullscreen"/>
 		<activity

@@ -3633,7 +3633,7 @@ AndroidBuilder.prototype.generateAndroidManifest = async function generateAndroi
 			`${this.appid}.${this.classname}Activity`,
 			'org.appcelerator.titanium.TiActivity',
 			'org.appcelerator.titanium.TiTranslucentActivity',
-			'org.appcelerator.titanium.TiCameraActivity',
+			'org.appcelerator.titanium.TiCameraXActivity',
 			'org.appcelerator.titanium.TiVideoActivity'
 		];
 		for (const activityName of tiActivityNames) {

@@ -768,6 +768,7 @@ public class TiC
 	public static final String PROPERTY_VERTICAL_ALIGN = "verticalAlign";
 	public static final String PROPERTY_VIBRATE_PATTERN = "vibratePattern";
 	public static final String PROPERTY_VIDEO_MAX_DURATION = "videoMaximumDuration";
+	public static final String PROPERTY_VIDEO_MAX_SIZE = "videoMaximumSize";
 	public static final String PROPERTY_VIDEO_QUALITY = "videoQuality";
 	public static final String PROPERTY_VISIBLE = "visible";
 	public static final String PROPERTY_VISIBILITY = "visibility";

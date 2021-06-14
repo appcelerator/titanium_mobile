@@ -1439,7 +1439,7 @@ properties:
         since: "7.0.0"
         notes: |
             Use <Titanium.Media.VIDEO_SCALING_RESIZE_ASPECT_FILL> instead.
-            
+
             This property has been removed for iOS in Titanium SDK 7.0.0 as of the official deprecation by Apple.
     summary: Scale video to fill the screen, clipping edges if necessary.
     description: |
@@ -1455,7 +1455,7 @@ properties:
         since: "7.0.0"
         notes: |
             Use <Titanium.Media.VIDEO_SCALING_RESIZE_ASPECT> instead.
-            
+
             This property has been removed for iOS in Titanium SDK 7.0.0 as of the official deprecation by Apple.
     platforms: [android]
     summary: Scale video to fit the screen, letterboxing if necessary.
@@ -1473,7 +1473,7 @@ properties:
         since: "7.0.0"
         notes: |
             Use <Titanium.Media.VIDEO_SCALING_MODE_RESIZE> instead.
-            
+
             This property has been removed for iOS in Titanium SDK 7.0.0 as of the official deprecation by Apple.
     summary: Video is scaled until both dimensions fit the screen exactly, stretching if necessary.
     description: This constant was removed on iOS in SDK 7.0.0
@@ -1891,6 +1891,27 @@ properties:
     default: true
     platforms: [iphone, ipad, macos]
 
+  - name: bitRate
+    summary: Specifies video bit rate (in bits/s). The default is 8 Mb/s.
+    type: int
+    default: 8388608
+    since: {android: "10.0.0"}
+    platforms: [android]
+
+  - name: frameRate
+    summary: Specifies video frame rate.
+    type: int
+    default: 30
+    since: {android: "10.0.0"}
+    platforms: [android]
+
+  - name: maxResolution
+    summary: Specifies video maximal resolution
+    type: ResolutionSize
+    default: {width: 1920, height: 1080}
+    since: {android: "10.0.0"}
+    platforms: [android]
+
   - name: saveToPhotoGallery
     summary: Specifies if the media should be saved to the photo gallery upon successful capture.
     type: Boolean
@@ -2256,3 +2277,15 @@ properties:
     summary: An Array of current output ports for the session. See the `AUDIO_SESSION_PORT` constants.
     type: Array<String>
     constants: Titanium.Media.AUDIO_SESSION_PORT_*
+---
+name: ResolutionSize
+summary: Maximum resolution
+platforms: [android]
+since: "10.0.0"
+properties:
+  - name: width
+    summary: Width
+    type: int
+  - name: height
+    summary: Height
+    type: int
