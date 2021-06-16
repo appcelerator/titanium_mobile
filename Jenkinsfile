@@ -279,7 +279,7 @@ timestamps {
 
 					// Install dependencies
 					timeout(5) {
-						sh 'npm ci'
+						sh 'npm ci -ddd'
 					}
 					// Run npm test, but record output in a file and check for failure of command by checking output
 					if (fileExists('npm_test.log')) {
