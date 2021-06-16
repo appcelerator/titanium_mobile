@@ -34,6 +34,26 @@ CFMutableSetRef krollBridgeRegistry = nil;
 
 @implementation KrollBridge
 
+- (NSDictionary<NSString *, id> *)modules
+{
+  // This is for backwards compatibility with native modules relying on a modules property that
+  // cached module ids -> module instances
+  // Note that this one will only return external native modules and relies on their moduleId
+  // method returning the correct valiue
+  NSDictionary<NSString *, id> *orig = [self.host valueForKey:@"modules"];
+  NSMutableDictionary<NSString *, id> *copy = [orig mutableCopy];
+  for (NSString *key in orig) {
+    id module = [orig objectForKey:key];
+    if ([module respondsToSelector:@selector(moduleId)]) {
+      NSString *moduleId = [module moduleId];
+      if (moduleId) {
+        copy[moduleId] = module;
+      }
+    }
+  }
+  return copy;
+}
+
 + (void)initialize
 {
   if (krollBridgeRegistry == nil) {
