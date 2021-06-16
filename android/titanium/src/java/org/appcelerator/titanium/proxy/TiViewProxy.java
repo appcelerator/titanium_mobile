@@ -35,8 +35,6 @@ import org.appcelerator.titanium.view.TiUIView;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Message;
@@ -901,41 +899,20 @@ public abstract class TiViewProxy extends KrollProxy
 	public TiBlob toImage()
 	{
 		//backward compat with maps
-		return toImage(null);
+		return handleToImage();
 	}
 
 	@Kroll.method
-	public TiBlob toImage(final @Kroll.argument(optional = true) KrollFunction callback)
+	public KrollPromise<TiBlob> toImage(final @Kroll.argument(optional = true) KrollFunction callback)
 	{
-		final boolean waitForFinish = (callback == null);
-		TiBlob blob;
+		return KrollPromise.create((promise) -> {
+			TiBlob blob = handleToImage();
 
-		/*
-		 * Callback don't exist. Just render on main thread and return blob.
-		 */
-		if (waitForFinish) {
-			blob = handleToImage();
-		}
-
-		/*
-		 * Callback exists. Perform async rendering and return an empty blob.
-		 */
-		else {
-			// Create a non-null empty blob to return.
-			blob = TiBlob.blobFromImage(Bitmap.createBitmap(1, 1, Config.ARGB_8888));
-			Runnable renderRunnable = new Runnable() {
-				public void run()
-				{
-					callback.callAsync(getKrollObject(), new Object[] { handleToImage() });
-				}
-			};
-
-			Thread renderThread = new Thread(renderRunnable);
-			renderThread.setPriority(Thread.MAX_PRIORITY);
-			renderThread.start();
-		}
-
-		return blob;
+			if (callback != null) {
+				callback.callAsync(getKrollObject(), new Object[] { blob });
+			}
+			promise.resolve(blob);
+		});
 	}
 
 	protected TiBlob handleToImage()

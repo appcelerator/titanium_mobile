@@ -670,8 +670,9 @@ LAYOUTFLAGS_SETTER(setHorizontalWrap, horizontalWrap, horizontalWrap, [self will
   [self replaceValue:newGradient forKey:@"backgroundGradient" notification:YES];
 }
 
-- (TiBlob *)toImage:(id)args
+- (KrollPromise *)toImage:(id)args
 {
+  KrollPromise *promise = [[[KrollPromise alloc] initInContext:[self currentContext]] autorelease];
   KrollCallback *callback = nil;
   BOOL honorScale = YES;
 
@@ -731,10 +732,11 @@ LAYOUTFLAGS_SETTER(setHorizontalWrap, horizontalWrap, horizontalWrap, [self will
         if (callback != nil) {
           [callback call:@[ blob ] thisObject:self];
         }
+        [promise resolve:@[ blob ]];
       },
       (callback == nil));
 
-  return blob;
+  return promise;
 }
 
 - (TiPoint *)convertPointToView:(id)args

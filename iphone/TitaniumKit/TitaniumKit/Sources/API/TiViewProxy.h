@@ -242,7 +242,7 @@ enum {
 - (id)animatedCenter;
 
 - (void)setBackgroundGradient:(id)arg;
-- (TiBlob *)toImage:(id)args;
+- (KrollPromise *)toImage:(id)args;
 
 #pragma mark nonpublic accessors not related to Housecleaning
 
