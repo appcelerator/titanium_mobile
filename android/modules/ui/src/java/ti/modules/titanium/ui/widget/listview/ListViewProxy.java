@@ -227,20 +227,6 @@ public class ListViewProxy extends RecyclerViewProxy
 		return "Ti.UI.ListView";
 	}
 
-	public List<ListItemProxy> getCurrentItems()
-	{
-		final TiListView listView = getListView();
-
-		if (listView != null) {
-			final ListViewAdapter adapter = listView.getAdapter();
-
-			if (adapter != null) {
-				return adapter.getModels();
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Get index for specified section.
 	 *

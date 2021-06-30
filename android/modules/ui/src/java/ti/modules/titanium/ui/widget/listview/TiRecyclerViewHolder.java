@@ -32,7 +32,7 @@ import org.appcelerator.titanium.util.TiUIHelper;
 
 import java.lang.ref.WeakReference;
 
-public abstract class TiRecyclerViewHolder extends RecyclerView.ViewHolder
+public abstract class TiRecyclerViewHolder<V extends TiViewProxy> extends RecyclerView.ViewHolder
 {
 	private static final String TAG = "TiRecyclerViewHolder";
 
@@ -45,7 +45,7 @@ public abstract class TiRecyclerViewHolder extends RecyclerView.ViewHolder
 
 	protected static Resources resources;
 
-	protected WeakReference<TiViewProxy> proxy;
+	protected WeakReference<V> proxy;
 
 	public TiRecyclerViewHolder(final Context context, final ViewGroup viewGroup)
 	{
@@ -165,11 +165,13 @@ public abstract class TiRecyclerViewHolder extends RecyclerView.ViewHolder
 	 *
 	 * @return TiViewProxy
 	 */
-	public TiViewProxy getProxy()
+	public V getProxy()
 	{
 		if (this.proxy != null) {
 			return this.proxy.get();
 		}
 		return null;
 	}
+
+	public abstract void bind(V proxy, boolean selected);
 }

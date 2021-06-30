@@ -49,14 +49,14 @@ public class TiTableView extends TiSwipeRefreshLayout implements OnSearchChangeL
 {
 	private static final String TAG = "TiTableView";
 
-	private static final int CACHE_SIZE = 32;
-	private static final int PRELOAD_INTERVAL = 800;
+	private static final int CACHE_SIZE = 48;
+	private static final int PRELOAD_INTERVAL = 4000;
 
 	private final TableViewAdapter adapter;
 	private final DividerItemDecoration decoration;
 	private final TableViewProxy proxy;
 	private final TiNestedRecyclerView recyclerView;
-	private final List<TableViewRowProxy> rows = new ArrayList<>(CACHE_SIZE);
+	private List<TableViewRowProxy> rows = new ArrayList<>(CACHE_SIZE);
 	private final SelectionTracker tracker;
 
 	private boolean isScrolling = false;
@@ -426,7 +426,7 @@ public class TiTableView extends TiSwipeRefreshLayout implements OnSearchChangeL
 	/**
 	 * Update table rows, including headers and footers.
 	 */
-	public void update()
+	public void update(boolean force)
 	{
 		final KrollDict properties = this.proxy.getProperties();
 		final boolean shouldPreload = this.rows.size() == 0;
@@ -447,8 +447,8 @@ public class TiTableView extends TiSwipeRefreshLayout implements OnSearchChangeL
 			query = query.toLowerCase();
 		}
 
-		// Clear current models.
-		this.rows.clear();
+		// Create new list to diff for changes against old list.
+		this.rows = new ArrayList<>(CACHE_SIZE);
 
 		// Add placeholder item for TableView header.
 		if (hasHeader) {
@@ -564,7 +564,7 @@ public class TiTableView extends TiSwipeRefreshLayout implements OnSearchChangeL
 		}
 
 		// Notify adapter of changes on UI thread.
-		this.adapter.notifyDataSetChanged();
+		this.adapter.update(this.rows, force);
 
 		// FIXME: This is not an ideal workaround for an issue where recycled items that were in focus
 		//        lose their focus when the data set changes. There are improvements to be made here.
@@ -588,5 +588,9 @@ public class TiTableView extends TiSwipeRefreshLayout implements OnSearchChangeL
 				}
 			});
 		}
+	}
+	public void update()
+	{
+		this.update(false);
 	}
 }

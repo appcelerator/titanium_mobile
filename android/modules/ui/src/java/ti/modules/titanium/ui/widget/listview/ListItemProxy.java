@@ -12,11 +12,10 @@ import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollEventCallback;
+import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollObject;
-import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
-import org.appcelerator.kroll.runtime.v8.V8Function;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.ColorProxy;
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -55,6 +54,7 @@ public class ListItemProxy extends TiViewProxy
 	private KrollDict template;
 	private String templateId;
 	private boolean placeholder = false;
+	private boolean hasAddedItemEvents = false;
 
 	public ListItemProxy()
 	{
@@ -80,44 +80,32 @@ public class ListItemProxy extends TiViewProxy
 	@Override
 	public TiUIView createView(Activity activity)
 	{
+		// Do not continue if this ListItem is a placeholder for a header/footer.
 		if (placeholder) {
-
-			// Placeholder for header or footer, do not create view.
 			return null;
 		}
 
-		final ListViewProxy listViewProxy = getListViewProxy();
+		// Fetch template assigned to this ListItem.
+		loadTemplate();
+		if (this.template == null) {
+			return null;
+		}
 
-		if (listViewProxy != null) {
-			final KrollDict listViewProperties = listViewProxy.getProperties();
-			final KrollDict listViewTemplates = listViewProperties.getKrollDict(TiC.PROPERTY_TEMPLATES);
-
-			if (this.templateId == null) {
-				final String defaultTemplateId = listViewProperties.optString(TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE,
-					UIModule.LIST_ITEM_TEMPLATE_DEFAULT);
-
-				// Attempt to obtain ListItem `template` identifier.
-				// If `template` is not set, use default.
-				this.templateId = properties.optString(TiC.PROPERTY_TEMPLATE, defaultTemplateId);
-			}
-			if (listViewTemplates != null && listViewTemplates.containsKey(templateId)) {
-
-				// Obtain specified template for item.
-				this.template = listViewTemplates.getKrollDict(templateId);
-			}
-			if (this.template != null) {
-
-				if (this.children.size() == 0) {
-
-					// Generate view and add children to parent.
-					generateViewFromTemplate(this, this.template);
+		// Apply template defined properties to this ListItem.
+		final KrollDict templateProperties = this.template.getKrollDict(TiC.PROPERTY_PROPERTIES);
+		if (templateProperties != null) {
+			for (KrollDict.Entry<String, Object> entry : templateProperties.entrySet()) {
+				if (!this.ignoredTemplateKeys.contains(entry.getKey())) {
+					setProperty(entry.getKey(), entry.getValue());
 				}
-
-				return new ItemView(this);
 			}
 		}
 
-		return null;
+		// Generate all child proxies from template and create all views.
+		if (!hasChildren()) {
+			generateViewFromTemplate(this, this.template);
+		}
+		return new ItemView(this);
 	}
 
 	/**
@@ -218,7 +206,6 @@ public class ListItemProxy extends TiViewProxy
 		final KrollDict templateProperties = template.getKrollDict(TiC.PROPERTY_PROPERTIES);
 		final Object[] childTemplates = (Object[]) template.get(TiC.PROPERTY_CHILD_TEMPLATES);
 		final String bindId = template.getString(TiC.PROPERTY_BIND_ID);
-		final KrollDict events = template.getKrollDict(TiC.PROPERTY_EVENTS);
 
 		if (parent == null) {
 			try {
@@ -240,20 +227,11 @@ public class ListItemProxy extends TiViewProxy
 				}
 
 				// Create instance with new properties.
-				// NOTE: Calling `getActivity()` initializes activity associated with the proxy.
-				parent.getActivity();
+				parent.setActivity(getActivity());
 				parent.handleCreationArgs(null, new Object[] { properties });
 
 			} catch (Exception e) {
 				Log.w(TAG, "Failed to create child proxy instance from template.");
-			}
-		} else if (templateProperties != null) {
-
-			// Apply template defined properties.
-			for (String k : templateProperties.keySet()) {
-				if (!ignoredTemplateKeys.contains(k)) {
-					parent.setProperty(k, templateProperties.get(k));
-				}
 			}
 		}
 		if (bindId != null) {
@@ -261,28 +239,9 @@ public class ListItemProxy extends TiViewProxy
 			// Include new instance binding.
 			binds.put(bindId, parent);
 		}
-		if (events != null) {
 
-			// Iterate through template events.
-			for (final String eventName : events.keySet()) {
-				final V8Function callback = (V8Function) events.get(eventName);
-				final KrollProxy proxy = parent;
-				final KrollObject krollObject = parent.getKrollObject();
-
-				// Add template event to item.
-				proxy.addEventListener(eventName, new KrollEventCallback()
-				{
-
-					@Override
-					public void call(Object data)
-					{
-						// Call callback defined in template.
-						callback.call(krollObject, new Object[] { handleEvent(eventName, data, false) });
-					}
-				});
-				krollObject.setHasListenersForEventType(eventName, true);
-			}
-		}
+		// Fetch event listeners from template and add them to the proxy.
+		addTemplateEventListeners(parent, template);
 
 		if (childTemplates != null) {
 
@@ -299,6 +258,198 @@ public class ListItemProxy extends TiViewProxy
 		}
 
 		return parent;
+	}
+
+	private void addTemplateEventListeners(final TiViewProxy proxy, KrollDict template)
+	{
+		// Validate arguments.
+		if ((proxy == null) || (template == null)) {
+			return;
+		}
+
+		// Fetch events assigned to given template.
+		final KrollDict eventDictionary = template.getKrollDict(TiC.PROPERTY_EVENTS);
+		if (eventDictionary == null) {
+			return;
+		}
+
+		// Make sure we only add events listeners once for the root ListItem.
+		// Note: ListItem's view is always re-created, unlike child views which are only created once.
+		if (proxy instanceof ListItemProxy) {
+			if (this.hasAddedItemEvents) {
+				return;
+			}
+			this.hasAddedItemEvents = true;
+		}
+
+		// Add event listeners to given proxy.
+		for (KrollDict.Entry<String, Object> entry : eventDictionary.entrySet()) {
+			if (!(entry.getValue() instanceof KrollFunction)) {
+				continue;
+			}
+			final String eventName = entry.getKey();
+			final KrollFunction callback = (KrollFunction) entry.getValue();
+			final KrollObject krollObject = proxy.getKrollObject();
+			proxy.addEventListener(eventName, new KrollEventCallback() {
+				@Override
+				public void call(Object data)
+				{
+					ListItemProxy itemProxy = getListItemContainerFor(proxy);
+					if (itemProxy != null) {
+						callback.call(krollObject, new Object[] { itemProxy.handleEvent(eventName, data, false) });
+					}
+				}
+			});
+			krollObject.setHasListenersForEventType(eventName, true);
+		}
+	}
+
+	private static ListItemProxy getListItemContainerFor(TiViewProxy proxy)
+	{
+		if (proxy == null) {
+			return null;
+		} else if (proxy instanceof ListItemProxy) {
+			return (ListItemProxy) proxy;
+		}
+		return getListItemContainerFor(proxy.getParent());
+	}
+
+	public void moveChildrenTo(ListItemProxy proxy)
+	{
+		// Validate argument.
+		if (proxy == null) {
+			return;
+		}
+
+		// Copy all child view proxy properties to this list item's dictionary.
+		// Saves view's current state when scrolled offscreen so we can restore it when scrolled back in.
+		// Note: Given "proxy" shouldn't have any child proxies, but do the copy just in case.
+		copyChildPropertiesFromProxies();
+		proxy.copyChildPropertiesFromProxies();
+
+		// Remove all children from given proxy. (If recycling is working as expected, it should have none.)
+		proxy.removeAllChildren();
+
+		// Do not continue if templates don't match. Prevents given proxy from re-using this proxy's views.
+		// Note: Should never happen if ListViewAdapter.getItemViewType() returns different IDs for different templates.
+		String templateId = getTemplateId();
+		if ((templateId == null) || !templateId.equals(proxy.getTemplateId())) {
+			return;
+		}
+
+		// Do not continue if this proxy has no child views.
+		// This will force given proxy to regenerate child proxies from template.
+		if (!hasChildren()) {
+			return;
+		}
+		TiViewProxy[] childProxies = getChildren();
+		if (childProxies[0].peekView() == null) {
+			return;
+		}
+
+		// Move this proxy's children to given proxy and overwrite their properties.
+		// Note: This also moves their native views. Updating properties will also update the native views.
+		proxy.loadTemplate();
+		proxy.copyChildPropertiesTo(childProxies, proxy.template);
+		proxy.add(childProxies);
+
+		// Now that this proxy has no children, release this proxy's 1 native view container.
+		// We do this to reduce memory footprint of all offscreen list items.
+		releaseViews();
+
+		// Remove all child binding IDs from this proxy except for the ListItem itself.
+		final String bindId = this.template.getString(TiC.PROPERTY_BIND_ID);
+		this.binds.clear();
+		if (bindId != null) {
+			this.binds.put(bindId, this);
+		}
+	}
+
+	private void copyChildPropertiesFromProxies()
+	{
+		for (HashMap.Entry<String, TiViewProxy> bindsEntry : this.binds.entrySet()) {
+			// Fetch the next child view proxy. (Skip the root ListItemProxy object.)
+			TiViewProxy proxy = bindsEntry.getValue();
+			if (proxy == this) {
+				continue;
+			}
+
+			// Do no continue if child proxy has no properties.
+			KrollDict proxyProperties = proxy.getProperties();
+			if (proxyProperties == null) {
+				continue;
+			}
+
+			// Copy all view proxy properties to this list item's dictionary.
+			// Saves view's current state when scrolled offscreen so we can restore it when scrolled back in.
+			Object object = this.childProperties.get(bindsEntry.getKey());
+			if (object instanceof HashMap) {
+				((HashMap) object).putAll(proxyProperties);
+			} else {
+				this.childProperties.put(bindsEntry.getKey(), new KrollDict(proxyProperties));
+			}
+		}
+	}
+
+	private void copyChildPropertiesTo(TiViewProxy[] proxies, KrollDict template)
+	{
+		// Validate arguments.
+		if ((proxies == null) || (proxies.length <= 0) || (template == null)) {
+			return;
+		}
+
+		// Fetch child templates nested under given template.
+		final Object[] childTemplates = (Object[]) template.get(TiC.PROPERTY_CHILD_TEMPLATES);
+
+		// Update all child proxies.
+		for (int index = 0; index < proxies.length; index++) {
+			// Fetch child's template.
+			KrollDict childTemplate = null;
+			if ((childTemplates != null) && (index < childTemplates.length)) {
+				Object objectTemplate = childTemplates[index];
+				if (objectTemplate instanceof KrollDict) {
+					childTemplate = (KrollDict) objectTemplate;
+				} else if (objectTemplate instanceof HashMap) {
+					childTemplate = new KrollDict((HashMap) objectTemplate);
+				}
+			}
+
+			// Fetch child's assigned configuration.
+			TiViewProxy tiProxy = null;
+			String bindId = null;
+			KrollDict events = null;
+			if (childTemplate != null) {
+				tiProxy = (TiViewProxy) childTemplate.get("tiProxy");
+				bindId = childTemplate.getString(TiC.PROPERTY_BIND_ID);
+				events = childTemplate.getKrollDict(TiC.PROPERTY_EVENTS);
+			}
+
+			// Fetch child's properties.
+			TiViewProxy proxy = proxies[index];
+			final KrollDict properties = new KrollDict();
+			if (tiProxy != null) {
+				properties.putAll(tiProxy.getProperties());
+			}
+			final Object childPropertiesObj = this.childProperties.get(bindId);
+			if (childPropertiesObj instanceof HashMap) {
+				properties.putAll((HashMap) childPropertiesObj);
+			}
+
+			// Assign properties to child. For best performance, only update property if value is different.
+			for (KrollDict.Entry<String, Object> entry : properties.entrySet()) {
+				if (proxy.shouldFireChange(proxy.getProperty(entry.getKey()), entry.getValue())) {
+					proxy.setPropertyAndFire(entry.getKey(), entry.getValue());
+				}
+			}
+
+			// Add child's binding ID to main dictionary.
+			if (bindId != null) {
+				this.binds.put(bindId, proxy);
+			}
+
+			// Update child's children. (This is recursive.)
+			copyChildPropertiesTo(proxy.getChildren(), childTemplate);
+		}
 	}
 
 	@Override
@@ -420,7 +571,10 @@ public class ListItemProxy extends TiViewProxy
 	 */
 	public String getTemplateId()
 	{
-		return templateId;
+		if (this.templateId == null) {
+			loadTemplate();
+		}
+		return this.templateId;
 	}
 
 	/**
@@ -630,15 +784,27 @@ public class ListItemProxy extends TiViewProxy
 		}
 	}
 
-	/**
-	 * Release item.
-	 */
-	@Override
-	public void release()
+	private void loadTemplate()
 	{
-		releaseViews();
+		// Fetch the ListView this ListItem has been added to.
+		final ListViewProxy listViewProxy = getListViewProxy();
+		if (listViewProxy == null) {
+			return;
+		}
 
-		super.release();
+		// Fetch template that this ListItem should use, if not done already.
+		final KrollDict listViewProperties = listViewProxy.getProperties();
+		final KrollDict listViewTemplates = listViewProperties.getKrollDict(TiC.PROPERTY_TEMPLATES);
+		if (this.templateId == null) {
+			// Attempt to obtain ListItem `template` identifier. If not set, then use default template.
+			final String defaultTemplateId = listViewProperties.optString(
+				TiC.PROPERTY_DEFAULT_ITEM_TEMPLATE, UIModule.LIST_ITEM_TEMPLATE_DEFAULT);
+			this.templateId = properties.optString(TiC.PROPERTY_TEMPLATE, defaultTemplateId);
+		}
+		if ((listViewTemplates != null) && listViewTemplates.containsKey(this.templateId)) {
+			// Obtain specified template for item.
+			this.template = listViewTemplates.getKrollDict(this.templateId);
+		}
 	}
 
 	/**
@@ -670,7 +836,7 @@ public class ListItemProxy extends TiViewProxy
 	 * ItemView class used for ListItem.
 	 * Auto-fills to width of parent.
 	 */
-	private class ItemView extends TiView
+	private static class ItemView extends TiView
 	{
 		public ItemView(TiViewProxy proxy)
 		{

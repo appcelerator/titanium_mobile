@@ -281,7 +281,7 @@ public class TiUIListView extends TiUIView
 			|| key.equals(TiC.PROPERTY_TOUCH_FEEDBACK_COLOR)) {
 
 			// Update list items.
-			this.listView.update();
+			this.listView.update(true);
 
 			// Return to prevent property being handled by TiUIView.
 			return;

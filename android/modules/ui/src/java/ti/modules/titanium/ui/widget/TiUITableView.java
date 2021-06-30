@@ -284,7 +284,7 @@ public class TiUITableView extends TiUIView
 			|| key.equals(TiC.PROPERTY_TOUCH_FEEDBACK_COLOR)) {
 
 			// Update table items.
-			this.tableView.update();
+			this.tableView.update(true);
 
 			// Return to prevent property being handled by TiUIView.
 			return;

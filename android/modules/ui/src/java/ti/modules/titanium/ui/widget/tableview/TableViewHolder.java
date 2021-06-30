@@ -42,7 +42,7 @@ import ti.modules.titanium.ui.TableViewSectionProxy;
 import ti.modules.titanium.ui.widget.TiUITableView;
 import ti.modules.titanium.ui.widget.listview.TiRecyclerViewHolder;
 
-public class TableViewHolder extends TiRecyclerViewHolder
+public class TableViewHolder extends TiRecyclerViewHolder<TableViewRowProxy>
 {
 	private static final String TAG = "TableViewHolder";
 

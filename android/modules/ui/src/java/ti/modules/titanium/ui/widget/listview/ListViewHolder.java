@@ -37,7 +37,7 @@ import java.lang.ref.WeakReference;
 import ti.modules.titanium.ui.UIModule;
 import ti.modules.titanium.ui.widget.TiUIListView;
 
-public class ListViewHolder extends TiRecyclerViewHolder
+public class ListViewHolder extends TiRecyclerViewHolder<ListItemProxy>
 {
 	private static final String TAG = "ListViewHolder";
 

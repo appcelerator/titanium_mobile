@@ -6,81 +6,59 @@
  */
 package ti.modules.titanium.ui.widget.listview;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiRHelper;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.selection.SelectionTracker;
 
-public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
+public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder, ListItemProxy>
 {
 	private static final String TAG = "ListViewAdapter";
 
-	private static int id_holder;
-	private LayoutInflater inflater;
-	private List<ListItemProxy> models;
-	private SelectionTracker tracker;
+	private final TreeMap<String, LinkedList<ListItemProxy>> recyclableItemsMap = new TreeMap<>();
 
 	public ListViewAdapter(@NonNull Context context, @NonNull List<ListItemProxy> models)
 	{
-		this.context = context;
+		super(context, models);
 
-		// Obtain layout inflater instance.
-		inflater = LayoutInflater.from(context);
-
-		// Obtain TableViewHolder layout identifier.
+		// Obtain ListViewHolder layout identifier.
 		try {
-			if (id_holder == 0) {
-				id_holder = TiRHelper.getResource("layout.titanium_ui_listview_holder");
+			if (this.id_holder == 0) {
+				this.id_holder = TiRHelper.getResource("layout.titanium_ui_listview_holder");
 			}
 		} catch (TiRHelper.ResourceNotFoundException e) {
 			Log.e(TAG, "Could not load 'layout.titanium_ui_listview_holder'.");
 		}
-
-		this.models = models;
-
-		setHasStableIds(true);
 	}
 
 	/**
-	 * Get number of items in list.
-	 *
-	 * @return Integer of item count.
-	 */
-	@Override
-	public int getItemCount()
-	{
-		return this.models.size();
-	}
-
-	/**
-	 * Get unique item identifier.
-	 *
+	 * Get unique integer identifier of the template the item uses.
+	 * This tells the RecyclerView to only bind scrolled-in items to holders of the same type/template.
 	 * @param position Index position of item to obtain identifier.
-	 * @return Long of item identifier.
+	 * @return Unique integer ID of the template the item uses.
 	 */
 	@Override
-	public long getItemId(int position)
+	public int getItemViewType(int position)
 	{
-		return this.models.get(position).hashCode();
-	}
+		final ListItemProxy proxy = this.models.get(position);
 
-	/**
-	 * Get list of models (items).
-	 *
-	 * @return List of models.
-	 */
-	public List<ListItemProxy> getModels()
-	{
-		return this.models;
+		if (proxy != null) {
+			final String templateId = proxy.getTemplateId();
+
+			if (templateId != null) {
+				return templateId.hashCode();
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -93,11 +71,32 @@ public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
 	@Override
 	public void onBindViewHolder(@NonNull ListViewHolder holder, int position)
 	{
+		// Fetch item proxy for given list position.
 		final ListItemProxy item = this.models.get(position);
 		final boolean selected = tracker != null ? tracker.isSelected(item) : false;
+		final LinkedList<ListItemProxy> recyclableItems = this.recyclableItemsMap.get(item.getTemplateId());
+
+		// Check if we have any recyclable items for the current template.
+		if (recyclableItems != null) {
+
+			// If item is in recycle collection, then remove it.
+			recyclableItems.remove(item);
+
+			// If item has no child proxies/views, then take the children from a recyclable item.
+			// This significantly boosts scroll performance by avoiding creating new views.
+			if (!item.hasChildren()) {
+				while (!recyclableItems.isEmpty()) {
+					final ListItemProxy oldItem = recyclableItems.poll();
+
+					if ((oldItem != null) && (oldItem.getHolder() == null) && oldItem.hasChildren()) {
+						oldItem.moveChildrenTo(item);
+						break;
+					}
+				}
+			}
+		}
 
 		// Update ListViewHolder with new model data.
-		// TODO: Optimize `bind()`.
 		holder.bind(item, selected);
 	}
 
@@ -112,8 +111,8 @@ public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
 	@Override
 	public ListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
 	{
-		// Create new TableViewHolder instance.
-		final RelativeLayout layout = (RelativeLayout) inflater.inflate(id_holder, null);
+		// Create new ListViewHolder instance.
+		final RelativeLayout layout = (RelativeLayout) this.inflater.inflate(this.id_holder, null);
 		return new ListViewHolder(parent.getContext(), layout);
 	}
 
@@ -128,21 +127,26 @@ public class ListViewAdapter extends TiRecyclerViewAdapter<ListViewHolder>
 	{
 		super.onViewRecycled(holder);
 
-		// Release child views for recycled holder.
-		final TiViewProxy proxy = holder.getProxy();
-		if (proxy != null) {
-			proxy.releaseViews();
-		}
-	}
+		final TiViewProxy view = holder.getProxy();
+		if (view instanceof ListItemProxy) {
+			final ListItemProxy item = (ListItemProxy) view;
 
-	/**
-	 * Replace models in adapter.
-	 *
-	 * @param models Replacement models.
-	 */
-	public void replaceModels(List<ListItemProxy> models)
-	{
-		this.models = models;
-		notifyDataSetChanged();
+			// Add item to recycle list so that it's child proxies/views can be re-used by another item.
+			if (item.hasChildren() && (item.getHolder() == holder)) {
+				LinkedList<ListItemProxy> recyclableItems = this.recyclableItemsMap.get(item.getTemplateId());
+				if (recyclableItems == null) {
+					recyclableItems = new LinkedList<>();
+					this.recyclableItemsMap.put(item.getTemplateId(), recyclableItems);
+				}
+				if (!recyclableItems.contains(item)) {
+					item.setHolder(null);
+					recyclableItems.add(item);
+				}
+			}
+		} else if (view != null) {
+
+			// Release the native views for all other proxy types.
+			view.releaseViews();
+		}
 	}
 }
