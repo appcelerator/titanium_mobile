@@ -95,7 +95,7 @@ describe('Date', function () {
 		should(date.toLocaleTimeString([ 'en-US' ], options)).be.a.String();
 		should(date.toLocaleTimeString([ 'en-US', 'de-DE' ], options)).be.a.String();
 
-		should(date.toLocaleTimeString('en-US', options)).be.equalOneOf(['8:02:05 PM', '8:02:05 in the evening']);
+		should(date.toLocaleTimeString('en-US', options)).be.equalOneOf([ '8:02:05 PM', '8:02:05 in the evening' ]);
 		should(date.toLocaleTimeString('de-DE', options)).be.equalOneOf([ '8:02:05 PM', '8:02:05 nachm.', '8:02:05 abends' ]);
 
 		should(date.toLocaleTimeString('en-US')).be.equalOneOf([ '8:02:05 PM', '20:02:05' ]);
