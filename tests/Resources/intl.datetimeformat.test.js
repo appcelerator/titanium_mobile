@@ -5,11 +5,12 @@
  * Please see the LICENSE included with this distribution for details.
  */
 /* eslint-env mocha */
-/* globals OS_ANDROID */
+/* globals OS_ANDROID, OS_VERSION_MAJOR */
 
 /* eslint no-unused-expressions: "off" */
 'use strict';
 const should = require('./utilities/assertions');
+const utilities = require('./utilities/utilities');
 
 describe('Intl.DateTimeFormat',  () => {
 	it('#constructor()', () => {
@@ -95,9 +96,9 @@ describe('Intl.DateTimeFormat',  () => {
 				timeZone: 'UTC'
 			};
 			let formatter = new Intl.DateTimeFormat('en-US', options);
-			should(formatter.format(date)).be.eql('8:02:05 PM');
+			should(formatter.format(date)).be.equalOneOf([ '8:02:05 PM', '8:02:05 in the evening' ]);
 			formatter = new Intl.DateTimeFormat('de-DE', options);
-			should(formatter.format(date)).be.equalOneOf([ '8:02:05 PM', '8:02:05 nachm.' ]);
+			should(formatter.format(date)).be.equalOneOf([ '8:02:05 PM', '8:02:05 nachm.', '8:02:05 abends'  ]);
 		});
 
 		it('24 hour time', () => {
@@ -192,7 +193,7 @@ describe('Intl.DateTimeFormat',  () => {
 			should(partsArray[index++]).be.eql({ type: 'minute', value: '15' });
 			should(partsArray[index++]).be.eql({ type: 'literal', value: ':' });
 			should(partsArray[index++]).be.eql({ type: 'second', value: '30' });
-			if (OS_ANDROID) {
+			if (OS_ANDROID || (utilities.isMacOS() && OS_VERSION_MAJOR >= 11)) {
 				should(partsArray[index++]).be.eql({ type: 'literal', value: '.' });
 				should(partsArray[index++]).be.eql({ type: 'fractionalSecond', value: '123' });
 			}

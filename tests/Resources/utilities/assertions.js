@@ -170,6 +170,8 @@ class ImageMatchDetails {
 			// Then try density specific image
 			result.push(`${withoutSuffix}@${density}x.png`);
 		}
+		// Try device specific image
+		result.push(`${withoutSuffix}~${Ti.Platform.osname}.png`);
 		// Then try base image
 		result.push(`${withoutSuffix}.png`);
 
