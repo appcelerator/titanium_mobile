@@ -9,7 +9,6 @@
 	"What is the name of the keystore's certificate alias?": "What is the name of the keystore's certificate alias?",
 	"Select a certificate alias by number or name": "Select a certificate alias by number or name",
 	"Invalid \"--alias\" value \"%s\"": "Invalid \"--alias\" value \"%s\"",
-	"The selected alias %s uses the %s signature algorithm which will likely have issues with Android 4.3 and older.": "The selected alias %s uses the %s signature algorithm which will likely have issues with Android 4.3 and older.",
 	"Certificates that use the %s or %s signature algorithm will provide better compatibility.": "Certificates that use the %s or %s signature algorithm will provide better compatibility.",
 	"the path to the Android SDK": "the path to the Android SDK",
 	"path": "path",
