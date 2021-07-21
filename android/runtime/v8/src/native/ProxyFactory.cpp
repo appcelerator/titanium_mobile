@@ -54,23 +54,13 @@ Local<Object> ProxyFactory::createV8Proxy(v8::Isolate* isolate, Local<Value> cla
 		return Local<Object>();
 	}
 
-	// FIXME: We pick the first item in exports as the constructor. We should do something more intelligent (for ES6 look at default export?)
-	Local<Array> names;
-	MaybeLocal<Array> possibleNames = exports->GetPropertyNames(context);
-	if (!possibleNames.ToLocal(&names) || names->Length() < 1) {
-		v8::String::Utf8Value classStr(isolate, className);
-		LOGE(TAG, "Failed to find constructor in exports for %s", *classStr);
-		LOG_JNIENV_ERROR("while creating V8 Proxy.");
-		return Local<Object>();
-	}
-	MaybeLocal<Value> possibleConstructor = exports->Get(context, names->Get(context, 0).ToLocalChecked());
-	if (possibleConstructor.IsEmpty()) {
+	MaybeLocal<Value> possibleConstructor = exports->Get(context, Proxy::constructorSymbol.Get(isolate));
+	if (possibleConstructor.IsEmpty() || !possibleConstructor.ToLocalChecked()->IsFunction()) {
 		v8::String::Utf8Value classStr(isolate, className);
 		LOGE(TAG, "Failed to get constructor in exports for %s", *classStr);
 		LOG_JNIENV_ERROR("while creating V8 Proxy.");
 		return Local<Object>();
 	}
-
 	Local<Function> creator = possibleConstructor.ToLocalChecked().As<Function>();
 
 	Local<Value> javaObjectExternal = External::New(isolate, javaProxy);
