@@ -28,6 +28,7 @@ import ti.modules.titanium.ui.AttributedStringProxy;
 import ti.modules.titanium.ui.UIModule;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -265,10 +266,48 @@ public class TiUIText extends TiUIView implements TextWatcher, OnEditorActionLis
 			}
 		}
 
+		if (d.containsKey(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_ENABLED)) {
+			if (TiConvert.toBoolean(d.get(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_ENABLED), false)) {
+				textInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
+			} else {
+				textInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+			}
+		}
+
+		setPasswordToggleTintList(d);
+
 		// Update virtual keyboard to use view's current IME settings.
 		restartInputMethodManager();
 
 		disableChangeEvent = false;
+	}
+
+	private void setPasswordToggleTintList(KrollDict d)
+	{
+		int toggleColor = Color.TRANSPARENT;
+		int toggleTintColor = Color.TRANSPARENT;
+
+		if (d.containsKey(TiC.PROPERTY_COLOR)) {
+			toggleTintColor = TiConvert.toColor(d, TiC.PROPERTY_COLOR);
+		}
+
+		if (d.containsKey(TiC.PROPERTY_HINT_TEXT_COLOR)) {
+			toggleColor = TiConvert.toColor(d, TiC.PROPERTY_HINT_TEXT_COLOR);
+		}
+
+		if (d.containsKey(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_COLOR)) {
+			toggleColor = TiConvert.toColor(d, TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_COLOR);
+		}
+
+		if (d.containsKey(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_TINT_COLOR)) {
+			toggleTintColor = TiConvert.toColor(d, TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_TINT_COLOR);
+		}
+
+		int stateToUse = android.R.attr.state_checked;
+		int[][] textColorStates = new int[][] { new int[] { stateToUse }, new int[] {} };
+		int[] textColors = { toggleTintColor, toggleColor };
+		ColorStateList colorStateList = new ColorStateList(textColorStates, textColors);
+		textInputLayout.setEndIconTintList(colorStateList);
 	}
 
 	private void updateTextField()
@@ -314,6 +353,11 @@ public class TiUIText extends TiUIView implements TextWatcher, OnEditorActionLis
 	{
 		if (Log.isDebugModeEnabled()) {
 			Log.d(TAG, "Property: " + key + " old: " + oldValue + " new: " + newValue, Log.DEBUG_MODE);
+		}
+		if (key.equals(TiC.PROPERTY_COLOR) || key.equals(TiC.PROPERTY_HINT_TEXT_COLOR)
+			|| key.equals(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_COLOR)
+			|| key.equals(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_TINT_COLOR)) {
+			setPasswordToggleTintList(proxy.getProperties());
 		}
 		if (key.equals(TiC.PROPERTY_AUTOFILL_TYPE) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			tv.setAutofillHints(TiConvert.toString(newValue));
@@ -392,6 +436,12 @@ public class TiUIText extends TiUIView implements TextWatcher, OnEditorActionLis
 		} else if (key.equals(TiC.PROPERTY_FULLSCREEN)) {
 			handleFullscreen(proxy.getProperties());
 			restartInputMethodManager();
+		} else if (key.equals(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_ENABLED)) {
+			if (TiConvert.toBoolean(newValue, false)) {
+				textInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
+			} else {
+				textInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+			}
 		} else if (key.equals(TiC.PROPERTY_LINES)) {
 			if (!field) {
 				this.viewHeightInLines = TiConvert.toInt(newValue, 0);

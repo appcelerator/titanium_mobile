@@ -10,7 +10,7 @@ description: |
 
     #### `click` event in iOS
 
-    In iOS 11+, `click` event in text field is not fired due to changes from apple. 
+    In iOS 11+, `click` event in text field is not fired due to changes from apple.
     Use `touchstart` event instead of `click` event.
 extends: Titanium.UI.View
 since: "0.8"
@@ -513,6 +513,37 @@ properties:
     since: "7.5.0"
     osver: { ios: { min: "12.0" } }
     platforms: [iphone, ipad, macos]
+
+  - name: passwordVisibilityToggleColor
+    summary: Color of password visibility toggle
+    description: |
+        Color applied to password visibility toggle when field's input is not visible.
+        This property only works when <Titanium.UI.TextField.passwordVisibilityToggleEnabled> is set `true`.
+    type: String
+    default: value of <Titanium.UI.TextField.hintTextColor> property
+    since: {android: "10.0.1"}
+    platforms: [android]
+
+  - name: passwordVisibilityToggleEnabled
+    summary: Determines whether the password visibility toggle functionality is enabled or not
+    description: |
+        When enabled, a button is placed at the end of the TextField which enables the user to switch
+        between the field's input being visibly disguised or not.
+        This property only works when <Titanium.UI.TextField.passwordMask> is set `true`.
+    type: boolean
+    default: false
+    since: {android: "10.0.1"}
+    platforms: [android]
+
+  - name: passwordVisibilityToggleTintColor
+    summary: Tint color of password visibility toggle
+    description: |
+        Color applied to password visibility toggle when field's input is visible.
+        This property only works when <Titanium.UI.TextField.passwordVisibilityToggleEnabled> is set `true`.
+    type: String
+    default: value of <Titanium.UI.TextField.color> property
+    since: {android: "10.0.1"}
+    platforms: [android]
 
   - name: returnKeyType
     summary: Specifies the text to display on the keyboard `Return` key when this field is focused.

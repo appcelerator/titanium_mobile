@@ -45,7 +45,10 @@ import android.app.Activity;
 		TiC.PROPERTY_VALUE,
 		TiC.PROPERTY_VERTICAL_ALIGN,
 		TiC.PROPERTY_RETURN_KEY_TYPE,
-		TiC.PROPERTY_PADDING
+		TiC.PROPERTY_PADDING,
+		TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_COLOR,
+		TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_ENABLED,
+		TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_TINT_COLOR
 })
 public class TextFieldProxy extends TiViewProxy
 {
@@ -57,6 +60,7 @@ public class TextFieldProxy extends TiViewProxy
 		defaultValues.put(TiC.PROPERTY_ENABLE_COPY, true);
 		defaultValues.put(TiC.PROPERTY_FULLSCREEN, true);
 		defaultValues.put(TiC.PROPERTY_HINT_TYPE, UIModule.HINT_TYPE_STATIC);
+		defaultValues.put(TiC.PROPERTY_PASSWORD_VISIBILITY_TOGGLE_ENABLED, false);
 	}
 
 	@Override

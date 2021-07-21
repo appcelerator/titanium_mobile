@@ -606,6 +606,9 @@ public class TiC
 	public static final String PROPERTY_PARTNER = "partner";
 	public static final String PROPERTY_PASSWORD = "password";
 	public static final String PROPERTY_PASSWORD_MASK = "passwordMask";
+	public static final String PROPERTY_PASSWORD_VISIBILITY_TOGGLE_COLOR = "passwordVisibilityToggleColor";
+	public static final String PROPERTY_PASSWORD_VISIBILITY_TOGGLE_ENABLED = "passwordVisibilityToggleEnabled";
+	public static final String PROPERTY_PASSWORD_VISIBILITY_TOGGLE_TINT_COLOR = "passwordVisibilityToggleTintColor";
 	public static final String PROPERTY_PATH = "path";
 	public static final String PROPERTY_PERSISTENT = "persistent";
 	public static final String PROPERTY_PHONE = "phone";
