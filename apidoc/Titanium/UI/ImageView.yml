@@ -201,6 +201,25 @@ properties:
         for more information.
     type: [ String, Titanium.Blob, Titanium.Filesystem.File ]
 
+  - name: imageTouchFeedback
+    summary: Enables a ripple effect when the foreground image is touched.
+    description: |
+        Note that the [touchFeedback](Titanium.UI.View.touchFeedback) property applies a ripple effect to the
+        view's background. If the image is opaque and completely covers the view (such as a photo),
+        then the background's ripple won't be visible. In this case, you should use this `imageTouchFeedback`
+        property to apply a ripple effect to the foreground image assigned via the `image` property.
+    type: Boolean
+    default: false
+    platforms: [android]
+    since: "10.1.0"
+
+  - name: imageTouchFeedbackColor
+    summary: Optional touch feedback ripple color. This has no effect unless `imageTouchFeedback` is true.
+    description: Defaults to provided theme color.
+    type: String
+    platforms: [android]
+    since: "10.1.0"
+
   - name: images
     summary: |
         Array of images to animate, defined using local filesystem paths, `File` objects,

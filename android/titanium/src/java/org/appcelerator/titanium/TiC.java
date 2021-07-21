@@ -473,6 +473,8 @@ public class TiC
 	public static final String PROPERTY_ICONIFIED_BY_DEFAULT = "iconifiedByDefault";
 	public static final String PROPERTY_ID = "id";
 	public static final String PROPERTY_IMAGE = "image";
+	public static final String PROPERTY_IMAGE_TOUCH_FEEDBACK = "imageTouchFeedback";
+	public static final String PROPERTY_IMAGE_TOUCH_FEEDBACK_COLOR = "imageTouchFeedbackColor";
 	public static final String PROPERTY_IMAGES = "images";
 	public static final String PROPERTY_IMPORTANCE = "importance";
 	public static final String PROPERTY_INDICATOR_COLOR = "indicatorColor";

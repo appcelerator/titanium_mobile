@@ -253,6 +253,30 @@ describe('Titanium.UI.ImageView', function () {
 		});
 	});
 
+	describe.android('.imageTouchFeedback', () => {
+		function test(imageViewProperties, finish) {
+			win = Ti.UI.createWindow();
+			win.add(Ti.UI.createImageView(imageViewProperties));
+			win.addEventListener('postlayout', function listener() {
+				win.removeEventListener('postlayout', listener);
+				finish();
+			});
+			win.open();
+		}
+
+		it('without image', function (finish) {
+			test({ imageTouchFeedback: true }, finish);
+		});
+
+		it('with image', function (finish) {
+			test({ image: 'Logo.png', imageTouchFeedback: true }, finish);
+		});
+
+		it('with imageTouchFeedbackColor', function (finish) {
+			test({ image: 'Logo.png', imageTouchFeedback: true, imageTouchFeedbackColor: 'yellow' }, finish);
+		});
+	});
+
 	// TODO: Combine all tests for 'images' property into one suite
 	// TODO Make this test cross-platform. We're using ms-appx urls here
 	it.windows('images', function (finish) {
