@@ -618,9 +618,10 @@ public class ListViewProxy extends RecyclerViewProxy
 	 * @param itemIndex Index of item in section.
 	 */
 	@Kroll.method
-	public void scrollToItem(int sectionIndex, int itemIndex)
+	public void scrollToItem(int sectionIndex, int itemIndex, @Kroll.argument(optional = true) KrollDict animation)
 	{
 		final TiListView listView = getListView();
+		final boolean animated = animation == null || animation.optBoolean(TiC.PROPERTY_ANIMATED, true);
 
 		if (listView != null) {
 			final ListSectionProxy section = getSectionByIndex(sectionIndex);
@@ -629,7 +630,12 @@ public class ListViewProxy extends RecyclerViewProxy
 				final ListItemProxy item = section.getListItemAt(itemIndex);
 
 				if (item != null) {
-					listView.getRecyclerView().smoothScrollToPosition(listView.getAdapterIndex(item.index));
+
+					if (animated) {
+						listView.getRecyclerView().smoothScrollToPosition(listView.getAdapterIndex(item.index));
+					} else {
+						listView.getRecyclerView().scrollToPosition(listView.getAdapterIndex(item.index));
+					}
 				}
 			}
 		}
@@ -644,7 +650,7 @@ public class ListViewProxy extends RecyclerViewProxy
 	@Kroll.method
 	public void selectItem(int sectionIndex, int itemIndex)
 	{
-		scrollToItem(sectionIndex, itemIndex);
+		scrollToItem(sectionIndex, itemIndex, null);
 
 		final TiListView listView = getListView();
 

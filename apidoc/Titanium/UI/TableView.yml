@@ -892,7 +892,7 @@ methods:
         type: Number
 
       - name: animation
-        summary: Animation properties. (iOS only.)
+        summary: Animation properties.
         type: TableViewAnimationProperties
         optional: true
 
@@ -922,7 +922,7 @@ methods:
         type: Number
 
       - name: animation
-        summary: Animation properties. (iOS only.)
+        summary: Animation properties.
         type: TableViewAnimationProperties
         optional: true
 
@@ -1772,11 +1772,13 @@ examples:
 name: TableViewAnimationProperties
 summary: A simple object for specifying the animation properties to use when inserting or deleting rows, or scrolling the table.
 description: |
-    These properties are only used on iOS. Not all properties apply to all methods.
+    Not all properties apply to all methods.
 
     `animationStyle` does not apply to the `scrollToTop` or `scrollToIndex` methods.
 
     `positon` only applies to the `scrollToIndex` method.
+platforms: [iphone, ipad, android, macos]
+since: {android: "10.1.0", iphone: "3.1.0", ipad: "3.1.0", macos: "9.2.0"}
 properties:
   - name: animated
     summary: Whether this table change should be animated. Ignored if any `animationStyle` value is specified.
