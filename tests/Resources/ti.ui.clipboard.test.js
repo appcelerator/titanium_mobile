@@ -151,35 +151,31 @@ describe('Titanium.UI.Clipboard', () => {
 				should(Ti.UI.Clipboard.getText).be.a.Function();
 			});
 
-			it('returns empty string with empty clipboard', () => {
+			it('returns null with empty clipboard', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
+				should.not.exist(Ti.UI.Clipboard.getText()); // Now gives null or undefined on both OSes when empty
 			});
 
 			it('returns given string after setText()', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setText('setText');
 				should(Ti.UI.Clipboard.getText()).eql('setText');
 			});
 
 			it('returns given string after setData(\'text\')', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setData('text', 'setData');
 				should(Ti.UI.Clipboard.getText()).eql('setData');
 			});
 
 			it('returns given string after setData(\'text/plain\')', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setData('text/plain', 'setData');
 				should(Ti.UI.Clipboard.getText()).eql('setData');
 			});
 
 			it.ios('returns given string after setData(\'public.plain-text\')', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setData('public.plain-text', 'setData');
 				should(Ti.UI.Clipboard.getText()).eql('setData');
 			});
@@ -446,12 +442,7 @@ describe('Titanium.UI.Clipboard', () => {
 	describe('examples', () => {
 		it('Copy Text to the Clipboard', () => {
 			Ti.UI.Clipboard.clearText();
-			// returns empty string on Android and undefined on iOS
-			if (OS_ANDROID) {
-				should(Ti.UI.Clipboard.getText()).eql('');
-			} else {
-				should.not.exist(Ti.UI.Clipboard.getText());
-			}
+			should.not.exist(Ti.UI.Clipboard.getText()); // Now gives null on both OSes when empty
 			Ti.UI.Clipboard.setText('hello');
 			should(Ti.UI.Clipboard.hasText()).be.true();
 			should(Ti.UI.Clipboard.getText()).eql('hello');
