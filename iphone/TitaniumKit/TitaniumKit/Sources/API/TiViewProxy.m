@@ -2736,7 +2736,7 @@ LAYOUTFLAGS_SETTER(setHorizontalWrap, horizontalWrap, horizontalWrap, [self will
   [child setSandboxBounds:bounds];
   if ([[child view] animating]) {
     // changing the layout while animating is bad, ignore for now
-    DebugLog(@"[WARN] New layout set while view %@ animating: Will relayout after animation.", child);
+    DebugLog(@"[DEBUG] New layout set while view %@ animating: Will relayout after animation.", child);
   } else {
     [child relayout];
   }
