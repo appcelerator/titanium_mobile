@@ -110,7 +110,7 @@
     "temp": "0.9.4",
     "wrap-ansi": "^7.0.0",
     "xcode": "^3.0.1",
-    "xmldom": "^0.5.0",
+    "xmldom": "^0.6.0",
     "yauzl": "^2.10.0"
   },
   "devDependencies": {
