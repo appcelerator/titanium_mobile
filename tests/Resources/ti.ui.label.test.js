@@ -163,6 +163,7 @@ describe('Titanium.UI.Label', function () {
 				text: 'this is some text',
 				verticalAlign: Ti.UI.TEXT_VERTICAL_ALIGNMENT_BOTTOM
 			});
+			// The internal structure is managed differently (string vs NSInteger enum)
 			if (utilities.isAndroid()) {
 				should(label.verticalAlign).be.a.String();
 			} else {

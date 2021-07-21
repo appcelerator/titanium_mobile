@@ -351,7 +351,7 @@ properties:
     type: [Number,String]
     constants: Titanium.UI.TEXT_VERTICAL_ALIGNMENT_*
     default: Titanium.UI.TEXT_VERTICAL_ALIGNMENT_CENTER
-    platforms: [android]
+    platforms: [android, iphone, ipad, macos]
 
 examples:
   - title: Simple Button Example

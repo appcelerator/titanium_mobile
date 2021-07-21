@@ -395,7 +395,7 @@
 
 - (void)setVerticalAlign_:(id)value
 {
-  verticalAlign = [TiUtils intValue:value def:UIControlContentVerticalAlignmentFill];
+  verticalAlign = [self verticalAlignFromValue:value];
   if (verticalAlign < UIControlContentVerticalAlignmentCenter || verticalAlign > UIControlContentVerticalAlignmentBottom) {
     verticalAlign = UIControlContentVerticalAlignmentFill;
   }
@@ -533,6 +533,23 @@
   CGPoint p = [TiUtils pointValue:value];
   CGSize size = { p.x, p.y };
   [[self label] setShadowOffset:size];
+}
+
+- (UIControlContentVerticalAlignment)verticalAlignFromValue:(id)value
+{
+  if ([value isKindOfClass:[NSNumber class]]) {
+    return [TiUtils intValue:value def:UIControlContentVerticalAlignmentFill];
+  } else if ([value isKindOfClass:[NSString class]]) {
+    if ([value isEqualToString:@"top"]) {
+      return UIControlContentVerticalAlignmentTop;
+    } else if ([value isEqualToString:@"bottom"]) {
+      return UIControlContentVerticalAlignmentBottom;
+    } else if ([value isEqualToString:@"center"]) {
+      return UIControlContentVerticalAlignmentCenter;
+    }
+  }
+
+  return UIControlContentVerticalAlignmentFill;
 }
 
 @end
