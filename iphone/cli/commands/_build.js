@@ -4118,7 +4118,7 @@ iOSBuilder.prototype._embedCapabilitiesAndWriteEntitlementsPlist = function _emb
 		// write the entitlements.plist
 		const contents = plist.toString('xml');
 
-		if (!fs.existsSync(dest) || contents !== fs.readFileSync(dest).toString()) {
+		if (!fs.existsSync(dest) || contents !== fs.readFileSync(dest, 'utf-8').trim()) {
 			if (!this.forceRebuild) {
 				this.logger.info(__('Forcing rebuild: %s has changed since last build', dest.replace(this.projectDir + '/', '')));
 				this.forceRebuild = true;
