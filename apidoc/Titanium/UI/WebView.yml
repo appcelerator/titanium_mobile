@@ -474,6 +474,90 @@ methods:
       - name: callback
         summary: Function to call upon search finished.
         type: Callback<SearchResult>
+
+  - name: addCookie
+    summary: |
+        Adds a cookie to the webview associated cookie store.
+    description: |
+        On iOS, the cookie will override an existing cookie with the same name, domain and path, if any. The cookie's
+        `expiryDate` property must be a date later than the creating date, otherwise the cookie will not persist in the
+        cookie storage.
+    parameters:
+      - name: cookie
+        summary: The cookie to add
+        type: Titanium.Network.Cookie
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
+
+  - name: getCookies
+    summary: |
+        Gets all the cookies with the domain, path and name matched with the given values from the webview associated cookie store.
+    description: |
+        The domain matching and path matching follow `RFC6265`. If name is null, return all the cookies with the domain and
+        path matched.
+    parameters:
+      - name: domain
+        summary: The domain of the cookie to get. It is case-insensitive.
+        type: String
+      - name: path
+        summary: The path of the cookie to get. It is case-sensitive.
+        type: String
+      - name: name
+        summary: The name of the cookie to get. It is case-sensitive.
+        type: String
+    returns:
+        type: Array<Titanium.Network.Cookie>
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
+
+  - name: cookiesForDomain
+    summary: |
+        Gets all the cookies with the domain matched with the given values from the webview associated cookie store.
+    description: |
+        The domain matching follows `RFC6265`.
+    parameters:
+      - name: domain
+        summary: The domain of the cookie to get. It is case-insensitive.
+        type: String
+    returns:
+        type: Array<Titanium.Network.Cookie>
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
+
+  - name: removeAllCookies
+    summary: |
+        Removes all the cookies from the webview associated cookie store.
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
+
+  - name: removeCookie
+    summary: |
+        Removes the cookie with the domain, path and name exactly the same as the given values from the webview associated cookie store.
+    parameters:
+      - name: domain
+        summary: The domain of the cookie to remove. It is case-insensitive.
+        type: String
+      - name: path
+        summary: The path of the cookie to remove. It is case-sensitive.
+        type: String
+      - name: name
+        summary: The name of the cookie to remove. It is case-sensitive.
+        type: String
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
+
+  - name: removeCookiesForDomain
+    summary: |
+        Removes the cookies with the domain matched with the given values from the webview associated cookie store.
+    description: |
+        The domain matching follows `RFC6265`.
+    parameters:
+      - name: domain
+        summary: The domain of the cookie to remove. It is case-insensitive.
+        type: String
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
+
 events:
   - name: beforeload
     summary: Fired before the web view starts loading its content.
@@ -1137,6 +1221,13 @@ properties:
     platforms: [iphone, ipad, macos]
     since: {iphone: "8.0.0", ipad: "8.0.0", macos: "9.2.0"}
     permission: read-only
+
+  - name: allCookies
+    summary: A list of all cookies in the webview associated cookie store.
+    type: Array<Titanium.Network.Cookie>
+    permission: read-only
+    platforms: [iphone, ipad, macos]
+    since: "10.0.0"
 
 ---
 name: SnapshotResult

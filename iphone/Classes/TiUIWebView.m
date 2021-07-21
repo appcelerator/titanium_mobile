@@ -418,8 +418,6 @@ static NSString *const baseInjectScript = @"Ti._hexish=function(a){var r='';var 
     [[self webView] setCustomUserAgent:userAgent];
   }
 
-  [self addCookieHeaderForRequest:request];
-
   [[self webView] loadRequest:request];
 }
 
@@ -537,43 +535,6 @@ static NSString *const baseInjectScript = @"Ti._hexish=function(a){var r='';var 
                               forMainFrameOnly:YES] autorelease];
 }
 
-- (WKUserScript *)userScriptCookieOut
-{
-  return [[[WKUserScript alloc] initWithSource:@"window.webkit.messageHandlers._Ti_Cookie_.postMessage(document.cookie);" injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO] autorelease];
-}
-
-- (WKUserScript *)userScriptCookieInForDomain:(NSString *)validDomain
-{
-  NSMutableString *script = [[NSMutableString alloc] init];
-  [script appendString:@"var cookieNames = document.cookie.split('; ').map(function(cookie) { return cookie.split('=')[0] } );\n"];
-
-  for (NSHTTPCookie *cookie in [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]) {
-    // Skip cookies that will break our script
-    if ([cookie.value rangeOfString:@"'"].location != NSNotFound) {
-      continue;
-    }
-    // Check the cookie for current domain?
-    if (![validDomain hasSuffix:cookie.domain] && ![cookie.domain hasSuffix:validDomain]) {
-      continue;
-    }
-    // Create a line that appends this cookie to the web view's document's cookies
-    [script appendFormat:@"if (cookieNames.indexOf('%@') == -1) { document.cookie='%@'; };\n", cookie.name, [self javascriptStringWithCookie:cookie]];
-  }
-
-  return [[[WKUserScript alloc] initWithSource:script injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO] autorelease];
-}
-
-- (NSString *)javascriptStringWithCookie:(NSHTTPCookie *)cookie
-{
-  NSString *string = [NSString stringWithFormat:@"%@=%@;domain=%@;path=%@", cookie.name, cookie.value, cookie.domain, cookie.path ?: @"/"];
-
-  if (cookie.secure) {
-    string = [string stringByAppendingString:@";secure=true"];
-  }
-
-  return string;
-}
-
 - (NSString *)pathFromComponents:(NSArray *)args
 {
   NSString *newPath;
@@ -671,53 +632,6 @@ static NSString *const baseInjectScript = @"Ti._hexish=function(a){var r='';var 
   }
 }
 
-- (void)addCookieHeaderForRequest:(NSMutableURLRequest *)request
-{
-  /*
-   To support cookie
-   https://stackoverflow.com/questions/26573137
-   https://github.com/haifengkao/YWebView
-   */
-
-  NSString *validDomain = request.URL.host;
-
-  if (validDomain.length <= 0) {
-    return;
-  }
-  if (!_tiCookieHandlerAdded) {
-    _tiCookieHandlerAdded = YES;
-    WKUserContentController *controller = [[[self webView] configuration] userContentController];
-    [controller addUserScript:[self userScriptCookieInForDomain:validDomain]];
-    [controller addUserScript:[self userScriptCookieOut]];
-    [controller addScriptMessageHandler:self name:@"_Ti_Cookie_"];
-  }
-
-  BOOL requestIsSecure = [request.URL.scheme isEqualToString:@"https"];
-
-  NSMutableArray *array = [NSMutableArray array];
-  for (NSHTTPCookie *cookie in [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]) {
-    // Don't even bother with values containing a `'`
-    if ([cookie.name rangeOfString:@"'"].location != NSNotFound) {
-      continue;
-    }
-    // Check the cookie for current domain.
-    if (![validDomain hasSuffix:cookie.domain] && ![cookie.domain hasSuffix:validDomain]) {
-      continue;
-    }
-
-    if (cookie.secure && !requestIsSecure) {
-      continue;
-    }
-    NSString *value = [NSString stringWithFormat:@"%@=%@", cookie.name, cookie.value];
-    [array addObject:value];
-  }
-
-  NSString *header = [array componentsJoinedByString:@";"];
-  if (![header isEqualToString:@""]) {
-    [request setValue:header forHTTPHeaderField:@"Cookie"];
-  }
-}
-
 - (void)loadLocalURL:(NSURL *)url
 {
   NSString *path = [url path];
@@ -798,44 +712,6 @@ static NSString *const baseInjectScript = @"Ti._hexish=function(a){var r='';var 
     }
   }
 
-  if ([message.name isEqualToString:@"_Ti_Cookie_"]) {
-    NSArray<NSString *> *cookies = [message.body componentsSeparatedByString:@"; "];
-    for (NSString *cookie in cookies) {
-      // Get this cookie's name and value
-      NSRange separatorRange = [cookie rangeOfString:@"="];
-      if (separatorRange.location == NSNotFound || separatorRange.location == 0 || separatorRange.location == ([cookie length] - 1)) {
-        continue;
-      }
-      NSString *cookieName = [cookie substringToIndex:separatorRange.location];
-      NSString *cookieValue = [cookie substringFromIndex:separatorRange.location + separatorRange.length];
-
-      // Get the cookie in shared storage with that name
-      NSHTTPCookie *localCookie = nil;
-      for (NSHTTPCookie *httpCookie in [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:self.webView.URL]) {
-        if ([httpCookie.name isEqualToString:cookieName]) {
-          localCookie = httpCookie;
-          break;
-        }
-      }
-
-      //If there is a cookie with a stale value, update it now.
-      if (localCookie != nil) {
-        NSMutableDictionary *cookieProperties = [localCookie.properties mutableCopy];
-        cookieProperties[NSHTTPCookieValue] = cookieValue;
-        NSHTTPCookie *updatedCookie = [NSHTTPCookie cookieWithProperties:cookieProperties];
-        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:updatedCookie];
-      } else {
-        // We need NSHTTPCookieOriginURL for NSHTTPCookie to be created
-        NSString *cookieWithURL = [NSString stringWithFormat:@"%@; ORIGINURL=%@;", cookie, self.webView.URL];
-        NSHTTPCookie *httpCookie = [self cookieForString:cookieWithURL];
-
-        if (httpCookie) {
-          [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:httpCookie];
-        }
-      }
-    }
-  }
-
   if ([[self proxy] _hasListeners:@"message"]) {
     [[self proxy] fireEvent:@"message"
                  withObject:@{
@@ -892,18 +768,6 @@ static NSString *const baseInjectScript = @"Ti._hexish=function(a){var r='';var 
 {
   [self _cleanupLoadingIndicator];
   [(TiUIWebViewProxy *)[self proxy] refreshHTMLContent];
-
-  // TO DO: Once TIMOB-26915 done, remove this
-  __block BOOL finishedEvaluation = NO;
-  [_webView.configuration.websiteDataStore.httpCookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *cookies) {
-    for (NSHTTPCookie *cookie in cookies) {
-      [NSHTTPCookieStorage.sharedHTTPCookieStorage setCookie:cookie];
-    }
-    finishedEvaluation = YES;
-  }];
-  while (!finishedEvaluation) {
-    [NSRunLoop.currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:NSDate.distantFuture];
-  }
 
   if ([[self proxy] _hasListeners:@"load"]) {
     [[self proxy] fireEvent:@"load" withObject:@{ @"url" : webView.URL.absoluteString, @"title" : webView.title }];
@@ -1302,100 +1166,6 @@ static NSString *UIKitLocalizedString(NSString *string)
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
   }
 }
-
-#pragma mark Cookie Utility
-
-/*
- To support cookie for iOS <11
- https://stackoverflow.com/questions/26573137
- https://github.com/haifengkao/YWebView
- */
-
-- (NSDictionary *)cookieMapForString:(NSString *)cokieStr
-{
-  NSMutableDictionary *cookieMap = [NSMutableDictionary dictionary];
-
-  NSArray *cookieKeyValueStrings = [cokieStr componentsSeparatedByString:@";"];
-  for (NSString *cookieKeyValueString in cookieKeyValueStrings) {
-    //Find the position of the first "="
-    NSRange separatorRange = [cookieKeyValueString rangeOfString:@"="];
-
-    if (separatorRange.location != NSNotFound && separatorRange.location > 0 && separatorRange.location < ([cookieKeyValueString length] - 1)) {
-      //The above conditions ensure that there is content before and after "=", and the key or value is not empty.
-
-      NSRange keyRange = NSMakeRange(0, separatorRange.location);
-      NSString *key = [cookieKeyValueString substringWithRange:keyRange];
-      NSString *value = [cookieKeyValueString substringFromIndex:separatorRange.location + separatorRange.length];
-
-      key = [key stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-      value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-      [cookieMap setObject:value forKey:key];
-    }
-  }
-  return cookieMap;
-}
-
-- (NSDictionary *)cookiePropertiesForString:(NSString *)cookieStr
-{
-  NSDictionary *cookieMap = [self cookieMapForString:cookieStr];
-
-  NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
-  for (NSString *key in [cookieMap allKeys]) {
-
-    NSString *value = [cookieMap objectForKey:key];
-    NSString *uppercaseKey = [key uppercaseString]; //Mainly to eliminate the problem of naming irregularities
-
-    if ([uppercaseKey isEqualToString:@"DOMAIN"]) {
-      if (![value hasPrefix:@"."] && ![value hasPrefix:@"www"]) {
-        value = [NSString stringWithFormat:@".%@", value];
-      }
-      [cookieProperties setObject:value forKey:NSHTTPCookieDomain];
-    } else if ([uppercaseKey isEqualToString:@"VERSION"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieVersion];
-    } else if ([uppercaseKey isEqualToString:@"MAX-AGE"] || [uppercaseKey isEqualToString:@"MAXAGE"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieMaximumAge];
-    } else if ([uppercaseKey isEqualToString:@"PATH"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookiePath];
-    } else if ([uppercaseKey isEqualToString:@"ORIGINURL"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieOriginURL];
-    } else if ([uppercaseKey isEqualToString:@"PORT"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookiePort];
-    } else if ([uppercaseKey isEqualToString:@"SECURE"] || [uppercaseKey isEqualToString:@"ISSECURE"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieSecure];
-    } else if ([uppercaseKey isEqualToString:@"COMMENT"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieComment];
-    } else if ([uppercaseKey isEqualToString:@"COMMENTURL"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieCommentURL];
-    } else if ([uppercaseKey isEqualToString:@"EXPIRES"]) {
-      NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-      [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'.'SSS+0000"];
-      [cookieProperties setObject:[dateFormatter dateFromString:value] forKey:NSHTTPCookieExpires];
-    } else if ([uppercaseKey isEqualToString:@"DISCART"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieDiscard];
-    } else if ([uppercaseKey isEqualToString:@"NAME"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieName];
-    } else if ([uppercaseKey isEqualToString:@"VALUE"]) {
-      [cookieProperties setObject:value forKey:NSHTTPCookieValue];
-    } else {
-      [cookieProperties setObject:key forKey:NSHTTPCookieName];
-      [cookieProperties setObject:value forKey:NSHTTPCookieValue];
-    }
-  }
-
-  //Since the cookieWithProperties: method properties can not be without NSHTTPCookiePath, so you need to confirm this, if not, the default is "/"
-  if (![cookieProperties objectForKey:NSHTTPCookiePath]) {
-    [cookieProperties setObject:@"/" forKey:NSHTTPCookiePath];
-  }
-  return cookieProperties;
-}
-
-- (NSHTTPCookie *)cookieForString:(NSString *)cookieStr
-{
-  NSDictionary *cookieProperties = [self cookiePropertiesForString:cookieStr];
-  NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:cookieProperties];
-  return cookie;
-}
-
 @end
 
 @implementation WebAppProtocolHandler

@@ -27,7 +27,6 @@
   NSURL *_currentURL;
   UIActivityIndicatorView *_loadingIndicator;
   BOOL _isViewDetached;
-  BOOL _tiCookieHandlerAdded;
   BOOL ignoreNextRequest;
   SEL reloadMethod;
   NSString *assetsDirectory;
