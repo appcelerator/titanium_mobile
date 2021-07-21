@@ -44,7 +44,15 @@
     },
     {
       "files": [ "tests/**/*.js" ],
-      "extends": [ "axway/env-titanium", "axway/+mocha"]
+      "extends": [ "axway/env-titanium", "axway/+mocha"],
+      "settings": {
+        "mocha/additionalCustomNames": [
+          { "name": "describe.android", "type": "suite", "interfaces": [ "BDD" ] },
+          { "name": "describe.ios", "type": "suite", "interfaces": [ "BDD" ] },
+          { "name": "it.android", "type": "testCase", "interfaces": [ "BDD" ] },
+          { "name": "it.ios", "type": "testCase", "interfaces": [ "BDD" ] }
+        ]
+      }
     },
     {
       "files": [ "tests/Resources/ti.ui.webview.script.tag.js" ],

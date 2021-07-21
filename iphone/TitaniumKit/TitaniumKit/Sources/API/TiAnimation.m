@@ -125,6 +125,14 @@
   return self;
 }
 
+- (void)_configure
+{
+  autoreverse = @(NO);
+  repeat = @(1);
+  color = nil;
+  backgroundColor = nil;
+}
+
 - (void)setCallBack:(KrollCallback *)callback_ context:(id<TiEvaluator>)context_
 {
   RELEASE_TO_NIL(callback);
@@ -232,6 +240,28 @@
   return center;
 }
 
+- (void)setColor:(id)color_
+{
+  [color release];
+  color = [[TiUtils colorValue:color_] retain];
+}
+
+- (id)color
+{
+  return color.name;
+}
+
+- (void)setBackgroundColor:(id)backgroundColor_
+{
+  [backgroundColor release];
+  backgroundColor = [[TiUtils colorValue:backgroundColor_] retain];
+}
+
+- (id)backgroundColor
+{
+  return backgroundColor.name;
+}
+
 - (id)description
 {
   return [NSString stringWithFormat:@"[object TiAnimation<%lu>]", (unsigned long)[self hash]];
@@ -290,13 +320,15 @@
   }
 
   // fire the event and call the callback
+  // store pointer to current callback in case the animation is reused in the complete event
+  ListenerEntry *callbackListener = [animation.callback retain];
   if ([animation _hasListeners:@"complete"]) {
     [animation fireEvent:@"complete" withObject:nil];
   }
-
-  if (animation.callback != nil && [animation.callback context] != nil) {
-    [animation _fireEventToListener:@"animated" withObject:animation listener:[animation.callback listener] thisObject:nil];
+  if (callbackListener != nil && [callbackListener context] != nil) {
+    [animation _fireEventToListener:@"animated" withObject:animation listener:[callbackListener listener] thisObject:nil];
   }
+  [callbackListener release];
 
   // tell our view that we're done
   if (animatedViewProxy != nil) {
@@ -596,14 +628,14 @@
       }
 
       if (backgroundColor != nil) {
-        [reverseAnimation setBackgroundColor:[TiUtils colorValue:[(TiViewProxy *)[(TiUIView *)view_ proxy] valueForKey:@"backgroundColor"]]];
-
+        [reverseAnimation setBackgroundColor:[TiUtils colorValue:[[(TiUIView *)view_ proxy] valueForKey:@"backgroundColor"]]];
         [[view_ proxy] replaceValue:backgroundColor.name forKey:@"backgroundColor" notification:NO];
-        [view_ setBackgroundColor:[backgroundColor _color]];
+        [view_ setBackgroundColor:backgroundColor.color];
       }
 
       if (color != nil && [view_ respondsToSelector:@selector(setColor_:)]) {
-        [reverseAnimation setColor:[TiUtils colorValue:[(TiViewProxy *)[(TiUIView *)view_ proxy] valueForKey:@"color"]]];
+        [reverseAnimation setColor:[TiUtils colorValue:[[(TiUIView *)view_ proxy] valueForKey:@"color"]]];
+        [[view_ proxy] replaceValue:color.name forKey:@"color" notification:NO];
         [view_ performSelector:@selector(setColor_:) withObject:color];
       }
 

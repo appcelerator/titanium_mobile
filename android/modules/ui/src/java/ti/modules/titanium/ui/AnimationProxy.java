@@ -30,6 +30,12 @@ import org.appcelerator.titanium.view.TiAnimation;
 })
 public class AnimationProxy extends TiAnimation
 {
+	public AnimationProxy()
+	{
+		defaultValues.put(TiC.PROPERTY_REPEAT, 1);
+		defaultValues.put(TiC.PROPERTY_AUTOREVERSE, false);
+	}
+
 	@Override
 	public String getApiName()
 	{

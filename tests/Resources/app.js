@@ -140,6 +140,7 @@ function loadTests() {
 	require('./ti.test');
 	require('./ti.ui.test');
 	require('./ti.ui.2dmatrix.test');
+	require('./ti.ui.animation.test');
 	require('./ti.ui.activityindicator.test');
 	require('./ti.ui.alertdialog.test');
 	if (OS_ANDROID) {
