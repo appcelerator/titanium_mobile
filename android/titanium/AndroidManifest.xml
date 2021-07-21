@@ -3,20 +3,26 @@
 	<application>
 		<activity
 			android:name="org.appcelerator.titanium.TiActivity"
+			android:exported="false"
 			android:configChanges="${tiActivityConfigChanges}"/>
 		<activity
 			android:name="org.appcelerator.titanium.TiTranslucentActivity"
+			android:exported="false"
 			android:configChanges="${tiActivityConfigChanges}"
 			android:theme="@style/Theme.AppDerived.Translucent"/>
 		<activity
 			android:name="ti.modules.titanium.media.TiCameraActivity"
+			android:exported="false"
 			android:configChanges="${tiActivityConfigChanges}"
 			android:theme="@style/Theme.Titanium.Dark.Fullscreen"/>
 		<activity
 			android:name="ti.modules.titanium.media.TiVideoActivity"
+			android:exported="false"
 			android:configChanges="${tiActivityConfigChanges}"
 			android:theme="@style/Theme.AppDerived.Fullscreen"/>
-		<activity android:name="ti.modules.titanium.ui.android.TiPreferencesActivity"/>
+		<activity
+			android:name="ti.modules.titanium.ui.android.TiPreferencesActivity"
+			android:exported="false"/>
 
 		<provider
 			android:name="org.appcelerator.titanium.io.TiFileProvider"

@@ -31,7 +31,7 @@
 
 	<application android:name=".TitaniumTestApplication" android:icon="@drawable/appicon" android:label="TitaniumTest" android:theme="@style/Theme.Titanium.App" android:usesCleartextTraffic="true">
 		<!-- The root Titanium splash activity which hosts the JS runtime. -->
-		<activity android:name=".TitaniumTestActivity" android:theme="@style/Theme.Titanium" android:alwaysRetainTaskState="true" android:configChanges="${tiActivityConfigChanges}">
+		<activity android:name=".TitaniumTestActivity" android:theme="@style/Theme.Titanium" android:exported="true" android:alwaysRetainTaskState="true" android:configChanges="${tiActivityConfigChanges}">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.LAUNCHER"/>
