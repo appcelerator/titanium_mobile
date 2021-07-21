@@ -10,7 +10,7 @@
 	<icon>appicon.png</icon>
 	<fullscreen>false</fullscreen>
 	<navbar-hidden>false</navbar-hidden>
-	<analytics>true</analytics>
+	<analytics>false</analytics>
 	<guid></guid>
 	<property name="ti.ui.defaultunit">dp</property>
 	<property name="run-on-main-thread" type="bool">true</property>
