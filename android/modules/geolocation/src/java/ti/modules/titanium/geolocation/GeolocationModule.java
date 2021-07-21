@@ -498,7 +498,8 @@ public class GeolocationModule extends KrollModule implements Handler.Callback, 
 			return true;
 		}
 		Context context = TiApplication.getInstance().getApplicationContext();
-		if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+		if ((context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+			& context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION))
 			== PackageManager.PERMISSION_GRANTED) {
 			return true;
 		}
@@ -533,8 +534,8 @@ public class GeolocationModule extends KrollModule implements Handler.Callback, 
 			TiBaseActivity.registerPermissionRequestCallback(TiC.PERMISSION_CODE_LOCATION, permissionCB,
 				callbackThisObject, promise);
 			Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
-			currentActivity.requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
-											TiC.PERMISSION_CODE_LOCATION);
+			currentActivity.requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+				Manifest.permission.ACCESS_COARSE_LOCATION }, TiC.PERMISSION_CODE_LOCATION);
 		});
 	}
 

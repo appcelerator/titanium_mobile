@@ -7,6 +7,7 @@
 package ti.modules.titanium.ui.widget.webview;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.DialogInterface;
@@ -84,7 +85,8 @@ public class TiWebChromeClient extends WebChromeClient
 
 		// Prompt end-user for permission on Android 6.0 and higher if needed.
 		if (Build.VERSION.SDK_INT >= 23) {
-			int permissionResult = activity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+			int permissionResult = activity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+				& activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
 			if (permissionResult != PackageManager.PERMISSION_GRANTED) {
 				TiBaseActivity.OnRequestPermissionsResultCallback activityCallback;
 				activityCallback = new TiBaseActivity.OnRequestPermissionsResultCallback() {
@@ -97,22 +99,24 @@ public class TiWebChromeClient extends WebChromeClient
 						TiBaseActivity.unregisterPermissionRequestCallback(TiC.PERMISSION_CODE_LOCATION);
 
 						// Determine if location permission was granted.
-						boolean wasGranted = false;
+						boolean granted = false;
 						if (permissions.length == grantResults.length) {
 							for (int index = 0; index < permissions.length; index++) {
-								if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permissions[index])) {
-									wasGranted = (grantResults[index] == PackageManager.PERMISSION_GRANTED);
+								if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permissions[index])
+									|| Manifest.permission.ACCESS_COARSE_LOCATION.equals(permissions[index])) {
+									granted = (grantResults[index] == PackageManager.PERMISSION_GRANTED);
 									break;
 								}
 							}
 						}
 
 						// Notify WebView whether or not location access was granted.
-						callback.invoke(origin, wasGranted, false);
+						callback.invoke(origin, granted, false);
 					}
 				};
 				TiBaseActivity.registerPermissionRequestCallback(TiC.PERMISSION_CODE_LOCATION, activityCallback);
-				String[] permissions = new String[] { Manifest.permission.ACCESS_FINE_LOCATION };
+				String[] permissions = new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+					Manifest.permission.ACCESS_COARSE_LOCATION };
 				activity.requestPermissions(permissions, TiC.PERMISSION_CODE_LOCATION);
 				return;
 			}
