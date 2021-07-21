@@ -219,7 +219,7 @@ enum {
  Tells the view proxy to run animation on its view.
  @param arg An animation object.
  */
-- (void)animate:(id)arg;
+- (KrollPromise *)animate:(id)arg;
 
 #ifndef TI_USE_AUTOLAYOUT
 - (void)setTop:(id)value;

@@ -6,6 +6,7 @@
  */
 #import "KrollCallback.h"
 #import "KrollObject.h"
+#import "KrollPromise.h"
 #import "TiBindingRunLoop.h"
 #import "TiEvaluator.h"
 #import <pthread.h>
@@ -284,7 +285,7 @@ void DoProxyDelegateReadValuesWithKeysFromProxy(UIView<TiProxyDelegate> *target,
 
 + (void)throwException:(NSString *)reason subreason:(NSString *)subreason location:(NSString *)location;
 - (void)throwException:(NSString *)reason subreason:(NSString *)subreason location:(NSString *)location;
-- (void)addEventListener:(NSArray *)args;
+- (KrollPromise *)addEventListener:(NSArray *)args;
 - (void)removeEventListener:(NSArray *)args;
 
 - (void)fireEvent:(id)args;

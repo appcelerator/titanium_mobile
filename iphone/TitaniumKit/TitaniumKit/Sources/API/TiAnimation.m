@@ -6,6 +6,7 @@
  */
 #import "TiAnimation.h"
 #import "KrollCallback.h"
+#import "KrollPromise.h"
 #import "LayoutConstraint.h"
 #import "Ti2DMatrix.h"
 #import "Ti3DMatrix.h"
@@ -24,7 +25,7 @@
 @synthesize zIndex, left, right, top, bottom, width, height;
 @synthesize duration, color, backgroundColor, opacity, opaque, view;
 @synthesize visible, curve, repeat, autoreverse, delay, transform, transition, dampingRatio, springVelocity;
-@synthesize animatedView, callback, isReverse, reverseAnimation, resetState;
+@synthesize animatedView, callback, promise, isReverse, reverseAnimation, resetState;
 
 - (id)initWithDictionary:(NSDictionary *)properties_ context:(id<TiEvaluator>)context_ callback:(KrollCallback *)callback_
 {
@@ -133,6 +134,14 @@
   }
 }
 
+- (void)setPromise:(KrollPromise *)promise_
+{
+  RELEASE_TO_NIL(promise);
+  if ([promise_ isKindOfClass:[KrollPromise class]]) {
+    promise = [promise_ retain];
+  }
+}
+
 - (void)dealloc
 {
   RELEASE_TO_NIL(zIndex);
@@ -156,6 +165,7 @@
   RELEASE_TO_NIL(transform);
   RELEASE_TO_NIL(transition);
   RELEASE_TO_NIL(callback);
+  RELEASE_TO_NIL(promise);
   RELEASE_TO_NIL(view);
   RELEASE_TO_NIL(dampingRatio);
   RELEASE_TO_NIL(springVelocity);
@@ -169,13 +179,14 @@
   return @"Ti.UI.Animation";
 }
 
-+ (TiAnimation *)animationFromArg:(id)args context:(id<TiEvaluator>)context create:(BOOL)yn
++ (TiAnimation *)animationFromArg:(id)args context:(id<TiEvaluator>)context create:(BOOL)yn promise:(KrollPromise *)promise
 {
+  TiAnimation *animation = nil;
   id arg = nil;
   BOOL isArray = NO;
 
   if ([args isKindOfClass:[TiAnimation class]]) {
-    return (TiAnimation *)args;
+    animation = (TiAnimation *)args;
   } else if ([args isKindOfClass:[NSArray class]]) {
     isArray = YES;
     arg = [args objectAtIndex:0];
@@ -185,38 +196,46 @@
         ENSURE_TYPE(cb, KrollCallback);
         [(TiAnimation *)arg setCallBack:cb context:context];
       }
-      return (TiAnimation *)arg;
+      animation = (TiAnimation *)arg;
     }
   } else {
     arg = args;
   }
 
-  if ([arg isKindOfClass:[NSDictionary class]]) {
-    NSDictionary *properties = arg;
-    KrollCallback *cb = nil;
+  if (animation == nil) {
+    if ([arg isKindOfClass:[NSDictionary class]]) {
+      NSDictionary *properties = arg;
+      KrollCallback *cb = nil;
 
-    if (isArray && [args count] > 1) {
-      cb = [args objectAtIndex:1];
-      ENSURE_TYPE(cb, KrollCallback);
+      if (isArray && [args count] > 1) {
+        cb = [args objectAtIndex:1];
+        ENSURE_TYPE(cb, KrollCallback);
+      }
+
+      // old school animated type properties
+      if ([TiUtils boolValue:@"animated" properties:properties def:NO]) {
+        float duration = [TiUtils floatValue:@"animationDuration" properties:properties def:1000];
+        UIViewAnimationTransition transition = [TiUtils intValue:@"animationStyle" properties:properties def:UIViewAnimationTransitionNone];
+        animation = [[[TiAnimation alloc] initWithDictionary:properties context:context callback:cb] autorelease];
+        animation.duration = [NSNumber numberWithFloat:duration];
+        animation.transition = [NSNumber numberWithInt:(int)transition];
+      } else {
+        animation = [[[TiAnimation alloc] initWithDictionary:properties context:context callback:cb] autorelease];
+      }
+    } else if (yn) {
+      animation = [[[TiAnimation alloc] _initWithPageContext:context] autorelease];
     }
-
-    // old school animated type properties
-    if ([TiUtils boolValue:@"animated" properties:properties def:NO]) {
-      float duration = [TiUtils floatValue:@"animationDuration" properties:properties def:1000];
-      UIViewAnimationTransition transition = [TiUtils intValue:@"animationStyle" properties:properties def:UIViewAnimationTransitionNone];
-      TiAnimation *animation = [[[TiAnimation alloc] initWithDictionary:properties context:context callback:cb] autorelease];
-      animation.duration = [NSNumber numberWithFloat:duration];
-      animation.transition = [NSNumber numberWithInt:transition];
-      return animation;
-    }
-
-    return [[[TiAnimation alloc] initWithDictionary:properties context:context callback:cb] autorelease];
+  }
+  if (animation != nil && promise != nil) {
+    [animation setPromise:promise];
   }
 
-  if (yn) {
-    return [[[TiAnimation alloc] _initWithPageContext:context] autorelease];
-  }
-  return nil;
+  return animation;
+}
+
++ (TiAnimation *)animationFromArg:(id)args context:(id<TiEvaluator>)context create:(BOOL)yn
+{
+  return [self animationFromArg:args context:context create:yn promise:nil];
 }
 
 - (void)setCenter:(id)center_
@@ -296,6 +315,9 @@
 
   if (animation.callback != nil && [animation.callback context] != nil) {
     [animation _fireEventToListener:@"animated" withObject:animation listener:[animation.callback listener] thisObject:nil];
+  }
+  if (animation.promise != nil) {
+    [animation.promise resolve:@[ animation ]];
   }
 
   // tell our view that we're done
@@ -430,6 +452,7 @@
         [reverseAnimation setIsReverse:YES];
         [reverseAnimation setDuration:duration];
         [reverseAnimation setDelay:[NSNumber numberWithInt:0]];
+        [reverseAnimation setPromise:promise];
         if (dampingRatio != nil || springVelocity != nil) {
           [reverseAnimation setDampingRatio:dampingRatio];
           [reverseAnimation setSpringVelocity:springVelocity];

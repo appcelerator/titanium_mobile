@@ -13,6 +13,7 @@
 
 @class TiViewProxy;
 @class TiAnimation;
+@class KrollPromise;
 
 /**
  Protocol for animation delegate.
@@ -90,6 +91,7 @@
 
   // this is a temporary function passed in
   ListenerEntry *callback;
+  KrollPromise *promise;
 
   NSObject<TiAnimationDelegate> *delegate;
 
@@ -109,6 +111,7 @@
 
 @property (nonatomic, readwrite, assign) UIView *animatedView;
 @property (nonatomic, readonly) ListenerEntry *callback;
+@property (nonatomic, readonly) KrollPromise *promise;
 @property (nonatomic, readwrite, assign) TiAnimation *reverseAnimation;
 @property (nonatomic, readwrite, assign) BOOL isReverse;
 @property (nonatomic, readwrite, assign) BOOL resetState;
@@ -140,6 +143,7 @@
 @property (nonatomic, retain, readwrite) NSNumber *dampingRatio;
 @property (nonatomic, retain, readwrite) NSNumber *springVelocity;
 
++ (TiAnimation *)animationFromArg:(id)args context:(id<TiEvaluator>)context create:(BOOL)yn promise:(KrollPromise *)promise;
 + (TiAnimation *)animationFromArg:(id)args context:(id<TiEvaluator>)context create:(BOOL)yn;
 
 - (id)initWithDictionary:(NSDictionary *)properties context:(id<TiEvaluator>)context;

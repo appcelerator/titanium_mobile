@@ -15,6 +15,7 @@ import java.util.TreeSet;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
+import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.annotations.Kroll;
@@ -830,7 +831,7 @@ public abstract class TiViewProxy extends KrollProxy
 	}
 
 	@Kroll.method
-	public void animate(Object arg, @Kroll.argument(optional = true) KrollFunction callback)
+	public KrollPromise<KrollDict> animate(Object arg, @Kroll.argument(optional = true) KrollFunction callback)
 	{
 		synchronized (pendingAnimationLock)
 		{
@@ -846,13 +847,19 @@ public abstract class TiViewProxy extends KrollProxy
 			} else {
 				throw new IllegalArgumentException("Unhandled argument to animate: " + arg.getClass().getSimpleName());
 			}
-
-			if (callback != null) {
-				pendingAnimation.setCallback(callback);
-			}
-
-			handlePendingAnimation(false);
 		}
+
+		return KrollPromise.create((promise) -> {
+			synchronized (pendingAnimationLock)
+			{
+				if (callback != null) {
+					pendingAnimation.setCallback(callback);
+				}
+				pendingAnimation.setPromise(promise);
+
+				handlePendingAnimation(false);
+			}
+		});
 	}
 
 	public void handlePendingAnimation(boolean forceQueue)

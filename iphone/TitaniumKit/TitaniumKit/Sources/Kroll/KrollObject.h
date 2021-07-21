@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 
-@class KrollContext, KrollCallback, TiProxy;
+@class KrollContext, KrollCallback, KrollPromise, TiProxy;
 extern JSClassRef KrollObjectClassRef;
 extern JSStringRef kTiStringExportsKey;
 
@@ -27,6 +27,7 @@ bool KrollDeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prope
   @private
   NSMutableDictionary *properties;
   NSMutableDictionary *statics;
+  NSMutableDictionary *promises;
   JSObjectRef _jsobject;
   BOOL targetable;
   BOOL finalized;
@@ -102,6 +103,8 @@ bool KrollDeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prope
 - (void)invokeCallbackForKey:(NSString *)key withObject:(NSDictionary *)eventData thisObject:(KrollObject *)thisObject onDone:(void (^)(id result))block;
 
 - (JSObjectRef)callbacksForEvent:(JSStringRef)jsEventTypeString;
+- (NSMutableArray<KrollPromise *> *)promisesForEvent:(NSString *)eventName;
+- (void)resolvePromisesForEvent:(NSString *)eventName withObject:(id)eventData;
 - (void)storeListener:(id)eventCallbackOrWrapper forEvent:(NSString *)eventName;
 - (void)removeListener:(KrollCallback *)eventCallback forEvent:(NSString *)eventName;
 - (void)triggerEvent:(NSString *)eventName withObject:(NSDictionary *)eventData thisObject:(KrollObject *)thisObject;

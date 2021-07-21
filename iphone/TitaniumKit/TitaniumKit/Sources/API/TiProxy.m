@@ -10,6 +10,7 @@
 #import "KrollBridge.h"
 #import "KrollCallback.h"
 #import "KrollContext.h"
+#import "KrollPromise.h"
 #import "ListenerEntry.h"
 #import "TiBindingEvent.h"
 #import "TiComplexValue.h"
@@ -752,16 +753,24 @@ void TiClassSelectorFunction(TiBindingRunLoop runloop, void *payload)
   }
 }
 
-- (void)addEventListener:(NSArray *)args
+- (KrollPromise *)addEventListener:(NSArray *)args
 {
+  KrollPromise *promise = [[[KrollPromise alloc] initInContext:[self currentContext]] autorelease];
+  ;
   NSString *type = [args objectAtIndex:0];
-  id listener = [args objectAtIndex:1];
-  if (![listener isKindOfClass:[KrollWrapper class]] && ![listener isKindOfClass:[KrollCallback class]]) {
-    ENSURE_TYPE(listener, KrollCallback);
+
+  if ([args count] > 1) {
+    id listener = [args objectAtIndex:1];
+    if (![listener isKindOfClass:[KrollWrapper class]] && ![listener isKindOfClass:[KrollCallback class]]) {
+      ENSURE_TYPE(listener, KrollCallback);
+    }
+
+    KrollObject *ourObject = [self krollObjectForContext:([listener isKindOfClass:[KrollCallback class]] ? [(KrollCallback *)listener context] : [(KrollWrapper *)listener bridge].krollContext)];
+    [ourObject storeListener:listener forEvent:type];
   }
 
-  KrollObject *ourObject = [self krollObjectForContext:([listener isKindOfClass:[KrollCallback class]] ? [(KrollCallback *)listener context] : [(KrollWrapper *)listener bridge].krollContext)];
-  [ourObject storeListener:listener forEvent:type];
+  KrollObject *krollObject = [self krollObjectForContext:[self executionContext].krollContext];
+  [krollObject storeListener:promise forEvent:type];
 
   //TODO: You know, we can probably nip this in the bud and do this at a lower level,
   //Or make this less onerous.
@@ -776,6 +785,7 @@ void TiClassSelectorFunction(TiBindingRunLoop runloop, void *payload)
   pthread_rwlock_unlock(&listenerLock);
 
   [self _listenerAdded:type count:ourCallbackCount];
+  return promise;
 }
 
 - (void)removeEventListener:(NSArray *)args

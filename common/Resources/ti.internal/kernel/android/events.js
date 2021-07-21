@@ -131,6 +131,11 @@ export default function EventEmitterBootstrap(global, kroll) {
 	// EventEmitter.prototype.emit() is also defined there.
 	Object.defineProperty(EventEmitter.prototype, 'addListener', {
 		value: function (type, listener, view) {
+			if (listener === undefined) {
+				return new Promise(resolve => {
+					this.addListener(type, result => resolve(result), view);
+				});
+			}
 			if (typeof listener !== 'function') {
 				throw new Error('addListener only takes instances of Function. The listener for event "' + type + '" is "' + (typeof listener) + '"');
 			}

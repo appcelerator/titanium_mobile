@@ -208,6 +208,8 @@ void TiBindingEventProcess(TiBindingRunLoop runloop, void *payload)
   KrollObject *targetKrollObject = [event->targetProxy krollObjectForContext:runloop];
   JSObjectRef callbacksObjectRef = [targetKrollObject callbacksForEvent:event->eventStringRef];
   int callbackCount = 0;
+  NSArray<KrollPromise *> *promises = [targetKrollObject promisesForEvent:event->eventString];
+  int promiseCount = promises != nil ? (int)[promises count] : 0;
   JSContextRef context = [runloop context];
 
   if (callbacksObjectRef != NULL) {
@@ -215,7 +217,7 @@ void TiBindingEventProcess(TiBindingRunLoop runloop, void *payload)
     callbackCount = (int)JSValueToNumber(context, jsCallbackArrayLength, NULL);
   }
 
-  if (callbackCount > 0) {
+  if (callbackCount > 0 || promiseCount > 0) {
     //Convert to JSObjectRefs
     if (eventObjectRef == NULL) {
       eventObjectRef = TiBindingTiValueFromNSDictionary(context, event->payloadDictionary);
@@ -251,6 +253,9 @@ void TiBindingEventProcess(TiBindingRunLoop runloop, void *payload)
     }
 
     JSObjectSetProperty(context, eventObjectRef, jsEventCancelBubbleStringRef, cancelBubbleValue, kJSPropertyAttributeNone, NULL);
+
+    NSDictionary *eventData = TiBindingTiValueToNSDictionary(context, eventObjectRef);
+    [targetKrollObject resolvePromisesForEvent:event->eventString withObject:eventData];
 
     for (int i = 0; i < callbackCount; i++) {
       // Process event in context

@@ -404,9 +404,10 @@ static NSArray *touchEventsArray;
   return nil;
 }
 
-- (void)animate:(id)arg
+- (KrollPromise *)animate:(id)arg
 {
-  TiAnimation *newAnimation = [TiAnimation animationFromArg:arg context:[self executionContext] create:NO];
+  KrollPromise *promise = [[[KrollPromise alloc] initInContext:[self currentContext]] autorelease];
+  TiAnimation *newAnimation = [TiAnimation animationFromArg:arg context:[self executionContext] create:NO promise:promise];
   [self rememberProxy:newAnimation];
   TiThreadPerformOnMainThread(
       ^{
@@ -419,6 +420,7 @@ static NSArray *touchEventsArray;
         [[self view] animate:newAnimation];
       },
       NO);
+  return promise;
 }
 
 - (void)setAnimation:(id)arg

@@ -10,6 +10,7 @@
 #import "KrollContext.h"
 #import "KrollMethod.h"
 #import "KrollMethodDelegate.h"
+#import "KrollPromise.h"
 #import "KrollPropertyDelegate.h"
 #import "TiBindingTiValue.h"
 #import "TiExceptionHandler.h"
@@ -465,6 +466,7 @@ bool KrollHasInstance(JSContextRef ctx, JSObjectRef constructor, JSValueRef poss
   RELEASE_TO_NIL(properties);
   RELEASE_TO_NIL(target);
   RELEASE_TO_NIL(statics);
+  RELEASE_TO_NIL(promises);
   //	[[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
   [super dealloc];
 }
@@ -1124,6 +1126,17 @@ TI_INLINE JSStringRef TiStringCreateWithPointerValue(int value)
     return;
   }
 
+  if (eventCallbackOrWrapper != nil && [eventCallbackOrWrapper isKindOfClass:[KrollPromise class]]) {
+    if (promises == nil) {
+      promises = [[NSMutableDictionary alloc] init];
+    }
+    if (promises[eventName] == nil) {
+      promises[eventName] = [[NSMutableArray alloc] init];
+    }
+    [promises[eventName] addObject:[eventCallbackOrWrapper retain]];
+    return;
+  }
+
   JSValueRef exception = NULL;
 
   JSValueRef jsEventValue = JSObjectGetProperty(jsContext, self.propsObject, kTiStringEventKey, &exception);
@@ -1205,6 +1218,27 @@ TI_INLINE JSStringRef TiStringCreateWithPointerValue(int value)
   }
 
   return jsCallbackArray;
+}
+
+- (NSMutableArray<KrollPromise *> *)promisesForEvent:(NSString *)eventName
+{
+  return [promises objectForKey:eventName];
+}
+
+- (void)resolvePromisesForEvent:(NSString *)eventName withObject:(id)eventData
+{
+  NSMutableArray<KrollPromise *> *eventPromises = [self promisesForEvent:eventName];
+
+  if (eventPromises != nil) {
+    for (int i = 0; i < eventPromises.count; i++) {
+      KrollPromise *promise = eventPromises[i];
+      if (promise != nil) {
+        [promise resolve:@[ [eventData copy] ]];
+      }
+    }
+    [eventPromises release];
+    promises[eventName] = nil;
+  }
 }
 
 - (void)removeListener:(KrollCallback *)eventCallback forEvent:(NSString *)eventName
