@@ -8,6 +8,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
+Properties properties = new Properties()
+properties.load(rootProject.file('local.properties').newDataInputStream())
+def sdkDir = properties.getProperty('sdk.dir').replace('\\', '/')
+
 // Fetch Titanium version info to be applied to generated "BuildConfig" Java class and published AAR.
 // Prefer environment variables assigned via build/package scripts under "titanium_mobile/build" folder.
 def tiBuildVersionString = System.env.TI_SDK_BUILD_VERSION
@@ -71,7 +75,7 @@ android {
 	}
 	externalNativeBuild {
 		cmake {
-			version '3.10.2'
+			version '3.10.2.4988404'
 			path "${projectDir}/../runtime/v8/src/native/CMakeLists.txt"
 		}
 	}
@@ -118,6 +122,24 @@ android {
 	compileOptions {
 		sourceCompatibility JavaVersion.VERSION_1_8
 		targetCompatibility JavaVersion.VERSION_1_8
+	}
+}
+
+// Install cmake during project configuration.
+def cmakeDir = new File(sdkDir+'/cmake/'+android.externalNativeBuild.cmake.version)
+if (!cmakeDir.exists()) {
+	def sdkManager = sdkDir+'/cmdline-tools/latest/bin/sdkmanager'
+	def cmakePackage = "cmake;${android.externalNativeBuild.cmake.version}"
+
+	if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+		sdkManager += '.bat'
+		cmakePackage = "\"${cmakePackage}\""
+	}
+
+	exec {
+		executable = sdkManager
+		workingDir = rootDir
+		args = ['--install', cmakePackage]
 	}
 }
 

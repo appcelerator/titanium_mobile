@@ -68,6 +68,7 @@ jar {
 			it.isDirectory() ? it : zipTree(it)
 		}
 	}
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 dependencies {
