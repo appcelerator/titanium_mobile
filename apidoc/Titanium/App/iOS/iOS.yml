@@ -114,6 +114,46 @@ methods:
             local JavaScript file to execute when the application is placed in the background.
         type: Dictionary
 
+  - name: registerBackgroundTask
+    summary: Registers a background task to run when the application is placed in the background.
+    description: |
+        Two type of tasks can be performed in background- refresh(fetch) and processing.
+
+        Refresh task can be used for updating your app with small bits of information. `UIBackgroundModes` key should be added in tiapp.xml with value `fetch`. 
+        In this case [backgroundfetch](Titanium.App.iOS.backgroundfetch) event will be fired by system.
+
+        Processing task can be used for long data updates, processing data, and app maintenance. `UIBackgroundModes` key should be added in tiapp.xml with value `processing`.
+        In this case [backgroundrefresh](Titanium.App.iOS.backgroundrefresh) event will be fired by system.
+
+        `BGTaskSchedulerPermittedIdentifiers` key should also be registered with unique value for each task. See the following example.
+
+        ``` xml
+        <ios>
+          <plist>
+          <dict>
+            <key>BGTaskSchedulerPermittedIdentifiers</key>
+              <array>
+                <string>com.test.bgrefresh</string>
+                <string>com.test.bgprocessing</string>
+              </array>
+             <key>UIBackgroundModes</key>
+              <array>
+                <string>fetch</string>
+                <string>processing</string>
+              </array>
+            </dict>
+            </plist>
+          </ios>
+        ```
+    parameters:
+      - name: params
+        summary: |
+            Parameters used to create the background task.
+        type: BackgroundTaskObject
+    since: "10.0.0"
+    osver: {ios: {min: "13.0"}}
+    platforms: [iphone, ipad, macos]
+
   - name: registerUserNotificationSettings
     summary: |
         Registers the application to use the requested notification types and categories.
@@ -165,7 +205,7 @@ methods:
     parameters:
       - name: handlerID
         summary: |
-            Unique string identifier for the event (`backgroundfetch`, `silentpush` or `backgroundtransfer`)
+            Unique string identifier for the event (`backgroundfetch`, `backgroundrefresh`, `silentpush` or `backgroundtransfer`)
             that initiated the background opertation mode.
         type: String
     osver: {ios: {min: "7.0"}}
@@ -518,6 +558,30 @@ properties:
     deprecated:
       since: "9.1.0"
       notes: Use <Titanium.UI.USER_INTERFACE_STYLE_DARK> instead, which is supported cross-platform.
+
+  - name: BACKGROUND_TASK_TYPE_REFRESH
+    summary: Background task type refresh. 
+    description: |
+        Used to set the `type` attribute when registering background task using method <Titanium.App.iOS.registerBackgroundTask>. 
+        This is used to refresh content that’s run while the app is in the background. Use this for updating your app with small bits of information, 
+        such as the latest stock values.
+    type: String
+    permission: read-only
+    osver: {ios: {min: "13.0"}}
+    value: "refresh"
+    since: "10.0.0"
+
+  - name: BACKGROUND_TASK_TYPE_PROCESS
+    summary: Background task type process.
+    description: |
+        Used to set the `type` attribute when registering background task using method <Titanium.App.iOS.registerBackgroundTask>. 
+        This is used for time-consuming processing task that runs while the app is in the background. Use processing tasks for long data updates, 
+        processing data, and app maintenance.
+    type: String
+    permission: read-only
+    osver: {ios: {min: "13.0"}}
+    value: "process"
+    since: "10.0.0"
 
   - name: UTTYPE_TEXT
     summary: |
@@ -1008,6 +1072,11 @@ events:
         The event returns the dictionary containing the `handlerID` property, which is a unique handler ID for the
         current event. This identifier should be passed as the argument to the
         [endBackgroundHandler](Titanium.App.iOS.endBackgroundHandler) method.
+
+        In iOS 13+, it is recommended to register refresh task using <Titanium.App.iOS.registerBackgroundTask>. 
+        If you have added `BGTaskSchedulerPermittedIdentifiers` in `tiapp.xml`, it is mandatory to register refresh task 
+        using method <Titanium.App.iOS.registerBackgroundTask>. Otherwise this event will not fire.
+        On macOS, this event will only be fired when refresh task is registered using <Titanium.App.iOS.registerBackgroundTask>.
     properties:
       - name: handlerId
         summary: |
@@ -1016,7 +1085,34 @@ events:
         type: String
     platforms: [iphone, ipad, macos]
     osver: {ios: {min: "7.0"}}
-    since: {iphone: "3.2.0", ipad: "3.2.0", macos: "9.2.0"}
+    since: {iphone: "3.2.0", ipad: "3.2.0", macos: "10.0.0"}
+
+  - name: backgroundprocess
+    summary: Fired when the application is woken up for a processing operation. Available on macOS and iOS 13+ .
+    description: |
+        Add this event if your app has registered a process task using <Titanium.App.iOS.registerBackgroundTask> and supports the `processing` UIBackground mode. 
+        Use this event for long data updates, processing data, and app maintenance. The system will launch your app and fire this event when conditions are favorable for battery life to handle deferrable, 
+        longer-running processing, such as syncing, database maintenance, or similar tasks. The system will attempt to fulfill this request to the best of its 
+        ability within the next two days as long as the user has used your app within the past week.
+
+        Use callback of this event for long data updates, processing data, and app maintenance. Call the
+        [endBackgroundHandler](Titanium.App.iOS.endBackgroundHandler) method with the `handlerID` parameter from this event.
+
+        When this event is fired, your app has minutes to perform the processing and call the [endBackgroundHandler](Titanium.App.iOS.endBackgroundHandler) method. 
+        Your app should call the [endBackgroundHandler](Titanium.App.iOS.endBackgroundHandler) method as soon as your task is completed.
+
+        The event returns the dictionary containing the `handlerID` property, which is a unique handler ID for the
+        current event. This identifier should be passed as the argument to the
+        [endBackgroundHandler](Titanium.App.iOS.endBackgroundHandler) method.
+    properties:
+      - name: handlerId
+        summary: |
+            Unique string identifier for the `backgroundprocess` event. This identifier should be passed as the argument
+            to the [endBackgroundHandler](Titanium.App.iOS.endBackgroundHandler) method.
+        type: String
+    platforms: [iphone, ipad, macos]
+    osver: {ios: {min: "13.0"}}
+    since: "10.0.0"
 
   - name: silentpush
     summary: Fired when the application is woken up by a silent remote notification. Available only on iOS 7 and later.
@@ -1617,3 +1713,87 @@ properties:
   - name: categories
     summary: Set of categories of user notification actions required by the applicaiton to use.
     type: Array<Titanium.App.iOS.UserNotificationCategory>
+
+---
+name: BackgroundTaskObject
+summary: |
+    Dictionary object of parameters used to register the background task using
+    the <Titanium.App.iOS.registerBackgroundTask> method.
+since: "10.0.0"
+platforms: [iphone, ipad, macos]
+
+properties:
+  - name: type
+    summary: Background task type.
+    type: String
+    constants: [Titanium.App.iOS.BACKGROUND_TASK_TYPE_REFRESH, Titanium.App.iOS.BACKGROUND_TASK_TYPE_PROCESS]
+
+  - name: identifier
+    summary: |
+        Unique value to identify the task. It should be one of the same value which is added in tiapp.xml for key `BGTaskSchedulerPermittedIdentifiers`.
+    type: String
+
+  - name: networkConnect
+    summary: |
+        Whether the background task requires network connectivity. This is valid with background task type <Titanium.App.iOS.BACKGROUND_TASK_TYPE_PROCESS>.
+        If this property is set to `true`, the system will only launch your app to fulfill this request when the device has a network connection.
+    type: Boolean
+    default: false
+
+  - name: powerConnect
+    summary: |
+        Whether the background task rrequires external power. This is valid with background task type <Titanium.App.iOS.BACKGROUND_TASK_TYPE_PROCESS>. 
+        If this property is set to `true`, the system will launch your app to fulfill this request only while the device is connected to external power.
+        Specify `true` if this task is resource intensive to minimize impact to battery life.
+    type: Boolean
+    default: false
+
+  - name: beginDate
+    summary: |
+        The earliest date at which the task may run. Setting this property does not guarantee that the task will begin at the specified date, 
+        but only that it will not begin sooner. If not specified, no start delay is used.
+    type: Date
+    optional: true
+
+examples:
+  - title: Background task example
+    example: |
+
+        ``` js
+        const win = Ti.UI.createWindow({
+            backgroundColor: '#fff'
+        });
+
+        const label = Ti.UI.createButton({
+            text: 'Background task'
+        });
+
+        win.add(label);
+        win.open();
+
+        Ti.App.iOS.registerBackgroundTask({
+            'identifier': 'com.test.bgrefresh',
+            'type': Ti.App.iOS.BACKGROUND_TASK_TYPE_REFRESH
+        });
+
+        Ti.App.iOS.registerBackgroundTask({
+            'identifier': 'com.test.bgprocessing',
+            'type': Ti.App.iOS.BACKGROUND_TASK_TYPE_PROCESS
+        });
+
+        Ti.App.iOS.addEventListener('backgroundfetch', function(e) {
+            Ti.API.info('backgroundfetch: ' + JSON.stringify(e));
+
+            label.text = 'backgroundfetch';
+
+            Ti.App.iOS.endBackgroundHandler(e.handlerId);
+        });
+
+        Ti.App.iOS.addEventListener('backgroundprocess', function(e) {
+            Ti.API.info('backgroundprocess: ' + JSON.stringify(e));
+
+            label.text = 'backgroundprocess';
+         
+            Ti.App.iOS.endBackgroundHandler(e.handlerId);
+        });
+        ```

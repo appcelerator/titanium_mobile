@@ -258,6 +258,9 @@ describe.ios('Titanium.App.iOS', function () {
 		should(Ti.App.iOS.UTTYPE_VIDEO).be.a.String();
 		should(Ti.App.iOS.UTTYPE_WEB_ARCHIVE).be.a.String();
 		should(Ti.App.iOS.UTTYPE_XML).be.a.String();
+
+		should(Ti.App.iOS.BACKGROUND_TASK_TYPE_PROCESS).be.a.String();
+		should(Ti.App.iOS.BACKGROUND_TASK_TYPE_REFRESH).be.a.String();
 	});
 
 	it.ios('.userInterfaceStyle', () => {
@@ -266,5 +269,21 @@ describe.ios('Titanium.App.iOS', function () {
 			// can vary between device configs
 			should(Ti.App.iOS.userInterfaceStyle).be.a.Number();
 		}
+	});
+
+	it('#registerBackgroundTask', function (finish) {
+		try {
+			should(Ti.App.iOS.registerBackgroundTask).be.a.Function();
+
+			Ti.App.iOS.registerBackgroundTask({
+				identifier: 'com.test.bgprocessing',
+				type: Ti.App.iOS.BACKGROUND_TASK_TYPE_PROCESS,
+				powerConnect: true,
+				networkConnect: true
+			});
+		} catch (err) {
+			return finish(err);
+		}
+		finish();
 	});
 });

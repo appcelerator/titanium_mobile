@@ -96,6 +96,7 @@ NSString *const kTiRemoteDeviceUUIDNotification = @"TiDeviceUUID";
 NSString *const kTiGestureShakeNotification = @"TiGestureShake";
 NSString *const kTiRemoteControlNotification = @"TiRemoteControl";
 NSString *const kTiBackgroundFetchNotification = @"TiBackgroundFetch";
+NSString *const kTiBackgroundProcessNotification = @"TiBackgroundProcess";
 NSString *const kTiSilentPushNotification = @"TiSilentPush";
 NSString *const kTiBackgroundTransfer = @"TiBackgroundTransfer";
 NSString *const kTiCurrentLocale = @"kTiCurrentLocale";

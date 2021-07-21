@@ -11,6 +11,7 @@
 #import "KrollBridge.h"
 #import "TiHost.h"
 #import "TiRootViewController.h"
+#import <BackgroundTasks/BackgroundTasks.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 
 extern BOOL applicationInMemoryPanic; // TODO: Remove in SDK 9.0+
@@ -56,8 +57,12 @@ TI_INLINE void waitForMemoryPanicCleared() //WARNING: This must never be run on 
 
   NSString *sessionId;
 
-  UIBackgroundTaskIdentifier bgTask;
+  UIBackgroundTaskIdentifier bgTaskIdentifier;
   NSMutableArray *backgroundServices;
+
+  NSMutableArray *backgroundTasks;
+  NSMutableArray *registeredBackgroundTasks;
+
   NSMutableArray *runningServices;
   NSDictionary *localNotification;
   UIApplicationShortcutItem *launchedShortcutItem;
@@ -288,6 +293,9 @@ TI_INLINE void waitForMemoryPanicCleared() //WARNING: This must never be run on 
  @param notificationName The name of the notification to schedule.
  */
 - (void)tryToPostBackgroundModeNotification:(NSMutableDictionary *)userInfo withNotificationName:(NSString *)notificationName;
+
+- (void)addBackgroundTask:(NSDictionary *)bgTask;
+- (void)backgroundTaskCompletedForIdentifier:(NSString *)identifier;
 
 - (void)registerBackgroundService:(TiProxy *)proxy;
 - (void)unregisterBackgroundService:(TiProxy *)proxy;
