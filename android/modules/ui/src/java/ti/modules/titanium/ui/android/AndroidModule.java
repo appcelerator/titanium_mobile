@@ -185,6 +185,11 @@ public class AndroidModule extends KrollModule
 	public static final int TABS_STYLE_BOTTOM_NAVIGATION = 1;
 
 	@Kroll.constant
+	public static final int TAB_MODE_FIXED = 1;
+	@Kroll.constant
+	public static final int TAB_MODE_SCROLLABLE = 0;
+
+	@Kroll.constant
 	public static final int TRANSITION_NONE = TiUIView.TRANSITION_NONE;
 	@Kroll.constant
 	public static final int TRANSITION_EXPLODE = TiUIView.TRANSITION_EXPLODE;

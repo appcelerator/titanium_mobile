@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.Design.TabLayout" parent="Base.Widget.Design.TabLayout">
+        <item name="tabMaxWidth">0dp</item>
+        <item name="tabGravity">fill</item>
+        <item name="tabMode">scrollable</item>
+    </style>
+</resources>

@@ -331,6 +331,10 @@ public class TabGroupProxy extends TiWindowProxy implements TiActivityWindow
 		if (getProperty(TiC.PROPERTY_STYLE) == null
 			|| ((Integer) getProperty(TiC.PROPERTY_STYLE)) == AndroidModule.TABS_STYLE_DEFAULT) {
 			view = new TiUITabLayoutTabGroup(this, activity);
+
+			if (getProperty(TiC.PROPERTY_TAB_MODE) != null) {
+				((TiUITabLayoutTabGroup) view).setTabMode((Integer) getProperty(TiC.PROPERTY_TAB_MODE));
+			}
 		} else {
 			view = new TiUIBottomNavigationTabGroup(this, activity);
 		}

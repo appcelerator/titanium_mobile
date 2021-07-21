@@ -51,7 +51,7 @@ excludes:
                  borderColor,borderRadius,borderWidth,bottom,children,enabled,focusable,height,
                  horizontalWrap,layout,left,opacity,right,softKeyboardOnFocus,
                  top,transform,width,zIndex]
-    events: [click, dblclick, doubletap, keypressed, longclick, longpress, pinch, postlayout, 
+    events: [click, dblclick, doubletap, keypressed, longclick, longpress, pinch, postlayout,
              singletap, swipe, touchcancel, touchend, touchmove, touchstart, twofingertap]
 
 events:
@@ -456,8 +456,8 @@ properties:
         prior to 8.0.0.GA. It displays the TabGroup with a list of Tabs at the top of the screen.
 
         [TABS_STYLE_BOTTOM_NAVIGATION](Titanium.UI.Android.TABS_STYLE_BOTTOM_NAVIGATION) is a style that displays
-        the TabGroup with a list of Tabs in a controller at the bottom of the screen. The recommended usage of this 
-        style is for items count between three and five: (https://material.io/design/components/bottom-navigation.html#usage) 
+        the TabGroup with a list of Tabs in a controller at the bottom of the screen. The recommended usage of this
+        style is for items count between three and five: (https://material.io/design/components/bottom-navigation.html#usage)
         In Android it is limited to supporting a maximum number of five tabs.
 
     availability: creation
@@ -473,11 +473,26 @@ properties:
 
         A tab's [backgroundColor](Titanium.UI.Tab.backgroundColor) property takes precedence if set.
 
-        This property applies to all states and tabs, not just inactive tabs. Furthermore, the inactive 
+        This property applies to all states and tabs, not just inactive tabs. Furthermore, the inactive
         tab icons without activeIcon will be tinted this color.
     type: [String, Titanium.UI.Color]
     since: {android: "3.0.0", iphone: "3.0.0", ipad: "3.0.0"}
     platforms: [android, iphone, ipad, macos]
+
+  - name: tabMode
+    summary: Property defining which tabMode is used for the TabGroup.
+    description: |
+        Sets the style of the TabGroup tabs.
+
+        [TAB_MODE_SCROLLABLE](Titanium.UI.Android.TAB_MODE_SCROLLABLE) is the best style for showing long tab titles and
+        enables horizontal scrolling (default).
+
+        [TAB_MODE_FIXED](Titanium.UI.Android.TAB_MODE_FIXED) will show all tabs at once.
+    availability: creation
+    constants: Titanium.UI.Android.TAB_MODE_*
+    since: "8.3.0"
+    type: Number
+    platforms: [android]
 
   - name: tabsTintColor
     summary: The tintColor to apply to the tabs.
@@ -561,7 +576,7 @@ properties:
   - name: shadowImage
     summary: Image of the shadow placed between the tab bar and the content area.
     description: |
-        The <Titanium.UI.TabGroup.tabsBackgroundImage> property must also be set 
+        The <Titanium.UI.TabGroup.tabsBackgroundImage> property must also be set
         in order for this to take effect.
     type: String
     platforms: [iphone, ipad, macos]

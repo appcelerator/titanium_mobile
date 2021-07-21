@@ -390,6 +390,11 @@ public class TiUITabLayoutTabGroup extends TiUIAbstractTabGroup implements TabLa
 	{
 	}
 
+	public void setTabMode(int value)
+	{
+		this.mTabLayout.setTabMode(value);
+	}
+
 	private LinearLayout getTabLinearLayoutForIndex(int index)
 	{
 		LinearLayout stripLayout = ((LinearLayout) this.mTabLayout.getChildAt(0));
