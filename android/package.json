@@ -24,11 +24,11 @@
 		"integrity": "sha512-A0tV+fYtkpKfIF5roRTCFPtdULMFygmfWlEuuHOBjC3q4rz/mKnAsJTYBlqayC/4oYEWehj867Oh1o6vy26XHQ=="
 	},
 	"minSDKVersion": "21",
-	"compileSDKVersion": "30",
+	"compileSDKVersion": "31",
 	"vendorDependencies": {
 		"android sdk": ">=23.x <=30.x",
 		"android build tools": ">=30.0.2 <=31.x",
-		"android platform tools": "30.x",
+		"android platform tools": "31.x",
 		"android tools": "<=26.x",
 		"android ndk": ">=r21 <=r22b",
 		"java": ">=1.8.x"

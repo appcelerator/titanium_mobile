@@ -9,7 +9,7 @@ apply plugin: 'com.android.application'
 
 // Set up Android app project.
 android {
-	compileSdkVersion 30
+	compileSdkVersion 31
 	defaultConfig {
 		applicationId 'com.titanium.test'
 		minSdkVersion 21
