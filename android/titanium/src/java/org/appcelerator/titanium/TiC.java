@@ -442,6 +442,7 @@ public class TiC
 	public static final String PROPERTY_FROM = "from";
 	public static final String PROPERTY_FULLNAME = "fullname";
 	public static final String PROPERTY_FULLSCREEN = "fullscreen";
+	public static final String PROPERTY_GRID_COLUMNS = "gridColumns";
 	public static final String PROPERTY_GROUP_ID = "groupId";
 	public static final String PROPERTY_GROUP_KEY = "groupKey";
 	public static final String PROPERTY_GROUP_ALERT_BEHAVIOR = "groupAlertBehavior";

@@ -13,7 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.RelativeLayout;
-
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.annotation.NonNull;
 
 import org.appcelerator.kroll.KrollDict;
@@ -95,6 +96,18 @@ public class TiUIListView extends TiUIView
 
 			// Set list scrolling.
 			this.listView.getRecyclerView().setScrollEnabled(isScrollable);
+		}
+
+		if (name.equals(TiC.PROPERTY_GRID_COLUMNS)) {
+			// create a simple GridLayout
+			final int gridColumns = TiConvert.toInt(value, 0);
+			if (gridColumns > 1) {
+				this.listView.getRecyclerView().setLayoutManager(new GridLayoutManager(
+					getProxy().getActivity(), gridColumns));
+			} else {
+				this.listView.getRecyclerView().setLayoutManager(new LinearLayoutManager(
+					getProxy().getActivity()));
+			}
 		}
 
 		if (name.equals(TiC.PROPERTY_REFRESH_CONTROL)) {
