@@ -126,6 +126,7 @@ public class TiAnimationBuilder
 	protected View view;
 	protected AnimatorHelper animatorHelper;
 	protected TiViewProxy viewProxy;
+	protected AnimatorSet animatorSet;
 
 	public TiAnimationBuilder()
 	{
@@ -613,7 +614,7 @@ public class TiAnimationBuilder
 		if (delay != null) {
 			as.setStartDelay(delay.longValue());
 		}
-
+		animatorSet = as;
 		return as;
 	}
 
@@ -1015,6 +1016,20 @@ public class TiAnimationBuilder
 
 		if (tdm == null || tdm.canUsePropertyAnimators()) {
 			buildPropertyAnimators().start();
+		}
+	}
+
+	public void stop(View view)
+	{
+		if (animatorSet != null) {
+			animatorSet.removeAllListeners();
+			animatorSet.cancel();
+			animatorSet = null;
+		}
+		view.clearAnimation();
+		setAnimationRunningFor(view, false);
+		if (animationProxy != null) {
+			animationProxy.fireEvent(TiC.EVENT_CANCEL, null);
 		}
 	}
 

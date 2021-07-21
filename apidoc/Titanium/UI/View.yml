@@ -1074,6 +1074,13 @@ methods:
         removed: "9.0.0"
         notes: Use the [Titanium.Proxy.applyProperties](Titanium.Proxy.applyProperties) method to batch-update layout properties.
 
+  - name: stopAnimation
+    summary: Stops a running animation.
+    description: |
+        Stops a running view [Animation](Titanium.UI.Animation).
+    platforms: [android]
+    since: { android: "7.4.0" }
+
   - name: toImage
     summary: Returns an image of the rendered view, as a Blob.
     description: |

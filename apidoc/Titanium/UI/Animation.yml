@@ -48,6 +48,11 @@ since: "0.9"
 platforms: [android, iphone, ipad, macos]
 
 events:
+  - name: cancel
+    summary: Fired when the animation is canceled.
+    since: "7.5.0"
+    platforms: [android]
+
   - name: complete
     summary: Fired when the animation completes.
 

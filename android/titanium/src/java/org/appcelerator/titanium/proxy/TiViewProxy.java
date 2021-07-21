@@ -830,11 +830,13 @@ public abstract class TiViewProxy extends KrollProxy
 	}
 
 	@Kroll.method
-	public void animate(Object arg, @Kroll.argument(optional = true) KrollFunction callback)
+	public void animate(@Kroll.argument(optional = true) Object arg, @Kroll.argument(optional = true) KrollFunction callback)
 	{
 		synchronized (pendingAnimationLock)
 		{
-			if (arg instanceof HashMap) {
+			if (arg == null) {
+				stopAnimation();
+			} else if (arg instanceof HashMap) {
 				@SuppressWarnings("rawtypes")
 				HashMap options = (HashMap) arg;
 				pendingAnimation = new TiAnimationBuilder();
@@ -852,6 +854,16 @@ public abstract class TiViewProxy extends KrollProxy
 			}
 
 			handlePendingAnimation(false);
+		}
+	}
+
+	@Kroll.method
+	public void stopAnimation()
+	{
+		TiUIView tiv = peekView();
+
+		if (tiv != null) {
+			tiv.stopAnimation();
 		}
 	}
 

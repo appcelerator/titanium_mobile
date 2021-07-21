@@ -154,6 +154,7 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 	private final AtomicBoolean bLayoutPending = new AtomicBoolean();
 	private final AtomicBoolean bTransformPending = new AtomicBoolean();
 
+	private TiAnimationBuilder tiBuilder;
 	/**
 	 * Constructs a TiUIView object with the associated proxy.
 	 * @param proxy the associated proxy.
@@ -363,7 +364,7 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 			return;
 		}
 
-		proxy.clearAnimation(builder);
+		proxy.clearAnimation(tiBuilder);
 
 		// If a view is "visible" but not currently seen (such as because it's covered or
 		// its position is currently set to be fully outside its parent's region),
@@ -391,12 +392,20 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 		if (Log.isDebugModeEnabled()) {
 			Log.d(TAG, "starting animation", Log.DEBUG_MODE);
 		}
-
-		builder.start(proxy, outerView);
+		tiBuilder.start(proxy, outerView);
 
 		if (invalidateParent) {
 			((View) viewParent).postInvalidate();
 		}
+	}
+
+	public void stopAnimation()
+	{
+		View outerView = getOuterView();
+		if (outerView == null || bTransformPending.get() || tiBuilder == null) {
+			return;
+		}
+		tiBuilder.stop(outerView);
 	}
 
 	public void listenerAdded(String type, int count, KrollProxy proxy)
