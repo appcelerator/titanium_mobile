@@ -271,6 +271,30 @@ public class TiUIText extends TiUIView implements TextWatcher, OnEditorActionLis
 		disableChangeEvent = false;
 	}
 
+	@Override
+	protected void applyContentDescription()
+	{
+		if (proxy == null || nativeView == null) {
+			return;
+		}
+		String contentDescription = composeContentDescription();
+		if (contentDescription != null) {
+			this.tv.setContentDescription(contentDescription);
+		}
+	}
+
+	@Override
+	protected void applyContentDescription(KrollDict properties)
+	{
+		if (proxy == null || nativeView == null) {
+			return;
+		}
+		String contentDescription = composeContentDescription(properties);
+		if (contentDescription != null) {
+			this.tv.setContentDescription(contentDescription);
+		}
+	}
+
 	private void updateTextField()
 	{
 		if (!field) {
