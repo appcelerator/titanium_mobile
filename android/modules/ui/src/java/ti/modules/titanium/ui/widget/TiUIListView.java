@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.RelativeLayout;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.annotation.NonNull;
 
 import org.appcelerator.kroll.KrollDict;
@@ -95,6 +96,16 @@ public class TiUIListView extends TiUIView
 
 			// Set list scrolling.
 			this.listView.getRecyclerView().setScrollEnabled(isScrollable);
+		}
+
+		if (name.equals(TiC.PROPERTY_SCROLL_TYPE)) {
+			if (value.equals(TiC.LAYOUT_VERTICAL)) {
+				this.listView.getRecyclerView().setLayoutManager(new LinearLayoutManager(
+					getProxy().getActivity()));
+			} else if (value.equals(TiC.LAYOUT_HORIZONTAL)) {
+				this.listView.getRecyclerView().setLayoutManager(new LinearLayoutManager(
+					getProxy().getActivity(), LinearLayoutManager.HORIZONTAL, false));
+			}
 		}
 
 		if (name.equals(TiC.PROPERTY_REFRESH_CONTROL)) {

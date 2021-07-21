@@ -173,7 +173,7 @@ events:
 
   - name: rowsselected
     summary: |
-        Fired when user stops two-pan gesture interaction for selecting multiple rows. 
+        Fired when user stops two-pan gesture interaction for selecting multiple rows.
         It is used in conjunction with <Titanium.UI.TableView.allowsMultipleSelectionInteraction>.
     platforms: [iphone, ipad, macos]
     since: 8.2.0
@@ -1238,9 +1238,9 @@ properties:
   - name: allowsMultipleSelectionInteraction
     summary: Allows a two-finger pan gesture to automatically transition the table view into editing mode and start selecting rows.
     description: |
-        Setting this property to true allows the user to start selecting multiple contiguous rows via a two-finger pan gesture. 
-        If the table view is already in editing mode, the user can also select multiple rows via a one-finger pan gesture along 
-        the edge of the table that contains editing controls (checkboxes). In order to support this behavior, 
+        Setting this property to true allows the user to start selecting multiple contiguous rows via a two-finger pan gesture.
+        If the table view is already in editing mode, the user can also select multiple rows via a one-finger pan gesture along
+        the edge of the table that contains editing controls (checkboxes). In order to support this behavior,
         you must also set <Titanium.UI.TableView.allowsMultipleSelectionDuringEditing> to true.
         Once user interaction stops the <Titanium.UI.TableView.rowsselected> event is fired.
     type: Boolean
@@ -1384,6 +1384,14 @@ properties:
     platforms: [iphone,ipad, macos]
     since: 2.1.2
 
+  - name: scrollType
+    summary: |
+        Change the type of the TableView to be `horizontal` or `vertical`.
+    description: Change the type of the TableView to be `horizontal` or `vertical`.
+    type: String
+    platforms: [android]
+    since: 10.0.0
+
   - name: search
     summary: Search field to use for the table view.
     description: |
@@ -1416,8 +1424,8 @@ properties:
   - name: showSearchBarInNavBar
     summary: A Boolean indicating whether search bar will be in navigation bar.
     description: |
-          If you want to show the search bar in navigation bar, set this property `true` during creation. 
-          Use the <Titanium.UI.Window.hidesSearchBarWhenScrolling> property to control the visibility of the 
+          If you want to show the search bar in navigation bar, set this property `true` during creation.
+          Use the <Titanium.UI.Window.hidesSearchBarWhenScrolling> property to control the visibility of the
           searchbar when scrolling.
     type: Boolean
     default: false
@@ -1425,7 +1433,7 @@ properties:
     platforms: [iphone, ipad, macos]
     osver: {ios: {min: "11.0"}}
     availability: creation
-    
+
   - name: searchAsChild
     summary: Determines whether the [SearchBar](Titanium.UI.SearchBar) or [SearchView](Titanium.UI.Android.SearchView) appears as part of the TableView.
     description: Set to false if the search view will be displayed in the action bar.
@@ -1813,7 +1821,7 @@ properties:
 name: SelectedRowObject
 summary: The arguments for the <Titanium.UI.TableView.rowsselected> event.
 since: 8.2.0
-platforms: [iphone, ipad, macos]    
+platforms: [iphone, ipad, macos]
 properties:
   - name: index
     summary: Row index.

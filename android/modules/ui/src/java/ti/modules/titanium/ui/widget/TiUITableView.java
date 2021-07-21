@@ -14,6 +14,8 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.GradientDrawable;
@@ -105,6 +107,16 @@ public class TiUITableView extends TiUIView
 
 			// Set list scrolling.
 			this.tableView.getRecyclerView().setScrollEnabled(isScrollable);
+		}
+
+		if (name.equals(TiC.PROPERTY_SCROLL_TYPE)) {
+			if (value.equals(TiC.LAYOUT_VERTICAL)) {
+				this.tableView.getRecyclerView().setLayoutManager(new LinearLayoutManager(
+					getProxy().getActivity()));
+			} else if (value.equals(TiC.LAYOUT_HORIZONTAL)) {
+				this.tableView.getRecyclerView().setLayoutManager(new LinearLayoutManager(
+					getProxy().getActivity(), LinearLayoutManager.HORIZONTAL, false));
+			}
 		}
 
 		if (name.equals(TiC.PROPERTY_SHOW_VERTICAL_SCROLL_INDICATOR)) {

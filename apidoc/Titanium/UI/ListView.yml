@@ -1001,6 +1001,14 @@ properties:
     platforms: [iphone, ipad, macos]
     availability: creation
 
+  - name: scrollType
+    summary: |
+        Change the type of the ListView to be `horizontal` or `vertical`.
+    description: Change the type of the ListView to be `horizontal` or `vertical`.
+    type: String
+    platforms: [android]
+    since: 10.0.0
+
   - name: tableSeparatorInsets
     deprecated:
         since: "5.4.0"
