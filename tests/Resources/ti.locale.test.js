@@ -16,7 +16,7 @@ describe('Global', () => {
 describe('Titanium.Locale', () => {
 
 	// reset back to US english when done
-	after(() => Ti.Locale.setLanguage('en-US'));
+	after(() => Ti.Locale.language = 'en-US');
 
 	it('exists', () => {
 		should(Ti.Locale).not.be.undefined();
@@ -109,7 +109,7 @@ describe('Titanium.Locale', () => {
 			});
 
 			beforeEach(() => {
-				Ti.Locale.setLanguage('en-US');
+				Ti.Locale.language = 'en-US';
 			});
 
 			it('returns stored value for found key', () => {
@@ -137,14 +137,14 @@ describe('Titanium.Locale', () => {
 
 			// https://jira.appcelerator.org/browse/TIMOB-26651
 			it('handles locale/country specific languages (i.e. en-GB vs en-US)', () => {
-				Ti.Locale.setLanguage('en-GB');
+				Ti.Locale.language = 'en-GB';
 				should(Ti.Locale.getString('this_is_my_key')).eql('this is my en-GB value'); // This fails on Windows, gives 'this is my value'
 				should(L('this_is_my_key')).eql('this is my en-GB value'); // This fails on Windows, gives 'this is my value'
 			});
 
 			// and then this one fails because it's using en-GB strings after we tell it to be ja...
 			it('handles single segment language (i.e. ja)', () => {
-				Ti.Locale.setLanguage('ja');
+				Ti.Locale.language = 'ja';
 				should(Ti.Locale.getString('this_is_my_key')).eql('これは私の値です');
 				should(L('this_is_my_key')).eql('これは私の値です');
 			});
@@ -278,21 +278,21 @@ describe('Titanium.Locale', () => {
 			});
 		});
 
-		describe('#setLanguage(String)', () => {
-			it('is a Function', () => {
-				should(Ti.Locale.setLanguage).be.a.Function();
+		describe('#set language(String)', () => {
+			it('has a setter', () => {
+				should(Ti.Locale).have.a.setter('language');
 			});
 
 			it('changes .currentLanguage', () => {
-				Ti.Locale.setLanguage('fr');
+				Ti.Locale.language = 'fr';
 				should(Ti.Locale.currentLanguage).eql('fr');
 			});
 
 			// FIXME Get working on iOS, setLangauge doesn't seem to affect currentLocale
 			it.iosBroken('changes .currentLocale', () => {
-				Ti.Locale.setLanguage('en-GB');
+				Ti.Locale.language = 'en-GB';
 				should(Ti.Locale.currentLocale).eql('en-GB'); // iOS returns 'en-US'
-				Ti.Locale.setLanguage('fr');
+				Ti.Locale.language = 'fr';
 				should(Ti.Locale.currentLocale).eql('fr');
 			});
 

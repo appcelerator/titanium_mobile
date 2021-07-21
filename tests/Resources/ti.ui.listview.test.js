@@ -28,10 +28,10 @@ describe('Titanium.UI', () => {
 		should(section_0).be.a.Object();
 
 		// Set section items.
-		section_0.setItems([
+		section_0.items = [
 			{ properties: { title: 'Red' } },
 			{ properties: { title: 'White' } }
-		]);
+		];
 		should(section_0.items.length).be.eql(2);
 
 		// Append item to section.
@@ -45,11 +45,11 @@ describe('Titanium.UI', () => {
 		should(section_1).be.a.Object();
 
 		// Set section items.
-		section_1.setItems([
+		section_1.items = [
 			{ properties: { title: 'Green' } },
 			{ properties: { title: 'Yellow' } },
 			{ properties: { title: 'Blue' } }
-		]);
+		];
 		should(section_1.items.length).be.eql(3);
 
 		// Set listView sections.
@@ -189,8 +189,8 @@ describe('Titanium.UI.ListView', function () {
 			win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 			// Set section items.
-			fruitSection.setItems(fruitDataSet);
-			vegSection.setItems(vegDataSet);
+			fruitSection.items = fruitDataSet;
+			vegSection.items = vegDataSet;
 
 			// Set header and footer views for first section.
 			fruitSection.headerView = Ti.UI.createView({ backgroundColor: 'black', height: 42 });
@@ -279,22 +279,22 @@ describe('Titanium.UI.ListView', function () {
 			win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 			const fruitSection = Ti.UI.createListSection({ headerTitle: 'Fruits' });
-			fruitSection.setItems([
+			fruitSection.items = [
 				{ properties: { title: 'Apple' } },
 				{ properties: { title: 'Banana' } },
-			]);
+			];
 
 			const vegSection = Ti.UI.createListSection({ headerTitle: 'Vegetables' });
-			vegSection.setItems([
+			vegSection.items = [
 				{ properties: { title: 'Carrots' } },
 				{ properties: { title: 'Potatoes' } },
-			]);
+			];
 
 			const fishSection = Ti.UI.createListSection({ headerTitle: 'Fish' });
-			fishSection.setItems([
+			fishSection.items = [
 				{ properties: { title: 'Cod' } },
 				{ properties: { title: 'Haddock' } },
-			]);
+			];
 
 			listView.sections = [ fruitSection ];
 
@@ -352,22 +352,22 @@ describe('Titanium.UI.ListView', function () {
 			win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 			const fruitSection = Ti.UI.createListSection({ headerTitle: 'Fruits' });
-			fruitSection.setItems([
+			fruitSection.items = [
 				{ properties: { title: 'Apple' } },
 				{ properties: { title: 'Banana' } },
-			]);
+			];
 
 			const vegSection = Ti.UI.createListSection({ headerTitle: 'Vegetables' });
-			vegSection.setItems([
+			vegSection.items = [
 				{ properties: { title: 'Carrots' } },
 				{ properties: { title: 'Potatoes' } },
-			]);
+			];
 
 			const fishSection = Ti.UI.createListSection({ headerTitle: 'Fish' });
-			fishSection.setItems([
+			fishSection.items = [
 				{ properties: { title: 'Cod' } },
 				{ properties: { title: 'Haddock' } },
-			]);
+			];
 
 			listView.sections = [ fruitSection, fishSection ];
 
@@ -426,22 +426,22 @@ describe('Titanium.UI.ListView', function () {
 			win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 			const fruitSection = Ti.UI.createListSection({ headerTitle: 'Fruits' });
-			fruitSection.setItems([
+			fruitSection.items = [
 				{ properties: { title: 'Apple' } },
 				{ properties: { title: 'Banana' } },
-			]);
+			];
 
 			const vegSection = Ti.UI.createListSection({ headerTitle: 'Vegetables' });
-			vegSection.setItems([
+			vegSection.items = [
 				{ properties: { title: 'Carrots' } },
 				{ properties: { title: 'Potatoes' } },
-			]);
+			];
 
 			const fishSection = Ti.UI.createListSection({ headerTitle: 'Fish' });
-			fishSection.setItems([
+			fishSection.items = [
 				{ properties: { title: 'Cod' } },
 				{ properties: { title: 'Haddock' } },
-			]);
+			];
 
 			listView.sections = [ fruitSection, fishSection ];
 
@@ -493,22 +493,22 @@ describe('Titanium.UI.ListView', function () {
 			win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 			const fruitSection = Ti.UI.createListSection({ headerTitle: 'Fruits' });
-			fruitSection.setItems([
+			fruitSection.items = [
 				{ properties: { title: 'Apple' } },
 				{ properties: { title: 'Banana' } },
-			]);
+			];
 
 			const vegSection = Ti.UI.createListSection({ headerTitle: 'Vegetables' });
-			vegSection.setItems([
+			vegSection.items = [
 				{ properties: { title: 'Carrots' } },
 				{ properties: { title: 'Potatoes' } },
-			]);
+			];
 
 			const fishSection = Ti.UI.createListSection({ headerTitle: 'Fish' });
-			fishSection.setItems([
+			fishSection.items = [
 				{ properties: { title: 'Cod' } },
 				{ properties: { title: 'Haddock' } },
-			]);
+			];
 
 			listView.sections = [ fruitSection, vegSection, fishSection ];
 
@@ -586,18 +586,18 @@ describe('Titanium.UI.ListView', function () {
 		ukHeaderView.add(Ti.UI.createLabel({ text: 'English UK Header', color: 'white' }));
 		ukFooterView.add(Ti.UI.createLabel({ text: 'English UK Footer', color: 'white' }));
 
-		ukSection.setItems([
+		ukSection.items = [
 			{ properties: { title: 'Lift', color: 'black' } },
 			{ properties: { title: 'Lorry', color: 'black' } },
 			{ properties: { title: 'Motorway', color: 'black' } }
-		]);
+		];
 		listView.appendSection(ukSection);
 
-		usSection.setItems([
+		usSection.items = [
 			{ properties: { title: 'Elevator', color: 'black' } },
 			{ properties: { title: 'Truck', color: 'black' } },
 			{ properties: { title: 'Freeway', color: 'black' } }
-		]);
+		];
 		listView.appendSection(usSection);
 
 		win.addEventListener('open', () => {
@@ -681,24 +681,24 @@ describe('Titanium.UI.ListView', function () {
 		win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 		const fruitSection = Ti.UI.createListSection({ headerTitle: 'Fruits / Frutas' });
-		fruitSection.setItems([
+		fruitSection.items = [
 			{ info: { text: 'Apple' }, es_info: { text: 'Manzana' }, pic: { image: 'Logo.png' } },
 			{ info: { text: 'Banana' }, es_info: { text: 'Banana' }, pic: { image: 'Logo.png' } }
-		]);
+		];
 		sections.push(fruitSection);
 
 		const vegSection = Ti.UI.createListSection({ headerTitle: 'Vegetables / Verduras' });
-		vegSection.setItems([
+		vegSection.items = [
 			{ info: { text: 'Carrot' }, es_info: { text: 'Zanahoria' }, pic: { image: 'Logo.png' } },
 			{ info: { text: 'Potato' }, es_info: { text: 'Patata' }, pic: { image: 'Logo.png' } }
-		]);
+		];
 		sections.push(vegSection);
 
 		const grainSection = Ti.UI.createListSection({ headerTitle: 'Grains / Granos' });
-		grainSection.setItems([
+		grainSection.items = [
 			{ info: { text: 'Corn' }, es_info: { text: 'Maiz' }, pic: { image: 'Logo.png' } },
 			{ info: { text: 'Rice' }, es_info: { text: 'Arroz' }, pic: { image: 'Logo.png' } }
-		]);
+		];
 		sections.push(grainSection);
 
 		listView.sections = sections;
@@ -939,16 +939,16 @@ describe('Titanium.UI.ListView', function () {
 		win = Ti.UI.createWindow({ backgroundColor: 'green' });
 
 		const fruitSection = Ti.UI.createListSection({ headerTitle: 'Fruits' });
-		fruitSection.setItems([
+		fruitSection.items = [
 			{ properties: { title: 'Apple', searchableText: 'Apple' } },
 			{ properties: { title: 'Banana', searchableText: 'Banana' } },
-		]);
+		];
 
 		const vegSection = Ti.UI.createListSection({ headerTitle: 'Vegetables' });
-		vegSection.setItems([
+		vegSection.items = [
 			{ properties: { title: 'Carrots', searchableText: 'Carrots' } },
 			{ properties: { title: 'Potatoes', searchableText: 'Potatoes' } },
-		]);
+		];
 
 		listView.sections = [ fruitSection, vegSection ];
 
@@ -1111,7 +1111,7 @@ describe('Titanium.UI.ListView', function () {
 			backgroundColor: 'gray'
 		});
 
-		section.setItems(items);
+		section.items = items;
 		listView.sections = [ section ];
 
 		win.addEventListener('open', () => {

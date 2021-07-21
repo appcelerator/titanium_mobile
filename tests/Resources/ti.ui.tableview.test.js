@@ -1079,11 +1079,11 @@ describe('Titanium.UI.TableView', function () {
 
 		try {
 			tableView.data = [];
-			tableView.setData(data_a);
+			tableView.data = data_a;
 			tableView.data = [];
-			tableView.setData(data_b);
+			tableView.data = data_b;
 			tableView.data = [];
-			tableView.setData(data_a);
+			tableView.data = data_a;
 		} catch (e) {
 			finish(e);
 		}
@@ -1419,7 +1419,7 @@ describe('Titanium.UI.TableView', function () {
 
 		row.add(view);
 
-		tableView.setData([ row ]);
+		tableView.data = [ row ];
 
 		tableView.addEventListener('postlayout', function onPostLayout() {
 			console.log('postlayout', row.rect.height, view.rect.height);
@@ -1455,7 +1455,7 @@ describe('Titanium.UI.TableView', function () {
 
 		row.add(view);
 
-		tableView.setData([ row ]);
+		tableView.data = [ row ];
 
 		// FIXME: Times out on ios?
 		row.addEventListener('postlayout', () => {
@@ -1546,7 +1546,7 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'blue'
 		});
 
-		tableView.setData([ row ]);
+		tableView.data = [ row ];
 
 		view.add(tableView);
 
@@ -1574,7 +1574,7 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'blue'
 		});
 
-		tableView.setData([ row ]);
+		tableView.data = [ row ];
 
 		view.add(tableView);
 
@@ -1597,11 +1597,11 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'white'
 		});
 
-		tableView.setData([
+		tableView.data = [
 			{ hasCheck: true },
 			{ hasChild: true },
 			{ hasDetail: true }
-		]);
+		];
 
 		view.add(tableView);
 
@@ -1627,13 +1627,13 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'white'
 		});
 
-		tableView.setData([
+		tableView.data = [
 			{
 				backgroundColor: 'blue',
 				height: '64px',
 				borderRadius: '16px'
 			}
-		]);
+		];
 
 		view.add(tableView);
 
@@ -1656,12 +1656,12 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'blue'
 		});
 
-		tableView.setData([
+		tableView.data = [
 			{
 				title: 'Default Title',
 				image: '/Logo.png'
 			}
-		]);
+		];
 
 		view.add(tableView);
 
@@ -1688,7 +1688,7 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'white'
 		});
 
-		tableView.setData([ { title: 'Row', color: 'black' } ]);
+		tableView.data = [ { title: 'Row', color: 'black' } ];
 
 		view.add(tableView);
 
@@ -1725,7 +1725,7 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'white'
 		});
 
-		tableView.setData([ { title: 'Row', color: 'black' } ]);
+		tableView.data = [ { title: 'Row', color: 'black' } ];
 
 		view.add(tableView);
 
@@ -1765,12 +1765,12 @@ describe('Titanium.UI.TableView', function () {
 			backgroundColor: 'white'
 		});
 
-		tableView.setData([
+		tableView.data = [
 			Ti.UI.createTableViewSection({
 				headerTitle: 'TableViewSection.headerTitle',
 				footerTitle: 'TableViewSection.footerTitle'
 			})
-		]);
+		];
 
 		view.add(tableView);
 
@@ -1804,7 +1804,7 @@ describe('Titanium.UI.TableView', function () {
 		const label = Ti.UI.createLabel({ text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean interdum laoreet augue scelerisque convallis.' });
 		row.add(label);
 
-		tableView.setData([ row ]);
+		tableView.data = [ row ];
 
 		view.add(tableView);
 

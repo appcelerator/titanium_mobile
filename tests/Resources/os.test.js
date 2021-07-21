@@ -76,7 +76,7 @@ describe('os', function () {
 
 		it('returns "LE" or "BE", value is consistent with Ti.Codec#getNativeByteOrder()', () => {
 			const byteOrder = os.endianness();
-			if (Ti.Codec.getNativeByteOrder() === Ti.Codec.BIG_ENDIAN) {
+			if (Ti.Codec.nativeByteOrder === Ti.Codec.BIG_ENDIAN) {
 				byteOrder.should.eql('BE');
 			} else {
 				byteOrder.should.eql('LE');

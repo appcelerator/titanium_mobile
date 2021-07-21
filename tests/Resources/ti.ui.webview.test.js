@@ -494,7 +494,7 @@ describe.androidARM64Broken('Titanium.UI.WebView', function () {
 		win = Ti.UI.createWindow();
 		const webView = Ti.UI.createWebView({
 			url: 'https://google.com',
-			blacklistedURLs: [ 'https://google.com' ]
+			blockedURLs: [ 'https://google.com' ]
 		});
 
 		webView.addEventListener('blacklisturl', function () {
@@ -512,20 +512,6 @@ describe.androidARM64Broken('Titanium.UI.WebView', function () {
 		});
 
 		webView.addEventListener('blockedurl', function () {
-			finish();
-		});
-		win.add(webView);
-		win.open();
-	});
-
-	// DEPRECATED: Since Titanium 9.2.0
-	it('blacklistedURLs', (finish) => {
-		win = Ti.UI.createWindow();
-		const webView = Ti.UI.createWebView({
-			url: 'https://www.axway.com',
-			blacklistedURLs: [ 'www.apple.com', 'www.google.com' ]
-		});
-		webView.addEventListener('load', () => {
 			finish();
 		});
 		win.add(webView);

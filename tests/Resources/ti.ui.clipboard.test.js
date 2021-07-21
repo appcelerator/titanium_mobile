@@ -54,7 +54,7 @@ describe('Titanium.UI.Clipboard', () => {
 
 			it('clears \'text\' data type', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				Ti.UI.Clipboard.setText('clearData');
+				Ti.UI.Clipboard.text = 'clearData';
 				should(Ti.UI.Clipboard.hasText()).be.true();
 				Ti.UI.Clipboard.clearData('text');
 				should(Ti.UI.Clipboard.hasText()).be.false();
@@ -78,7 +78,7 @@ describe('Titanium.UI.Clipboard', () => {
 
 			it('makes hasText() return false after being called', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				Ti.UI.Clipboard.setText('clearText');
+				Ti.UI.Clipboard.text = 'clearText';
 				should(Ti.UI.Clipboard.hasText()).be.true();
 				Ti.UI.Clipboard.clearText();
 				should(Ti.UI.Clipboard.hasText()).be.false();
@@ -100,7 +100,7 @@ describe('Titanium.UI.Clipboard', () => {
 
 			it.android('returns null for non-text data type on Android', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				Ti.UI.Clipboard.setText('hi');
+				Ti.UI.Clipboard.text = 'hi';
 				should(Ti.UI.Clipboard.getData('color')).be.null();
 				should(Ti.UI.Clipboard.getData('url')).be.null();
 				should(Ti.UI.Clipboard.getData('image')).be.null();
@@ -146,42 +146,42 @@ describe('Titanium.UI.Clipboard', () => {
 			});
 		});
 
-		describe('#getText()', () => {
-			it('is a Function', () => {
-				should(Ti.UI.Clipboard.getText).be.a.Function();
+		describe('#text', () => {
+			it('is a getter', () => {
+				should(Ti.UI.Clipboard).have.a.getter('text');
 			});
 
 			it('returns empty string with empty clipboard', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
+				// should(Ti.UI.Clipboard.text).eql(''); // FIXME: undefined on iOS
 			});
 
 			it('returns given string after setText()', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
-				Ti.UI.Clipboard.setText('setText');
-				should(Ti.UI.Clipboard.getText()).eql('setText');
+				// should(Ti.UI.Clipboard.text).eql(''); // FIXME: undefined on iOS
+				Ti.UI.Clipboard.text = 'setText';
+				should(Ti.UI.Clipboard.text).eql('setText');
 			});
 
 			it('returns given string after setData(\'text\')', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
+				// should(Ti.UI.Clipboard.text).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setData('text', 'setData');
-				should(Ti.UI.Clipboard.getText()).eql('setData');
+				should(Ti.UI.Clipboard.text).eql('setData');
 			});
 
 			it('returns given string after setData(\'text/plain\')', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
+				// should(Ti.UI.Clipboard.text).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setData('text/plain', 'setData');
-				should(Ti.UI.Clipboard.getText()).eql('setData');
+				should(Ti.UI.Clipboard.text).eql('setData');
 			});
 
 			it.ios('returns given string after setData(\'public.plain-text\')', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
-				// should(Ti.UI.Clipboard.getText()).eql(''); // FIXME: undefined on iOS
+				// should(Ti.UI.Clipboard.text).eql(''); // FIXME: undefined on iOS
 				Ti.UI.Clipboard.setData('public.plain-text', 'setData');
-				should(Ti.UI.Clipboard.getText()).eql('setData');
+				should(Ti.UI.Clipboard.text).eql('setData');
 			});
 		});
 
@@ -232,7 +232,7 @@ describe('Titanium.UI.Clipboard', () => {
 				should(Ti.UI.Clipboard.hasData()).be.false();
 				should(Ti.UI.Clipboard.hasData('text')).be.false();
 				should(Ti.UI.Clipboard.hasData('text/plain')).be.false();
-				Ti.UI.Clipboard.setText('hello there');
+				Ti.UI.Clipboard.text = 'hello there';
 				should(Ti.UI.Clipboard.hasData()).be.true();
 				should(Ti.UI.Clipboard.hasData('text')).be.true();
 				should(Ti.UI.Clipboard.hasData('text/plain')).be.true();
@@ -244,7 +244,7 @@ describe('Titanium.UI.Clipboard', () => {
 				should(Ti.UI.Clipboard.hasData('color')).be.false();
 				should(Ti.UI.Clipboard.hasData('image')).be.false();
 				should(Ti.UI.Clipboard.hasData('url')).be.false();
-				Ti.UI.Clipboard.setText('hello there');
+				Ti.UI.Clipboard.text = 'hello there';
 				should(Ti.UI.Clipboard.hasData()).be.true();
 				should(Ti.UI.Clipboard.hasData('text')).be.true();
 				should(Ti.UI.Clipboard.hasData('text/plain')).be.true();
@@ -294,7 +294,7 @@ describe('Titanium.UI.Clipboard', () => {
 			it('returns true after setText()', () => {
 				Ti.UI.Clipboard.clearData(); // delete all data
 				should(Ti.UI.Clipboard.hasText()).be.false();
-				Ti.UI.Clipboard.setText('I set it!');
+				Ti.UI.Clipboard.text = 'I set it!';
 				should(Ti.UI.Clipboard.hasText()).be.true();
 			});
 
@@ -437,7 +437,7 @@ describe('Titanium.UI.Clipboard', () => {
 
 		describe('#setText()', () => {
 			it('is a Function', () => {
-				should(Ti.UI.Clipboard.setText).be.a.Function();
+				should(Ti.UI.Clipboard).have.a.getter('text');
 			});
 			// TODO: Test with null/undefined/no arg
 		});
@@ -448,13 +448,13 @@ describe('Titanium.UI.Clipboard', () => {
 			Ti.UI.Clipboard.clearText();
 			// returns empty string on Android and undefined on iOS
 			if (OS_ANDROID) {
-				should(Ti.UI.Clipboard.getText()).eql('');
+				should(Ti.UI.Clipboard.text).eql('');
 			} else {
-				should.not.exist(Ti.UI.Clipboard.getText());
+				should.not.exist(Ti.UI.Clipboard.text);
 			}
-			Ti.UI.Clipboard.setText('hello');
+			Ti.UI.Clipboard.text = 'hello';
 			should(Ti.UI.Clipboard.hasText()).be.true();
-			should(Ti.UI.Clipboard.getText()).eql('hello');
+			should(Ti.UI.Clipboard.text).eql('hello');
 		});
 
 		it.ios('Use of named clipboard in iOS', () => {
@@ -464,13 +464,13 @@ describe('Titanium.UI.Clipboard', () => {
 			});
 			should(clipboard1.name).eql('myClipboard');
 			clipboard1.setText('hello');
-			should(clipboard1.getText()).eql('hello');
+			should(clipboard1.text).eql('hello');
 
 			const clipboard2 = Ti.UI.createClipboard({
 				name: 'myClipboard'
 			});
 
-			should(clipboard2.getText()).eql('hello'); // same name, so shares the same text
+			should(clipboard2.text).eql('hello'); // same name, so shares the same text
 		});
 
 		it.ios('Use of unique named clipboard in iOS', () => {
@@ -482,7 +482,7 @@ describe('Titanium.UI.Clipboard', () => {
 			// Uses a GUID for name
 			should(clipboard.name).match(/[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}/);
 			should(clipboard.unique).be.true();
-			should(clipboard.getText()).eql('hello');
+			should(clipboard.text).eql('hello');
 		});
 	});
 });

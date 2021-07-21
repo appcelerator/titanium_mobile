@@ -629,7 +629,7 @@ describe('Titanium.Buffer', function () {
 			start = 2;
 		}
 		should(buffer.length).eql(length);
-		should(buffer.byteOrder).eql(Ti.Codec.getNativeByteOrder());
+		should(buffer.byteOrder).eql(Ti.Codec.nativeByteOrder);
 		should(buffer[start + 1]).eql(97); // a
 		should(buffer[start + 3]).eql(112); // p
 		should(buffer[start + 5]).eql(112); // p

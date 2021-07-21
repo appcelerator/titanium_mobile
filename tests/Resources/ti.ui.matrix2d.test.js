@@ -15,7 +15,7 @@ describe('Titanium.UI.Matrix2D', function () {
 	it.iosBroken('apiName', function () {
 		var matrix = Ti.UI.createMatrix2D();
 		should(matrix).have.readOnlyProperty('apiName').which.is.a.String();
-		should(matrix.apiName).be.eql('Ti.UI.Matrix2D'); // ios still reports Ti.UI.2DMatrix
+		should(matrix.apiName).be.eql('Ti.UI.2DMatrix'); // ios still reports Ti.UI.2DMatrix
 	});
 
 	it('#invert()', function () {
