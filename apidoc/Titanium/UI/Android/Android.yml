@@ -55,6 +55,23 @@ methods:
     since: "9.1.0"
         
 properties:
+  - name: FLAG_LAYOUT_NO_LIMITS
+    summary: Flag allowing window to extend into the status bar and navigation bar.
+    description: |
+        When assigned to [Window.windowFlags](Titanium.UI.Window.windowFlags), this flag will make the
+        window ignore the system's insets such as the top status bar and bottom navigation bar so that
+        they overlap the window. The system may make the status bar and navigation bar completely transparent,
+        but this behavior is not guaranteed to happen.
+
+        When using this flag, it's also recommended to set the
+        [Window.extendSafeArea](Titanium.UI.Window.extendSafeArea) property to `true`.
+
+        Warning: Using this flag causes [Window.safeAreaPadding](Titanium.UI.Window.safeAreaPadding)
+        to return all zeros. This flag also breaks keyboard `adjustPan` support.
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+
   - name: FLAG_TRANSLUCENT_NAVIGATION
     summary: Window flag which makes the Android system's navigation bar semi-transparent.
     description: |
