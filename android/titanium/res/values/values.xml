@@ -59,7 +59,7 @@
 	<!-- Titanium's light material theme with an action bar. -->
 	<style name="Theme.Titanium.Light" parent="Theme.MaterialComponents.Light.DarkActionBar">
 		<item name="actionBarSize">@dimen/ti_action_bar_height</item>
-		<item name="actionBarStyle">@style/Widget.AppCompat.Light.ActionBar.Solid</item>
+		<item name="actionBarStyle">@style/Widget.MaterialComponents.Light.ActionBar.Solid</item>
 		<item name="colorPrimary">@color/ti_light_primary</item>
 		<item name="colorPrimaryDark">@color/ti_light_primary_dark</item>
 		<item name="colorAccent">@color/ti_light_accent</item>
