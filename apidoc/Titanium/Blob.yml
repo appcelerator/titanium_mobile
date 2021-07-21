@@ -241,6 +241,22 @@ methods:
         optional: true
         default: 0
 
+  - name: imageAsWebP
+    summary: Creates a new blob by compressing the underlying image to the specified quality.
+    description: |
+        Returns the compressed or uncompressed WebP image as a blob.
+
+        If this blob doesn't represent an image, returns `null`.
+    platforms: [android]
+    since: {android: "10.0.0"}
+    parameters:
+      - name: quality
+        type: Number
+        summary: Quality to compress this image to. From 0.0 (lowest quality) to 1.0 (highest quality, lossless WebP).
+    returns:
+        type: Titanium.Blob
+        summary: Compressed WebP image as a blob.
+
   - name: imageWithAlpha
     summary: Returns a copy of the underlying image with an added alpha channel.
     description: |

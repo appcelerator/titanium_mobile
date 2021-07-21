@@ -825,6 +825,60 @@ public class TiBlob extends KrollProxy
 	}
 
 	@Kroll.method
+	public TiBlob imageAsWebP(Number compressionQuality)
+	{
+		Bitmap img = getImage();
+		if (img == null) {
+			return null;
+		}
+
+		float quality = 1f;
+		if (compressionQuality != null) {
+			quality = compressionQuality.floatValue();
+		}
+
+		TiBlob result = null;
+		ByteArrayOutputStream bos;
+
+		try {
+			bos = new ByteArrayOutputStream();
+			if (img.compress(
+				quality == 1f ? CompressFormat.WEBP_LOSSLESS : CompressFormat.WEBP_LOSSY, (int) (quality * 100), bos)
+			) {
+				byte[] data = bos.toByteArray();
+
+				BitmapFactory.Options bfOptions = new BitmapFactory.Options();
+				bfOptions.inPurgeable = true;
+				bfOptions.inInputShareable = true;
+
+				result = TiBlob.blobFromData(data, "image/webp");
+			}
+		} catch (OutOfMemoryError e) {
+			TiBlobLruCache.getInstance().evictAll();
+			Log.e(TAG, "Unable to get the thumbnail image. Not enough memory: " + e.getMessage(), e);
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "Unable to get the thumbnail image. Illegal Argument: " + e.getMessage(), e);
+		} catch (Throwable t) {
+			Log.e(TAG, "Unable to get the thumbnail image. Unknown exception: " + t.getMessage(), t);
+		} finally {
+			// [MOD-309] Free up memory to work around issue in Android
+			if (img != null) {
+				img.recycle();
+				img = null;
+			}
+			bos = null;
+
+			// Perform soft garbage collection to reclaim memory.
+			KrollRuntime instance = KrollRuntime.getInstance();
+			if (instance != null) {
+				instance.softGC();
+			}
+		}
+
+		return result;
+	}
+
+	@Kroll.method
 	public TiBlob imageAsThumbnail(Number size, @Kroll.argument(optional = true) Number borderSize,
 								   @Kroll.argument(optional = true) Number cornerRadius)
 	{
