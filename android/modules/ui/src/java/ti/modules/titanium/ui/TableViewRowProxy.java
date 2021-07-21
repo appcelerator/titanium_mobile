@@ -133,7 +133,6 @@ public class TableViewRowProxy extends TiViewProxy
 			}
 			payload.put(TiC.EVENT_PROPERTY_ROW, this);
 			payload.put(TiC.EVENT_PROPERTY_INDEX, index);
-			payload.put(TiC.EVENT_PROPERTY_DETAIL, false);
 
 			if (tableView != null) {
 				payload.put(TiC.EVENT_PROPERTY_SEARCH_MODE, tableView.isFiltered());

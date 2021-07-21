@@ -2147,6 +2147,11 @@ public abstract class TiUIView implements KrollProxyListener, OnFocusChangeListe
 		}
 	}
 
+	public KrollDict getLastUpEvent()
+	{
+		return dictFromEvent(this.lastUpEvent);
+	}
+
 	/**
 	 * Retrieve the saved animated scale values, which we store here since Android provides no property
 	 * for looking them up.

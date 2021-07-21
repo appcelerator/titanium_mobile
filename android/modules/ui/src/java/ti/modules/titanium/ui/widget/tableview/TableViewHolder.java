@@ -19,6 +19,7 @@ import org.appcelerator.titanium.view.TiBorderWrapperView;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -29,6 +30,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.os.Build;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -121,6 +123,7 @@ public class TableViewHolder extends TiRecyclerViewHolder
 		this.leftImage.setVisibility(View.GONE);
 		this.title.setVisibility(View.GONE);
 		this.rightImage.setVisibility(View.GONE);
+		this.rightImage.setOnTouchListener(null);
 
 		this.border.reset();
 	}
@@ -130,6 +133,7 @@ public class TableViewHolder extends TiRecyclerViewHolder
 	 * @param proxy TableViewRowProxy to bind.
 	 * @param selected Is row selected.
 	 */
+	@SuppressLint("ClickableViewAccessibility")
 	public void bind(final TableViewRowProxy proxy, final boolean selected)
 	{
 		reset();
@@ -259,6 +263,24 @@ public class TableViewHolder extends TiRecyclerViewHolder
 				} else if (hasDetail) {
 					this.rightImage.setImageDrawable(disclosureDrawable);
 					this.rightImage.setVisibility(View.VISIBLE);
+					this.rightImage.setOnTouchListener(new View.OnTouchListener()
+					{
+						@Override
+						public boolean onTouch(View v, MotionEvent e)
+						{
+							if (e.getAction() == MotionEvent.ACTION_UP) {
+								final TiUIView view = proxy.peekView();
+
+								if (view != null) {
+									final KrollDict data = view.getLastUpEvent();
+
+									data.put(TiC.EVENT_PROPERTY_DETAIL, true);
+									proxy.fireEvent(TiC.EVENT_CLICK, data);
+								}
+							}
+							return true;
+						}
+					});
 				}
 			}
 
