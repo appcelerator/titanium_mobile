@@ -911,6 +911,30 @@ public class GeolocationModule extends KrollModule implements Handler.Callback, 
 		return event;
 	}
 
+	@Kroll.getProperty
+	public int getHeadingTime()
+	{
+		return tiCompass.headingTime;
+	}
+
+	@Kroll.setProperty
+	public void setHeadingTime(int value)
+	{
+		tiCompass.headingTime = value;
+	}
+
+	@Kroll.getProperty
+	public int getHeadingFilter()
+	{
+		return tiCompass.headingFilter;
+	}
+
+	@Kroll.setProperty
+	public void getHeadingFilter(int value)
+	{
+		tiCompass.headingFilter = value;
+	}
+
 	/**
 	 * Convenience method used to package a error into a consumable form
 	 * for the Titanium developer before it is fired back to Javascript.

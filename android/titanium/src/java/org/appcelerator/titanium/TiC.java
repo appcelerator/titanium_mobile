@@ -455,7 +455,6 @@ public class TiC
 	public static final String PROPERTY_HEADER_TITLE = "headerTitle";
 	public static final String PROPERTY_HEADER_VIEW = "headerView";
 	public static final String PROPERTY_HEADING = "heading";
-	public static final String PROPERTY_HEADING_FILTER = "headingFilter";
 	public static final String PROPERTY_HEIGHT = "height";
 	public static final String PROPERTY_HIDE_ANNOTATION_WHEN_TOUCH_MAP = "hideAnnotationWhenTouchMap";
 	public static final String PROPERTY_HIGHLIGHTED_COLOR = "highlightedColor";

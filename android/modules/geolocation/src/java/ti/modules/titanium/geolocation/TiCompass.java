@@ -14,7 +14,6 @@ import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollPromise;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiSensorHelper;
 
 import android.hardware.GeomagneticField;
@@ -45,6 +44,8 @@ public class TiCompass implements SensorEventListener
 	private final Criteria locationCriteria = new Criteria();
 	private Location geomagneticFieldLocation;
 	private long lastDeclinationCheck;
+	public int headingTime = 250;
+	public int headingFilter = 0;
 
 	public TiCompass(GeolocationModule geolocationModule, TiLocation tiLocation)
 	{
@@ -71,16 +72,12 @@ public class TiCompass implements SensorEventListener
 	{
 		if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
 			long eventTimestamp = event.timestamp / 1000000;
-
-			if (eventTimestamp - lastEventInUpdate > 250) {
+			if (eventTimestamp - lastEventInUpdate > headingTime) {
 				long actualTimestamp = baseTime.getTimeInMillis() + (eventTimestamp - sensorTimerStart);
 
 				lastEventInUpdate = eventTimestamp;
 
-				Object filter = geolocationModule.getProperty(TiC.PROPERTY_HEADING_FILTER);
-				if (filter != null) {
-					float headingFilter = TiConvert.toFloat(filter);
-
+				if (headingFilter != 0) {
 					if (Math.abs(event.values[0] - lastHeading) < headingFilter) {
 						return;
 					}
@@ -88,7 +85,7 @@ public class TiCompass implements SensorEventListener
 					lastHeading = event.values[0];
 				}
 
-				geolocationModule.fireEvent(TiC.EVENT_HEADING, eventToHashMap(event, actualTimestamp));
+				geolocationModule.fireSyncEvent(TiC.EVENT_HEADING, eventToHashMap(event, actualTimestamp));
 			}
 		}
 	}
