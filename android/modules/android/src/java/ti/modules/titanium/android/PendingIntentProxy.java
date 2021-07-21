@@ -17,6 +17,7 @@ import org.appcelerator.titanium.util.TiConvert;
 
 import android.app.PendingIntent;
 import android.content.Context;
+import android.os.Build;
 
 @Kroll.proxy(creatableInModule = AndroidModule.class,
 			 propertyAccessors = { TiC.PROPERTY_FLAGS, TiC.PROPERTY_INTENT, TiC.PROPERTY_UPDATE_CURRENT_INTENT })
@@ -87,7 +88,14 @@ public class PendingIntentProxy extends KrollProxy
 
 		//add FLAG_UPDATE_CURRENT if updateCurrentIntent is true
 		if (updateCurrentIntent) {
-			flags = flags | PendingIntent.FLAG_UPDATE_CURRENT;
+			flags |= PendingIntent.FLAG_UPDATE_CURRENT;
+		}
+
+		// NOTE: Android 12 requires mutability flags.
+		// Set `FLAG_IMMUTABLE` if not `FLAG_MUTABLE`.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+			&& (flags & PendingIntent.FLAG_MUTABLE) == 0) {
+			flags |= PendingIntent.FLAG_IMMUTABLE;
 		}
 
 		super.handleCreationDict(dict);

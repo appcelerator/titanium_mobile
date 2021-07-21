@@ -1075,9 +1075,21 @@ describe.android('Titanium.Android', () => {
 			});
 		});
 
+		describe('.FLAG_IMMUTABLE', () => {
+			it('is a Number', () => {
+				should(Ti.Android).have.a.constant('FLAG_IMMUTABLE').which.is.a.Number();
+			});
+		});
+
 		describe('.FLAG_INSISTENT', () => {
 			it('is a Number', () => {
 				should(Ti.Android).have.a.constant('FLAG_INSISTENT').which.is.a.Number();
+			});
+		});
+
+		describe('.FLAG_MUTABLE', () => {
+			it('is a Number', () => {
+				should(Ti.Android).have.a.constant('FLAG_MUTABLE').which.is.a.Number();
 			});
 		});
 

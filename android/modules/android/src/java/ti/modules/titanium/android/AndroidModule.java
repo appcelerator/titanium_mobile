@@ -353,6 +353,10 @@ public class AndroidModule extends KrollModule
 	@Kroll.constant
 	public static final int FLAG_CANCEL_CURRENT = PendingIntent.FLAG_CANCEL_CURRENT;
 	@Kroll.constant
+	public static final int FLAG_IMMUTABLE = PendingIntent.FLAG_IMMUTABLE;
+	@Kroll.constant
+	public static final int FLAG_MUTABLE = PendingIntent.FLAG_MUTABLE;
+	@Kroll.constant
 	public static final int FLAG_NO_CREATE = PendingIntent.FLAG_NO_CREATE;
 	@Kroll.constant
 	public static final int FLAG_ONE_SHOT = PendingIntent.FLAG_ONE_SHOT;

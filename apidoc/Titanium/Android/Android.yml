@@ -1594,6 +1594,28 @@ properties:
     type: Number
     permission: read-only
 
+  - name: FLAG_IMMUTABLE
+    summary: Pending intent should be immutable.
+    description: |
+        Use with the <Titanium.Android.PendingIntent.flags> property.
+
+        See [PendingIntent.FLAG_IMMUTABLE in the Android API Reference](https://developer.android.com/reference/android/app/PendingIntent.html#FLAG_IMMUTABLE).
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+    osver: {android: {min: "6.0"}}
+
+  - name: FLAG_MUTABLE
+    summary: Pending intent should be mutable.
+    description: |
+        Use with the <Titanium.Android.PendingIntent.flags> property.
+
+        See [PendingIntent.FLAG_MUTABLE in the Android API Reference](https://developer.android.com/reference/android/app/PendingIntent.html#FLAG_MUTABLE).
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+    osver: {android: {min: "12.0"}}
+
   - name: FLAG_NO_CREATE
     summary: If the current intent does not exist, do not create it.
     description: |
