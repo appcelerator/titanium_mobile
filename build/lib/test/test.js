@@ -15,6 +15,8 @@ const titanium = require.resolve('titanium');
 const { promisify } = require('util');
 const stripAnsi = require('strip-ansi');
 const exec = promisify(require('child_process').exec); // eslint-disable-line security/detect-child-process
+const glob = promisify(require('glob'));
+const utils = require('../utils');
 
 const ROOT_DIR = path.join(__dirname, '../../..');
 const SOURCE_DIR = path.join(ROOT_DIR, 'tests');
@@ -147,7 +149,14 @@ async function copyMochaAssets() {
 		// Resources
 		fs.copy(path.join(SOURCE_DIR, 'Resources'), path.join(PROJECT_DIR, 'Resources')),
 		// modules
-		fs.copy(path.join(SOURCE_DIR, 'modules'), path.join(PROJECT_DIR, 'modules')),
+		(async () => {
+			await fs.copy(path.join(SOURCE_DIR, 'modules'), path.join(PROJECT_DIR, 'modules'));
+			const modulesSourceDir = path.join(SOURCE_DIR, 'modules-source');
+			const zipPaths = await glob('*/*/dist/*.zip', { cwd: modulesSourceDir });
+			for (const nextZipPath of zipPaths) {
+				await utils.unzip(path.join(modulesSourceDir, nextZipPath), PROJECT_DIR);
+			}
+		})(),
 		// platform
 		fs.copy(path.join(SOURCE_DIR, 'platform'), path.join(PROJECT_DIR, 'platform')),
 		// plugins

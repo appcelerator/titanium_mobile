@@ -12,4 +12,9 @@
 		<module platform="ios">ti.identity</module>
 		<module platform="android">ti.playservices</module>
 		<module platform="android">ti.cloudpush</module>
+
+		<!-- Below modules are built manually from: titanium_mobile/tests/modules-source -->
+		<!-- The "test.js" build script will unzip their "dist" files to modules folder. -->
+		<module platform="android">ti.modulesdk920</module>
+		<module platform="ios">ti.modulesdk920</module>
 	</modules>

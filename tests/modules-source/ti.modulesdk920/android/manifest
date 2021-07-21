@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 4
+architectures: arm64-v8a armeabi-v7a x86 x86_64
+description: TiModuleSdk920
+author: Axway
+license: Apache Public License v2
+copyright: Copyright (c) 2020 by Axway
+
+# these should not be edited
+name: TiModuleSdk920
+moduleid: ti.modulesdk920
+guid: c3d55776-adf1-4b31-a1b5-d71efed7d36f
+platform: android
+minsdk: 9.0.0.GA

@@ -1,0 +1,26 @@
+---
+Language: Java
+AccessModifierOffset: -4
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+# class, constructor, method should be next line
+BreakBeforeBraces: Linux
+# Keep '=' at end of line when wrapping, but move things like '&&', '||' to beginning of newline
+BreakBeforeBinaryOperators: NonAssignment
+# FIXME: break for brace after synchronized block, anonymous class declarations
+BreakAfterJavaFieldAnnotations: true
+ColumnLimit: 120
+IndentCaseLabels: true
+IndentWidth: 4
+MaxEmptyLinesToKeep: 1
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+TabWidth: 4
+UseTab: ForContinuationAndIndentation
+SpaceAfterCStyleCast: true
+# Spaces inside {} for array literals, i.e. "new Object[] { args }"
+Cpp11BracedListStyle: false
+ReflowComments: false

@@ -1,0 +1,6 @@
+/*/*/build/
+/*/*/dist/*
+!/*/*/dist/*.zip
+
+/*/ios/*.xcodeproj/xcuserdata/
+/*/ios/*.xcodeproj/project.xcworkspace/xcuserdata/
