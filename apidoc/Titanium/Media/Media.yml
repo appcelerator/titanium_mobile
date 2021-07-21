@@ -927,6 +927,41 @@ properties:
     type: Number
     permission: read-only
 
+  - name: IMAGE_SCALING_AUTO
+    summary: Scales the image depending on how the view container is sized.
+    description: |
+        If a [width](Titanium.UI.View.width) and [height](Titanium.UI.View.height) are both conigured on the
+        image view, then it will use [IMAGE_SCALING_FILL](Titanium.Media.IMAGE_SCALING_FILL)
+        to stretch the image disproportionally to fill the view. Otherwise it will use
+        [IMAGE_SCALING_ASPECT_FIT](Titanium.Media.IMAGE_SCALING_ASPECT_FIT) to letterbox/pillarbox the image.
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+
+  - name: IMAGE_SCALING_NONE
+    summary: Disables scaling and displays the image as-is.
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+
+  - name: IMAGE_SCALING_FILL
+    summary: Stretches the image disproportionally to completely fill the container's bounds.
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+
+  - name: IMAGE_SCALING_ASPECT_FILL
+    summary: Crops the image proportionally causing its content to be clipped either horizontally or vertically.
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+
+  - name: IMAGE_SCALING_ASPECT_FIT
+    summary: Letterbox or pillarbox scales the image proportionally to fit the container.
+    type: Number
+    permission: read-only
+    since: "10.1.0"
+
   - name: MEDIA_TYPE_PHOTO
     summary: Media type constant for photo media.
     type: String

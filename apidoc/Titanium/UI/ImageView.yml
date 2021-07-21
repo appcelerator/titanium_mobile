@@ -134,10 +134,11 @@ properties:
 
   - name: autorotate
     summary: |
-        Indicates whether the image should be rotated based on exif orientation data.
-        By default, this is false on android and true on iOS.
+        Indicates whether the image should be rotated based on EXIF orientation data.
+
+        Before Titanium 10.1.0, this defaulted to `false` on Android.
     type: Boolean
-    default: false on android, true on iOS.
+    default: true
     availability: creation
     since: 3.0.0
     platforms: [android, iphone, ipad, macos]
@@ -234,6 +235,13 @@ properties:
     summary: Run the animation in reverse.
     type: Boolean
     default: false
+
+  - name: scalingMode
+    summary: Determines how the image is scaled within the view.
+    type: Number
+    constants: Titanium.Media.IMAGE_SCALING_*
+    default: <Titanium.Media.IMAGE_SCALING_AUTO>
+    since: "10.1.0"
 
   - name: tintColor
     summary: The view's tintColor. Android does not support setting instances of <Titanium.UI.Color>

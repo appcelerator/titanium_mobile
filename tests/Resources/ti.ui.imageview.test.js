@@ -365,6 +365,46 @@ describe('Titanium.UI.ImageView', function () {
 		win.open();
 	});
 
+	describe('.scalingMode', () => {
+		function test(scalingMode, finish) {
+			win = Ti.UI.createWindow();
+			const imageView = Ti.UI.createImageView({
+				image: '/Logo.png',
+				scalingMode: scalingMode,
+				autosize: true,
+				width: Ti.UI.FILL,
+				height: Ti.UI.FILL
+			});
+			win.add(imageView);
+			win.addEventListener('postlayout', function listener() {
+				try {
+					win.removeEventListener('postlayout', listener);
+					should(imageView.scalingMode).be.eql(scalingMode);
+				} catch (err) {
+					finish(err);
+				}
+				finish();
+			});
+			win.open();
+		}
+
+		it('IMAGE_SCALING_NONE', function (finish) {
+			test(Ti.Media.IMAGE_SCALING_NONE, finish);
+		});
+
+		it('IMAGE_SCALING_FILL', function (finish) {
+			test(Ti.Media.IMAGE_SCALING_FILL, finish);
+		});
+
+		it('IMAGE_SCALING_ASPECT_FILL', function (finish) {
+			test(Ti.Media.IMAGE_SCALING_ASPECT_FILL, finish);
+		});
+
+		it('IMAGE_SCALING_ASPECT_FIT', function (finish) {
+			test(Ti.Media.IMAGE_SCALING_ASPECT_FIT, finish);
+		});
+	});
+
 	// TIMOB-18684
 	// FIXME Get working on iOS. Times out. never fires postlayout?
 	// FIXME Times out on Android build agent. likely postlayout never fires

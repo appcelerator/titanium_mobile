@@ -165,6 +165,12 @@
 @property (nonatomic, readonly) NSNumber *AUDIO_SESSION_OVERRIDE_ROUTE_NONE;
 @property (nonatomic, readonly) NSNumber *AUDIO_SESSION_OVERRIDE_ROUTE_SPEAKER;
 
+@property (nonatomic, readonly) NSNumber *IMAGE_SCALING_AUTO;
+@property (nonatomic, readonly) NSNumber *IMAGE_SCALING_NONE;
+@property (nonatomic, readonly) NSNumber *IMAGE_SCALING_FILL;
+@property (nonatomic, readonly) NSNumber *IMAGE_SCALING_ASPECT_FILL;
+@property (nonatomic, readonly) NSNumber *IMAGE_SCALING_ASPECT_FIT;
+
 @property (nonatomic, readonly) NSNumber *MUSIC_MEDIA_TYPE_MUSIC;
 @property (nonatomic, readonly) NSNumber *MUSIC_MEDIA_TYPE_PODCAST;
 @property (nonatomic, readonly) NSNumber *MUSIC_MEDIA_TYPE_AUDIOBOOK;

@@ -37,6 +37,7 @@ import org.appcelerator.titanium.view.TiDrawableReference;
 import org.appcelerator.titanium.view.TiUIView;
 
 import ti.modules.titanium.filesystem.FileProxy;
+import ti.modules.titanium.media.MediaModule;
 import ti.modules.titanium.ui.ImageViewProxy;
 import ti.modules.titanium.ui.ScrollViewProxy;
 import android.app.Activity;
@@ -807,6 +808,9 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 			setImageSource(d.get(TiC.PROPERTY_IMAGES));
 			setImages();
 		}
+		if (d.containsKey(TiC.PROPERTY_SCALING_MODE)) {
+			view.setScalingMode(TiConvert.toInt(d.get(TiC.PROPERTY_SCALING_MODE), MediaModule.IMAGE_SCALING_AUTO));
+		}
 		if (d.containsKey(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS)) {
 			view.setEnableZoomControls(TiConvert.toBoolean(d, TiC.PROPERTY_ENABLE_ZOOM_CONTROLS, true));
 		}
@@ -827,7 +831,7 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 				// Check for orientation and decodeRetries only if an image is specified
 				Object autoRotate = d.get(TiC.PROPERTY_AUTOROTATE);
 				if (autoRotate != null && TiConvert.toBoolean(autoRotate)) {
-					view.setOrientation(source.getOrientation());
+					view.setOrientation(source.getExifOrientation());
 				}
 				if (d.containsKey(TiC.PROPERTY_DECODE_RETRIES)) {
 					source.setDecodeRetries(TiConvert.toInt(d.get(TiC.PROPERTY_DECODE_RETRIES),
@@ -868,12 +872,14 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 
 		if (key.equals(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS)) {
 			view.setEnableZoomControls(TiConvert.toBoolean(newValue));
+		} else if (key.equals(TiC.PROPERTY_SCALING_MODE)) {
+			view.setScalingMode(TiConvert.toInt(newValue, MediaModule.IMAGE_SCALING_AUTO));
 		} else if (key.equals(TiC.PROPERTY_IMAGE)) {
 			if ((oldValue == null && newValue != null) || (oldValue != null && !oldValue.equals(newValue))) {
 				TiDrawableReference source = TiDrawableReference.fromObject(getProxy(), newValue);
 				Object autoRotate = proxy.getProperty(TiC.PROPERTY_AUTOROTATE);
 				if (autoRotate != null && TiConvert.toBoolean(autoRotate)) {
-					view.setOrientation(source.getOrientation());
+					view.setOrientation(source.getExifOrientation());
 				}
 				if (proxy.hasProperty(TiC.PROPERTY_DECODE_RETRIES)) {
 					source.setDecodeRetries(TiConvert.toInt(proxy.getProperty(TiC.PROPERTY_DECODE_RETRIES),

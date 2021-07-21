@@ -262,11 +262,15 @@ DEFINE_EXCEPTIONS
 
 - (UIViewContentMode)contentModeForImageView
 {
-  if (TiDimensionIsAuto(width) || TiDimensionIsAutoSize(width) || TiDimensionIsUndefined(width) || TiDimensionIsAuto(height) || TiDimensionIsAutoSize(height) || TiDimensionIsUndefined(height)) {
-    return UIViewContentModeScaleAspectFit;
-  } else {
-    return UIViewContentModeScaleToFill;
+  int contentMode = [TiUtils intValue:[self.proxy valueForKey:@"scalingMode"] def:-1];
+  if (contentMode < 0) {
+    if (TiDimensionIsAuto(width) || TiDimensionIsAutoSize(width) || TiDimensionIsUndefined(width) || TiDimensionIsAuto(height) || TiDimensionIsAutoSize(height) || TiDimensionIsUndefined(height)) {
+      contentMode = UIViewContentModeScaleAspectFit;
+    } else {
+      contentMode = UIViewContentModeScaleToFill;
+    }
   }
+  return contentMode;
 }
 
 - (void)updateContentMode
@@ -662,6 +666,11 @@ DEFINE_EXCEPTIONS
 - (void)setHeight_:(id)height_
 {
   height = TiDimensionFromObject(height_);
+  [self updateContentMode];
+}
+
+- (void)setScalingMode_:(id)value
+{
   [self updateContentMode];
 }
 

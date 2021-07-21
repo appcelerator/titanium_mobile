@@ -138,7 +138,7 @@ public class TiImageHelper
 	 * the photo's "orientation" (aka: rotation) relative to the camera's mounting orientation.
 	 * @param path Path to an image file or URL.
 	 * @return
-	 * Returns the orientation of the image in degrees, clockwise.
+	 * Returns the orientation of the image in degrees, counter-clockwise.
 	 * <p>
 	 * Will only return values 0, 90, 180, and 270.
 	 * <p>
@@ -179,7 +179,7 @@ public class TiImageHelper
 	 * <p>
 	 * This method will not close the given stream. That is the caller's responsibility.
 	 * @return
-	 * Returns the orientation of the image in degrees, clockwise.
+	 * Returns the orientation of the image in degrees, counter-clockwise.
 	 * <p>
 	 * Will only return values 0, 90, 180, and 270.
 	 * <p>
@@ -192,27 +192,45 @@ public class TiImageHelper
 		try {
 			if (stream != null) {
 				ExifInterface exifInterface = new ExifInterface(stream);
-				int exifOrientation =
-					exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-				switch (exifOrientation) {
-					case ExifInterface.ORIENTATION_ROTATE_270:
-					case ExifInterface.ORIENTATION_TRANSVERSE: // Rotated and mirrored.
-						orientation = 270;
-						break;
-					case ExifInterface.ORIENTATION_ROTATE_180:
-					case ExifInterface.ORIENTATION_FLIP_VERTICAL:
-						orientation = 180;
-						break;
-					case ExifInterface.ORIENTATION_ROTATE_90:
-					case ExifInterface.ORIENTATION_TRANSPOSE: // Rotated and mirrored.
-						orientation = 90;
-						break;
-				}
+				orientation = TiExifOrientation.from(exifInterface).getDegreesCounterClockwise();
 			}
 		} catch (Exception ex) {
 			Log.e(TAG, "Unable to find orientation", ex);
 		}
 		return orientation;
+	}
+
+	/**
+	 * Fetches the orientation of the given image in case it is not displayed upright.
+	 * <p>
+	 * This typically needs to be done with JPEG files whose EXIF information provides
+	 * the photo's "orientation" (aka: rotation) relative to the camera's upright orientation.
+	 * @param stream
+	 * An open input stream to an encoded image file, such as a JPEG.
+	 * <p>
+	 * This stream should not reference the raw decoded pixels of a bitmap since it would not
+	 * contain any EXIF orientation metadata.
+	 * <p>
+	 * This method will not close the given stream. That is the caller's responsibility.
+	 * @return
+	 * Returns an exif orientation object indicating if image needs to be rotated and/or mirrored.
+	 * <p>
+	 * returns null if given a null argument.
+	 */
+	public static TiExifOrientation getExifOrientation(InputStream stream)
+	{
+		if (stream == null) {
+			return null;
+		}
+
+		TiExifOrientation exifOrientation = TiExifOrientation.UPRIGHT;
+		try {
+			ExifInterface exifInterface = new ExifInterface(stream);
+			exifOrientation = TiExifOrientation.from(exifInterface);
+		} catch (Exception ex) {
+			Log.e(TAG, "Unable to fetch EXIF orientation", ex);
+		}
+		return exifOrientation;
 	}
 
 	/**
