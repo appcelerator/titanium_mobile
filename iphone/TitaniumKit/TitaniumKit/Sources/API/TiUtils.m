@@ -2307,4 +2307,27 @@ If the new path starts with / and the base url is app://..., we have to massage 
   return isHyperloopAvailable;
 }
 
++ (UIImageSymbolWeight)symbolWeightFromString:(NSString *)string
+{
+  if ([string isEqualToString:@"ultralight"]) {
+    return UIImageSymbolWeightUltraLight;
+  } else if ([string isEqualToString:@"light"]) {
+    return UIImageSymbolWeightLight;
+  } else if ([string isEqualToString:@"thin"]) {
+    return UIImageSymbolWeightThin;
+  } else if ([string isEqualToString:@"normal"]) {
+    return UIImageSymbolWeightRegular;
+  } else if ([string isEqualToString:@"semibold"]) {
+    return UIImageSymbolWeightSemibold;
+  } else if ([string isEqualToString:@"bold"]) {
+    return UIImageSymbolWeightBold;
+  } else if ([string isEqualToString:@"heavy"]) {
+    return UIImageSymbolWeightHeavy;
+  } else if ([string isEqualToString:@"black"]) {
+    return UIImageSymbolWeightBlack;
+  }
+
+  return UIImageSymbolWeightRegular;
+}
+
 @end

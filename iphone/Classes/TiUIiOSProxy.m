@@ -452,8 +452,14 @@
   if (![TiUtils isIOSVersionOrGreater:@"13.0"]) {
     return nil;
   }
-  ENSURE_SINGLE_ARG_OR_NIL(arg, NSString);
-  TiBlob *blob = [[[TiBlob alloc] initWithSystemImage:arg] autorelease];
+
+  NSString *systemImage = nil;
+  NSDictionary<NSString *, id> *parameters = nil;
+
+  ENSURE_ARG_OR_NIL_AT_INDEX(systemImage, arg, 0, NSString);
+  ENSURE_ARG_OR_NIL_AT_INDEX(parameters, arg, 1, NSDictionary);
+
+  TiBlob *blob = [[[TiBlob alloc] initWithSystemImage:systemImage andParameters:parameters] autorelease];
   return blob;
 }
 

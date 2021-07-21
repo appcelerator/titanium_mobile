@@ -27,13 +27,18 @@ methods:
     summary: |
         Get image from SF Symbols provided by Apple.
     description: |
-        More details on SF Symbols can be found on https://developer.apple.com/design/human-interface-guidelines/sf-symbols/overview.
-        One can download SF Symbols app from https://developer.apple.com/design/downloads/SF-Symbols.dmg and 
-        use it to lookup the inbuilt SF Symbol name.
+        More details on SF Symbols can be found [here](https://developer.apple.com/design/human-interface-guidelines/sf-symbols/overview).
+        One can download SF Symbols app from [here](https://developer.apple.com/design/downloads/SF-Symbols.dmg) and
+        use it to lookup the built-in SF Symbol name.
     parameters:
       - name: name
         summary: Name of SF Symbol.
         type: String
+      - name: parameters
+        optional: true
+        summary: |
+            Additional parameters to pass to the SF Symbol. Available in Titanium SDK 10.1.0 and later
+        type: SystemImageParameters
     returns:
       type: Titanium.Blob
     since: "8.2.0"
@@ -1722,3 +1727,19 @@ properties:
     type: Number
     since: "8.0.0"
     permission: read-only
+
+---
+name: SystemImageParameters
+summary: |
+    Dictionary object of parameters for the 2nd parameter of the <Titanium.UI.iOS.systemButton> method
+    to pass additional configuration options like `weight` and `size`. Available in Titanium SDK 10.1.0
+    and later.
+properties:
+  - name: weight
+    summary: |
+        The symbol weight to use for the SF Symbol.
+        Can be one of `ultralight`, `light`, `thin`, `normal`, `semibold`, `bold`, `heavy` or `black`.
+    type: String
+  - name: size
+    summary: The symbol point size to use for the SF Symbol
+    type: Number

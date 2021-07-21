@@ -141,7 +141,7 @@ typedef enum {
 Initialize the blob with a system image.
 @param imageName The  system image name
 */
-- (id)initWithSystemImage:(NSString *)imageName;
+- (id)initWithSystemImage:(NSString *)imageName andParameters:(NSDictionary *)parameters;
 
 /**
  Returns the System Image Name .

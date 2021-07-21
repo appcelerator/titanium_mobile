@@ -868,4 +868,12 @@ typedef enum {
 
 + (BOOL)isMacOS;
 
+/**
+ Maps a string-based symbol weight (e.g. for SFSymbols) to a native symbol weight.
+
+ @param string The raw string to map.
+ @return The mapped symbol weight.
+ */
++ (UIImageSymbolWeight)symbolWeightFromString:(NSString *)string NS_AVAILABLE_IOS(13_0);
+
 @end

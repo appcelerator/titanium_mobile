@@ -149,14 +149,28 @@ GETTER_IMPL(NSUInteger, size, Size);
   return self;
 }
 
-- (id)initWithSystemImage:(NSString *)imageName
+- (id)initWithSystemImage:(NSString *)imageName andParameters:(NSDictionary *)parameters
 {
   if (![TiUtils isIOSVersionOrGreater:@"13.0"]) {
     return nil;
   }
 
   if (self = [super init]) {
-    image = [[UIImage systemImageNamed:imageName] retain];
+    if (parameters == nil) {
+      image = [[UIImage systemImageNamed:imageName] retain];
+    } else {
+      UIImageSymbolWeight nativeWeight = [TiUtils symbolWeightFromString:parameters[@"weight"]];
+      CGFloat nativeSize = [TiUtils floatValue:parameters[@"size"] def:0.0];
+      UIImageSymbolConfiguration *configuration;
+
+      if (nativeSize > 0) {
+        configuration = [UIImageSymbolConfiguration configurationWithPointSize:nativeSize weight:nativeWeight scale:UIImageSymbolScaleDefault];
+      } else {
+        configuration = [UIImageSymbolConfiguration configurationWithWeight:nativeWeight];
+      }
+
+      image = [[UIImage systemImageNamed:imageName withConfiguration:configuration] retain];
+    }
     type = TiBlobTypeSystemImage;
     systemImageName = [imageName retain];
     mimetype = [([UIImageAlpha hasAlpha:image] ? MIMETYPE_PNG : MIMETYPE_JPEG) copy];

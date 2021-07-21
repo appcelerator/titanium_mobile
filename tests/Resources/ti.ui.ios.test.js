@@ -136,6 +136,8 @@ describe.ios('Titanium.UI.iOS', function () {
 			should(Ti.UI.iOS.systemImage).be.a.Function();
 			const systemImage = Ti.UI.iOS.systemImage('drop.triangle.fill');
 			should(systemImage).be.an.Object();
+			const systemImageWithParameters = Ti.UI.iOS.systemImage('drop.triangle.fill', { weight: 'bold', size: 60 });
+			should(systemImageWithParameters).be.an.Object();
 		}
 	});
 
