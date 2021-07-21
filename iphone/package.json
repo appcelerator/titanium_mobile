@@ -29,5 +29,8 @@
 		"type": "git",
 		"url": "git://github.com/appcelerator/titanium_mobile_ios.git"
 	},
-	"license": "Apache Public License v2"
+	"license": "Apache Public License v2",
+	"engines": {
+		"node": ">=12.13.0"
+	}
 }

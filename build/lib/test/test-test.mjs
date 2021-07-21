@@ -7,10 +7,14 @@
 
 'use strict';
 
-const { handleBuild } = require('./test');
-const expect = require('chai').expect;
-const fs = require('fs-extra');
-const path = require('path');
+import { handleBuild } from './test.mjs';
+import { expect } from 'chai';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('test.handleBuild', function () {
 	this.slow(750);

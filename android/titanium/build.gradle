@@ -144,7 +144,7 @@ task updateV8Library() {
 		exec {
 			executable = 'node'
 			workingDir = projectDir
-			args = ['-e', "require('./libv8-services').updateLibraryThenExit()"]
+			args = ['./libv8-services.mjs', 'updateLibraryThenExit']
 		}
 	}
 }
@@ -195,14 +195,14 @@ def getChangedFiles() {
 // Note: This supports incremental builds. Only executes when JS files change or snapshot output file is missing.
 task snapshotTiCommonFiles() {
 	inputs.dir "${projectDir}/../../common/Resources"
-	inputs.file "${projectDir}/../../build/lib/builder.js"
+	inputs.file "${projectDir}/../../build/lib/builder.mjs"
 	inputs.file "${projectDir}/../../build/lib/android/index.js"
 	outputs.file "${projectDir}/../runtime/v8/generated/V8Snapshots.h"
 	doLast {
 		exec {
 			executable = 'node'
 			workingDir = projectDir
-			args = ['-e', "require('./libv8-services').createSnapshotThenExit()"]
+			args = ['./libv8-services.mjs', 'createSnapshotThenExit']
 		}
 	}
 }
@@ -214,7 +214,7 @@ project.afterEvaluate {
 	externalNativeBuildRelease.dependsOn compileReleaseJavaWithJavac
 }
 
-// Runs our "prebuild.js" script before the C/C++ compile, but after Java compile. (Mid-build script?)
+// Runs our "prebuild.mjs" script before the C/C++ compile, but after Java compile. (Mid-build script?)
 // Generates C/C++ files providing our Android-only JS files via byte arrays.
 tasks.withType(JavaCompile) {
 	dependsOn checkJavaStyle
@@ -223,7 +223,7 @@ tasks.withType(JavaCompile) {
 		exec {
 			executable = 'node'
 			workingDir = projectDir
-			args = ['prebuild.js']
+			args = ['prebuild.mjs']
 		}
 	}
 }

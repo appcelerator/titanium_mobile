@@ -59,7 +59,7 @@
     "postinstall": "husky install",
     "test": "npm run ios-sanity-check && npm run lint",
     "test:android": "npm run cleanbuild:android -- --skip-zip --no-docs --symlink && ti sdk select $npm_package_version && npm run test:integration -- android",
-    "test:cli": "JUNIT_REPORT_PATH=junit.cli.report.xml nyc mocha **/cli/tests/test-*.js build/**/test-*.js --reporter=mocha-jenkins-reporter",
+    "test:cli": "JUNIT_REPORT_PATH=junit.cli.report.xml nyc mocha **/cli/tests/test-*.js build/**/test-*.mjs --reporter=mocha-jenkins-reporter",
     "test:ios": "npm run test:iphone",
     "test:iphone": "npm run cleanbuild:ios -- --skip-zip --no-docs --symlink && ti sdk select $npm_package_version && npm run test:integration -- ios -F iphone",
     "test:ipad": "npm run cleanbuild:ios -- --skip-zip --no-docs --symlink && ti sdk select $npm_package_version && npm run test:integration -- ios -F ipad",

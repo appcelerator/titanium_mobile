@@ -4,16 +4,19 @@
  * Licensed under the terms of the Apache Public License.
  * Please see the LICENSE included with this distribution for details.
  */
+import { promisify } from 'util';
+import { exec as execSync } from 'child_process'; // eslint-disable-line security/detect-child-process
+import fs from 'fs-extra';
+import path from 'path';
+import ejs from 'ejs';
+import generateBootstrap from './genBootstrap.js';
+import { fileURLToPath } from 'url';
+import Builder from '../../build/lib/builder.mjs';
+import Android from '../../build/lib/android/index.js';
 
-'use strict';
-
-const util = require('util');
-const exec = util.promisify(require('child_process').exec); // eslint-disable-line security/detect-child-process
-const fs = require('fs-extra');
-const path = require('path');
-const ejs = require('ejs');
-const generateBootstrap = require('./genBootstrap');
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const exec = promisify(execSync);
 const runtimeV8DirPath = path.join(__dirname, '..', 'runtime', 'v8');
 
 // Determine if we're running on a Windows machine.
@@ -60,13 +63,12 @@ async function gperf(workingDirPath, inputFilePath, outputFilePath) {
  * @param {string} outputDir directory to place the generated 'ti.kernel.js' file
  */
 async function generateTiKernel(outputDir) {
-	const Builder = require('../../build/lib/builder');
-	const Android = require('../../build/lib/android');
 	const options = { };
 	const builder = new Builder(options, [ 'android' ]);
 	await builder.ensureGitHash();
+	const sdkVersion = (await fs.readJson(new URL('../../package.json', import.meta.url))).version;
 	const android = new Android({
-		sdkVersion: require('../../package.json').version,
+		sdkVersion,
 		gitHash: options.gitHash,
 		timestamp: options.timestamp
 	});
@@ -183,16 +185,14 @@ async function generateSourceCode() {
 
 /** Executes the pre-build step. */
 async function main() {
-	console.log('Running Titanium "prebuild.js" script.');
+	console.log('Running Titanium "prebuild.mjs" script.');
 	// Generate C/C++ source files with JS files embedded in them and from gperf templates.
 	return generateSourceCode();
 }
 
-if (require.main === module) {
-	main()
-		.then(() => process.exit(0))
-		.catch((err) => {
-			console.error(err);
-			process.exit(1);
-		});
-}
+main()
+	.then(() => process.exit(0))
+	.catch((err) => {
+		console.error(err);
+		process.exit(1);
+	});

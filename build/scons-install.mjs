@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-'use strict';
+import program from 'commander';
+import Builder from './lib/builder.mjs';
+import fs from 'fs-extra';
 
-const program = require('commander');
-const version = require('../package.json').version;
+const version = fs.readJsonSync(new URL('../package.json', import.meta.url)).version;
 program
 	.option('-v, --sdk-version [version]', 'Override the SDK version we report', process.env.PRODUCT_VERSION || version)
 	.option('-t, --version-tag [tag]', 'Override the SDK version tag we report')
@@ -11,7 +12,6 @@ program
 	.parse(process.argv);
 
 async function main(program) {
-	const Builder = require('./lib/builder');
 	const builder = new Builder(program.opts(), program.args);
 	return builder.install(program.args[0]);
 }

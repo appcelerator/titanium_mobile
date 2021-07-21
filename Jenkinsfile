@@ -18,7 +18,7 @@ def testOnAndroidDevices = false // testOnDevices // FIXME: Our android device i
 def testOnIOSDevices = false // testOnDevices // FIXME: Our iphone device in CI is gone for now!
 
 // Variables we can change
-def nodeVersion = '12.18.0' // NOTE that changing this requires we set up the desired version on jenkins master first!
+def nodeVersion = '14.15.1' // NOTE that changing this requires we set up the desired version on jenkins master first!
 def npmVersion = 'latest' // We can change this without any changes to Jenkins. 5.7.1 is minimum to use 'npm ci'
 
 // Variables which we assign and share between nodes

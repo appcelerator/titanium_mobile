@@ -6,19 +6,21 @@
  */
 /* eslint no-unused-expressions: "off" */
 /* eslint security/detect-child-process: "off" */
-'use strict';
+import { promisify } from 'util';
+import ejs from 'ejs';
+import fs from 'fs-extra';
+import path from 'path';
+import request from 'request-promise-native';
+import AndroidBuilder from '../../build/lib/android/index.js';
+import Builder from '../../build/lib/builder.mjs';
+import BuildUtils from '../../build/lib/utils.js';
+import { fileURLToPath } from 'url';
+import { exec as execSync, execFile as execFileSync } from 'child_process';
 
-const AndroidBuilder = require('../../build/lib/android');
-const Builder = require('../../build/lib/builder');
-const BuildUtils = require('../../build/lib/utils');
-const util = require('util');
-const ejs = require('ejs');
-const child_process = require('child_process');
-const exec = util.promisify(child_process.exec);
-const execFile = util.promisify(child_process.execFile);
-const fs = require('fs-extra');
-const path = require('path');
-const request = require('request-promise-native');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const exec = promisify(execSync);
+const execFile = promisify(execFileSync);
 
 // Determine if we're running on a Windows machine.
 const isWindows = process.platform === 'win32';
@@ -44,7 +46,7 @@ function quotePath(filePath) {
  * @returns {Promise<Object>} Dictionary of the parsed JSON file if loaded successfully.
  */
 async function loadPackageJson() {
-	return fs.readJson('../package.json');
+	return fs.readJson(new URL('../package.json', import.meta.url));
 }
 
 /**
@@ -129,7 +131,7 @@ async function generateSnapshot(v8SnapshotHeaderFilePath, rollupFileContent) {
 	}
 
 	// Generate 'V8Snapshots.h' from template
-	const template = await util.promisify(ejs.renderFile)('V8Snapshots.h.ejs', { blobs }, {});
+	const template = await promisify(ejs.renderFile)('V8Snapshots.h.ejs', { blobs }, {});
 	await fs.writeFile(v8SnapshotHeaderFilePath, template);
 
 	console.log('Generated snapshot header.');
@@ -139,7 +141,7 @@ async function generateSnapshot(v8SnapshotHeaderFilePath, rollupFileContent) {
  * Does a transpile/polyfill/rollup of our "titanium_mobile/common/Resources" JS files.
  * Will then generate a C++ header file providing a V8 snapshot of the rolled-up JS for fast startup times.
  */
-async function createSnapshot() {
+export async function createSnapshot() {
 	// Perform a transpile/polyfill/rollup of our common JS files.
 	// This contains our "ti.main.js" which the app executes on startup before executing the "app.js" file.
 	const rollupOutputDirPath = path.join(__dirname, 'build', 'outputs', 'ti-assets', 'Resources');
@@ -149,8 +151,9 @@ async function createSnapshot() {
 	const options = { };
 	const mainBuilder = new Builder(options, [ 'android' ]);
 	await mainBuilder.ensureGitHash();
+	const sdkVersion = (await fs.readJson(new URL('../../package.json', import.meta.url))).version;
 	const androidBuilder = new AndroidBuilder({
-		sdkVersion: require('../../package.json').version,
+		sdkVersion,
 		gitHash: options.gitHash,
 		timestamp: options.timestamp
 	});
@@ -240,7 +243,7 @@ async function createSnapshot() {
  * Checks if the V8 library referenced by the "titanium_mobile/android/package.json" file is installed.
  * If not, then this function will automatically download/install it. Function will do nothing if already installed.
  */
-async function updateLibrary() {
+export async function updateLibrary() {
 	// Fetch info about the V8 library we should be building with.
 	// This info is stored in our "package.json" under "titanium_mobile/android" folder.
 	const packageJsonData = await loadPackageJson();
@@ -279,7 +282,7 @@ async function updateLibrary() {
  *
  * Will exit the process when the async operation ends. Intended to be called from the command line.
  */
-function createSnapshotThenExit() {
+export function createSnapshotThenExit() {
 	exitWhenDone(createSnapshot());
 }
 
@@ -289,7 +292,7 @@ function createSnapshotThenExit() {
  *
  * Will exit the process when the async operation ends. Intended to be called from the command line.
  */
-function updateLibraryThenExit() {
+export function updateLibraryThenExit() {
 	exitWhenDone(updateLibrary());
 }
 
@@ -306,9 +309,13 @@ function exitWhenDone(promise) {
 		});
 }
 
-module.exports = {
-	createSnapshot,
-	createSnapshotThenExit,
-	updateLibrary,
-	updateLibraryThenExit
-};
+if (process.argv.length > 0) {
+	const lastArg = process.argv.pop();
+	if (lastArg === 'createSnapshotThenExit') {
+		createSnapshotThenExit();
+	} else if (lastArg === 'updateLibraryThenExit') {
+		updateLibraryThenExit();
+	} else {
+		console.error(`Unknown argument to libv8-services: ${lastArg}`);
+	}
+}

@@ -3,19 +3,23 @@
  * Licensed under the terms of the Apache Public License.
  * Please see the LICENSE included with this distribution for details.
  */
-'use strict';
+import path from 'path';
+import stripAnsi from 'strip-ansi';
+import fs from 'fs-extra';
+import 'colors';
+import ejs from 'ejs';
+import StreamSplitter from 'stream-splitter';
+import { spawn, exec as execSync } from 'child_process';// eslint-disable-line security/detect-child-process
+import { promisify } from 'util';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
 
-const path = require('path');
-const fs = require('fs-extra');
-const colors = require('colors'); // eslint-disable-line no-unused-vars
-const ejs = require('ejs');
-const StreamSplitter = require('stream-splitter');
-const spawn = require('child_process').spawn; // eslint-disable-line security/detect-child-process
+const require = createRequire(import.meta.url);
 const titanium = require.resolve('titanium');
-const { promisify } = require('util');
-const stripAnsi = require('strip-ansi');
-const exec = promisify(require('child_process').exec); // eslint-disable-line security/detect-child-process
+const exec = promisify(execSync);
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '../../..');
 const SOURCE_DIR = path.join(ROOT_DIR, 'tests');
 const PROJECT_NAME = 'mocha';
@@ -53,7 +57,7 @@ const isCI = !!(process.env.BUILD_NUMBER || process.env.CI || false);
  * @param {string} [snapshotDir='../../../tests/Resources'] directory to place generated snapshot images
  * @returns {Promise<object>}
  */
-async function test(platforms, target, deviceId, deployType, deviceFamily, snapshotDir = path.join(__dirname, '../../../tests/Resources')) {
+export async function test(platforms, target, deviceId, deployType, deviceFamily, snapshotDir = path.join(__dirname, '../../../tests/Resources')) {
 	const snapshotPromises = []; // place to stick commands we've fired off to pull snapshot images
 
 	// delete old test app (if does not exist, this will no-op)
@@ -758,7 +762,7 @@ class DeviceTestDetails {
  * @param {Promise[]} snapshotPromises array to hold promises for grabbign generated images
  * @returns {Promise<object>}
  */
-async function handleBuild(prc, target, snapshotDir, snapshotPromises) {
+export async function handleBuild(prc, target, snapshotDir, snapshotPromises) {
 	return new Promise((resolve, reject) => {
 		const deviceMap = new Map();
 		let started = false;
@@ -951,7 +955,7 @@ async function outputJUnitXML(jsonResults, prefix) {
 /**
  * @param {object[]} results test results
  */
-async function outputResults(results) {
+export async function outputResults(results) {
 	const suites = {};
 
 	// start
@@ -1007,8 +1011,3 @@ async function outputResults(results) {
 	const total = skipped + failures + passes;
 	console.log('%d Total Tests: %d passed, %d failed, %d skipped.', total, passes, failures, skipped);
 }
-
-// public API
-exports.test = test;
-exports.outputResults = outputResults;
-exports.handleBuild = handleBuild;

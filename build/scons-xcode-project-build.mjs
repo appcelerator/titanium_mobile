@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-'use strict';
+import path from 'path';
+import program from 'commander';
+import Builder from './lib/builder.mjs';
+import fs from 'fs-extra';
+import { i18n } from 'node-titanium-sdk';
+import IOS from './lib/ios.js';
 
-const program = require('commander');
-const fs = require('fs-extra');
-const path = require('path');
-const IOS = require('./lib/ios');
-const Builder = require('./lib/builder');
-const { i18n } = require('node-titanium-sdk');
 program.parse(process.argv);
 
 const projectDir = program.args[0];
@@ -48,8 +47,9 @@ async function generateBundle(outputDir) {
 	const options = { };
 	const builder = new Builder(options, [ 'ios' ]);
 	await builder.ensureGitHash();
+	const sdkVersion = (await fs.readJson(new URL('../package.json', import.meta.url))).version;
 	const ios = new IOS({
-		sdkVersion: require('../package.json').version,
+		sdkVersion,
 		gitHash: options.gitHash,
 		timestamp: options.timestamp
 	});

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-'use strict';
+import program from 'commander';
+import Builder from './lib/builder.mjs';
+import fs from 'fs-extra';
 
-const program = require('commander');
-const version = require('../package.json').version;
+const version = fs.readJsonSync(new URL('../package.json', import.meta.url)).version;
+
 program
 	.option('-a, --all', 'Build a zipfile for every OS')
 	.option('-v, --sdk-version [version]', 'Override the SDK version we report', process.env.PRODUCT_VERSION || version)
@@ -12,7 +14,6 @@ program
 	.parse(process.argv);
 
 async function main(program) {
-	const Builder = require('./lib/builder');
 	const builder = new Builder(program.opts(), program.args);
 	await builder.generateDocs();
 	return builder.package();

@@ -1,17 +1,20 @@
-'use strict';
+import os from 'os';
+import path from 'path';
+import fs from 'fs-extra';
+import { rollup } from 'rollup';
+import { babel } from '@rollup/plugin-babel';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import { runTests, outputMultipleResults } from './test/index.mjs';
+import git from './git.js';
+import utils from './utils.js';
+import Packager from './packager.js';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
-const os = require('os');
-const path = require('path');
-const fs = require('fs-extra');
-const rollup = require('rollup').rollup;
-const { babel } = require('@rollup/plugin-babel');
-const { nodeResolve } = require('@rollup/plugin-node-resolve');
-const commonjs = require('@rollup/plugin-commonjs');
-
-const git = require('./git');
-const utils = require('./utils');
-const Packager = require('./packager');
-
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..', '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const TMP_DIR = path.join(DIST_DIR, 'tmp');
@@ -66,7 +69,7 @@ function getCorejsVersion() {
 	throw new Error('Could not lookup core-js version in package-lock file.');
 }
 
-class Builder {
+export default class Builder {
 
 	/**
 	 * @param {object} options command line options
@@ -112,7 +115,6 @@ class Builder {
 	}
 
 	async test() {
-		const { runTests, outputMultipleResults } = require('./test');
 		const results = await runTests(this.platforms, this.options);
 		return outputMultipleResults(results);
 	}
@@ -254,4 +256,3 @@ class Builder {
 	}
 }
 
-module.exports = Builder;
